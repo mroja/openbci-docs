@@ -1,0 +1,393 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.utils.openbci_logging &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.utils.openbci_logging</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># Author:</span>
+<span class="c1">#     Mateusz Kruszyński &lt;mateusz.kruszynski@gmail.com&gt;</span>
+<span class="c1">#     Joanna Tustanowska &lt;joanna.tustanowska@titanis.pl&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;Module defines a single method get_logger that returns logger with</span>
+<span class="sd">set logging level. Change logging.INFO lines to change logging level.&quot;&quot;&quot;</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+<span class="kn">import</span> <span class="nn">functools</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">logging.handlers</span>
+
+<span class="kn">import</span> <span class="nn">inspect</span>
+
+
+<span class="n">LEVELS</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;debug&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">DEBUG</span><span class="p">,</span>
+          <span class="s1">&#39;info&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">INFO</span><span class="p">,</span>
+          <span class="s1">&#39;warning&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">WARNING</span><span class="p">,</span>
+          <span class="s1">&#39;error&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">ERROR</span><span class="p">,</span>
+          <span class="s1">&#39;critical&#39;</span><span class="p">:</span> <span class="n">logging</span><span class="o">.</span><span class="n">CRITICAL</span><span class="p">}</span>
+
+
+<span class="n">MAX_FILE_SIZE_B</span> <span class="o">=</span> <span class="mi">1000000</span>
+<span class="n">LOG_BUFFER_SIZE_B</span> <span class="o">=</span> <span class="mi">5000</span>
+<span class="n">BACKUP_COUNT</span> <span class="o">=</span> <span class="mi">2</span>
+
+<span class="n">USE_SENTRY</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;SENTRY_DSN&#39;</span><span class="p">,</span> <span class="kc">False</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="ow">not</span> <span class="n">USE_SENTRY</span><span class="p">:</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="kn">from</span> <span class="nn">configparser</span> <span class="k">import</span> <span class="n">ConfigParser</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">ConfigParser</span><span class="p">()</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="s1">&#39;/etc/default/openbci&#39;</span><span class="p">)</span>
+        <span class="n">send_logs</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sentry&#39;</span><span class="p">,</span> <span class="s1">&#39;send_logs&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">send_logs</span> <span class="o">==</span> <span class="s1">&#39;true&#39;</span><span class="p">:</span>
+            <span class="n">USE_SENTRY</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;sentry&#39;</span><span class="p">,</span> <span class="s1">&#39;key&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">USE_SENTRY</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">:</span>
+                <span class="n">USE_SENTRY</span> <span class="o">=</span> <span class="kc">False</span>
+    <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+        <span class="k">pass</span>
+
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">raven</span> <span class="k">import</span> <span class="n">Client</span>
+    <span class="kn">from</span> <span class="nn">raven.handlers.logging</span> <span class="k">import</span> <span class="n">SentryHandler</span>
+    <span class="kn">from</span> <span class="nn">raven.conf</span> <span class="k">import</span> <span class="n">setup_logging</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="c1"># import warnings</span>
+    <span class="c1"># warnings.warn(&quot;raven-python modules not found, log messages will not be sent to Sentry&quot;, UserWarning)</span>
+    <span class="n">USE_SENTRY</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_sentry_handler</span><span class="p">(</span><span class="n">sentry_key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">obci_peer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span>
+<span class="k">else</span><span class="p">:</span>
+    <span class="k">class</span> <span class="nc">OBCISentryClient</span><span class="p">(</span><span class="n">Client</span><span class="p">):</span>
+
+        <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dsn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">obci_peer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">):</span>
+            <span class="nb">super</span><span class="p">(</span><span class="n">OBCISentryClient</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">dsn</span><span class="p">,</span> <span class="o">**</span><span class="n">options</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">peer</span> <span class="o">=</span> <span class="n">obci_peer</span>
+
+        <span class="k">def</span> <span class="nf">build_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">event_type</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">date</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">time_spent</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stack</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">public_key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                      <span class="n">tags</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+            <span class="n">data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">OBCISentryClient</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">build_msg</span><span class="p">(</span><span class="n">event_type</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">date</span><span class="p">,</span> <span class="n">time_spent</span><span class="p">,</span>
+                                                           <span class="n">extra</span><span class="p">,</span> <span class="n">stack</span><span class="p">,</span> <span class="n">public_key</span><span class="p">,</span> <span class="n">tags</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+            <span class="n">tst</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;tags&#39;</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">tst</span><span class="p">:</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">peer</span><span class="p">,</span> <span class="s1">&#39;_crash_extra_tags&#39;</span><span class="p">):</span>
+                <span class="n">data</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">peer</span><span class="o">.</span><span class="n">_crash_extra_tags</span><span class="p">())</span>
+
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">peer</span><span class="p">,</span> <span class="s1">&#39;_crash_extra_data&#39;</span><span class="p">):</span>
+                <span class="n">dt</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;extra&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="p">{})</span>
+                <span class="n">up</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer</span><span class="o">.</span><span class="n">_crash_extra_data</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">dt</span><span class="p">:</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;extra&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">up</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">data</span><span class="p">[</span><span class="s1">&#39;extra&#39;</span><span class="p">][</span><span class="s1">&#39;data&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">up</span>
+
+            <span class="k">return</span> <span class="n">data</span>
+
+    <span class="k">def</span> <span class="nf">_sentry_handler</span><span class="p">(</span><span class="n">sentry_key</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">obci_peer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">client</span> <span class="o">=</span> <span class="n">OBCISentryClient</span><span class="p">(</span><span class="n">sentry_key</span><span class="p">,</span> <span class="n">obci_peer</span><span class="o">=</span><span class="n">obci_peer</span><span class="p">,</span> <span class="n">auto_log_stacks</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;logging setup: initializing sentry failed - &#39;</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">handler</span> <span class="o">=</span> <span class="n">SentryHandler</span><span class="p">(</span><span class="n">client</span><span class="p">)</span>
+        <span class="n">handler</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="s1">&#39;sentry_handler&#39;</span><span class="p">)</span>
+        <span class="n">setup_logging</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">handler</span>
+
+
+<span class="c1"># print(&quot;logging setup: found raven and sentry key - %s&quot; % USE_SENTRY)</span>
+
+<div class="viewcode-block" id="console_formatter"><a class="viewcode-back" href="../../../apidoc/obci.utils.html#obci.utils.openbci_logging.console_formatter">[docs]</a><span class="k">def</span> <span class="nf">console_formatter</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span>
+        <span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> - </span><span class="si">%(name)s</span><span class="s2"> - </span><span class="si">%(levelname)s</span><span class="s2"> - </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="file_formatter"><a class="viewcode-back" href="../../../apidoc/obci.utils.html#obci.utils.openbci_logging.file_formatter">[docs]</a><span class="k">def</span> <span class="nf">file_formatter</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span>
+        <span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> - </span><span class="si">%(name)s</span><span class="s2"> - </span><span class="si">%(filename)s</span><span class="s2">:</span><span class="si">%(lineno)d</span><span class="s2"> - </span><span class="si">%(levelname)s</span><span class="s2"> - </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="mx_formatter"><a class="viewcode-back" href="../../../apidoc/obci.utils.html#obci.utils.openbci_logging.mx_formatter">[docs]</a><span class="k">def</span> <span class="nf">mx_formatter</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span>
+        <span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> - </span><span class="si">%(name)s</span><span class="s2"> - </span><span class="si">%(levelname)s</span><span class="s2"> - </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="get_dummy_logger"><a class="viewcode-back" href="../../../apidoc/obci.utils.html#obci.utils.openbci_logging.get_dummy_logger">[docs]</a><span class="k">def</span> <span class="nf">get_dummy_logger</span><span class="p">(</span><span class="n">p_name</span><span class="p">,</span> <span class="n">p_level</span><span class="o">=</span><span class="s1">&#39;info&#39;</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return logger with p_name as name. And logging level p_level.</span>
+<span class="sd">    p_level should be in (starting with the most talkactive):</span>
+<span class="sd">    &#39;debug&#39;, &#39;info&#39;, &#39;warning&#39;, &#39;error&#39;, &#39;critical&#39;.&quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">p_name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Some module migh be imported few times. In every get_logger call</span>
+        <span class="c1"># with p_name = &quot;X&quot; we return the same instance of logger, bu we must</span>
+        <span class="c1"># ensure, that the logger has no more than one handler.</span>
+        <span class="n">handler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+
+        <span class="n">level</span> <span class="o">=</span> <span class="n">LEVELS</span><span class="p">[</span><span class="n">p_level</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+        <span class="n">handler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+
+        <span class="n">formatter</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">Formatter</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%(asctime)s</span><span class="s2"> - </span><span class="si">%(name)s</span><span class="s2"> - </span><span class="si">%(levelname)s</span><span class="s2"> - </span><span class="si">%(message)s</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">handler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">handler</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">logger</span></div>
+
+
+<div class="viewcode-block" id="get_logger"><a class="viewcode-back" href="../../../apidoc/obci.utils.html#obci.utils.openbci_logging.get_logger">[docs]</a><span class="k">def</span> <span class="nf">get_logger</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">file_level</span><span class="o">=</span><span class="s1">&#39;debug&#39;</span><span class="p">,</span> <span class="n">stream_level</span><span class="o">=</span><span class="s1">&#39;warning&#39;</span><span class="p">,</span>
+               <span class="n">mx_level</span><span class="o">=</span><span class="s1">&#39;warning&#39;</span><span class="p">,</span> <span class="n">sentry_level</span><span class="o">=</span><span class="s1">&#39;error&#39;</span><span class="p">,</span>
+               <span class="n">conn</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">log_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">obci_peer</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Return logger with name as name. And logging level p_level.</span>
+<span class="sd">    p_level should be in (starting with the most talkactive):</span>
+<span class="sd">    &#39;debug&#39;, &#39;info&#39;, &#39;warning&#39;, &#39;error&#39;, &#39;critical&#39;.&quot;&quot;&quot;</span>
+    <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">logger</span><span class="o">.</span><span class="n">handlers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="c1"># Some module migh be imported few times. In every get_logger call</span>
+        <span class="c1"># with name = &quot;X&quot; we return the same instance of logger, bu we must</span>
+        <span class="c1"># ensure, that the logger has no more than one handler.</span>
+
+        <span class="n">level</span> <span class="o">=</span> <span class="n">LEVELS</span><span class="p">[</span><span class="s1">&#39;debug&#39;</span><span class="p">]</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">level</span><span class="p">)</span>
+        <span class="n">formatter</span> <span class="o">=</span> <span class="n">console_formatter</span><span class="p">()</span>
+
+        <span class="n">shandler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">StreamHandler</span><span class="p">()</span>
+        <span class="n">shandler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+        <span class="n">stream_level</span> <span class="o">=</span> <span class="n">stream_level</span> <span class="ow">or</span> <span class="s1">&#39;warning&#39;</span>
+        <span class="n">file_level</span> <span class="o">=</span> <span class="n">file_level</span> <span class="ow">or</span> <span class="s1">&#39;debug&#39;</span>
+        <span class="n">mx_level</span> <span class="o">=</span> <span class="n">mx_level</span> <span class="ow">or</span> <span class="s1">&#39;warning&#39;</span>
+        <span class="n">shandler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LEVELS</span><span class="p">[</span><span class="n">stream_level</span><span class="p">])</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">shandler</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">conn</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="kn">import</span> <span class="nn">obci.utils.log_mx_handler</span> <span class="k">as</span> <span class="nn">log_mx_handler</span>
+            <span class="n">mxhandler</span> <span class="o">=</span> <span class="n">log_mx_handler</span><span class="o">.</span><span class="n">LogMXHandler</span><span class="p">(</span><span class="n">conn</span><span class="p">)</span>
+            <span class="n">mxhandler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LEVELS</span><span class="p">[</span><span class="n">mx_level</span><span class="p">])</span>
+            <span class="n">mxhandler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">mx_formatter</span><span class="p">())</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">mxhandler</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">log_dir</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">log_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">log_dir</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">log_dir</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">log_dir</span><span class="p">)</span>
+            <span class="n">fhandler</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">handlers</span><span class="o">.</span><span class="n">RotatingFileHandler</span><span class="p">(</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;.log&quot;</span><span class="p">),</span>
+                <span class="n">maxBytes</span><span class="o">=</span><span class="n">MAX_FILE_SIZE_B</span><span class="p">,</span>
+                <span class="n">backupCount</span><span class="o">=</span><span class="n">BACKUP_COUNT</span><span class="p">)</span>
+            <span class="n">fhandler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">formatter</span><span class="p">)</span>
+            <span class="n">fhandler</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LEVELS</span><span class="p">[</span><span class="n">file_level</span><span class="p">])</span>
+            <span class="n">fhandler</span><span class="o">.</span><span class="n">setFormatter</span><span class="p">(</span><span class="n">file_formatter</span><span class="p">())</span>
+            <span class="c1"># memhandler = logging.handlers.MemoryHandler(LOG_BUFFER_SIZE_B,</span>
+            <span class="c1">#                                     flushLevel=LEVELS[&#39;warning&#39;],</span>
+            <span class="c1">#                                            target=fhandler)</span>
+            <span class="c1"># memhandler.setLevel(LEVELS file_level])</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">fhandler</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">USE_SENTRY</span><span class="p">:</span>
+            <span class="n">h</span> <span class="o">=</span> <span class="n">_sentry_handler</span><span class="p">(</span><span class="n">obci_peer</span><span class="o">=</span><span class="n">obci_peer</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">h</span><span class="p">:</span>
+                <span class="n">h</span><span class="o">.</span><span class="n">setLevel</span><span class="p">(</span><span class="n">LEVELS</span><span class="p">[</span><span class="n">sentry_level</span><span class="p">])</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">addHandler</span><span class="p">(</span><span class="n">h</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">logger</span></div>
+
+
+<div class="viewcode-block" id="log_crash"><a class="viewcode-back" href="../../../apidoc/obci.utils.html#obci.utils.openbci_logging.log_crash">[docs]</a><span class="k">def</span> <span class="nf">log_crash</span><span class="p">(</span><span class="n">func</span><span class="p">):</span>
+    <span class="nd">@functools</span><span class="o">.</span><span class="n">wraps</span><span class="p">(</span><span class="n">func</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">wrapper</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">func</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="c1"># print &quot;self:   &quot;, self</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s1">&#39;logger&#39;</span><span class="p">):</span>
+                <span class="n">info</span> <span class="o">=</span> <span class="n">sys</span><span class="o">.</span><span class="n">exc_info</span><span class="p">()</span>
+                <span class="n">frames</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getouterframes</span><span class="p">(</span><span class="n">info</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">tb_frame</span><span class="p">)</span>
+                <span class="n">extra_obj</span> <span class="o">=</span> <span class="n">_find_extra_obj</span><span class="p">(</span><span class="n">frames</span><span class="p">)</span>
+
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">crash_log_msg</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">extra_obj</span><span class="p">,</span> <span class="n">info</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span>
+                <span class="n">extra</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;data&#39;</span><span class="p">:</span> <span class="p">{},</span> <span class="s1">&#39;tags&#39;</span><span class="p">:</span> <span class="p">{}}</span>
+                <span class="n">extra</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">crash_log_data</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">extra_obj</span><span class="p">))</span>
+                <span class="n">extra</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">crash_log_tags</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">extra_obj</span><span class="p">))</span>
+                <span class="n">extra</span><span class="p">[</span><span class="s1">&#39;culprit&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">caller_name</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">extra</span><span class="o">=</span><span class="n">extra</span><span class="p">)</span>
+                <span class="k">del</span> <span class="n">info</span>
+                <span class="k">del</span> <span class="n">frames</span>
+            <span class="k">raise</span> <span class="n">e</span>
+    <span class="k">return</span> <span class="n">wrapper</span></div>
+
+
+<span class="k">def</span> <span class="nf">_find_extra_obj</span><span class="p">(</span><span class="n">frames</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">frame</span> <span class="ow">in</span> <span class="n">frames</span><span class="p">:</span>
+        <span class="n">arg_info</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getargvalues</span><span class="p">(</span><span class="n">frame</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">arg_info</span><span class="o">.</span><span class="n">args</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span> <span class="ow">and</span> <span class="n">arg_info</span><span class="o">.</span><span class="n">args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;self&#39;</span><span class="p">:</span>
+            <span class="n">callee</span> <span class="o">=</span> <span class="n">arg_info</span><span class="o">.</span><span class="n">locals</span><span class="p">[</span><span class="s1">&#39;self&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">callee</span><span class="p">,</span> <span class="s1">&#39;_crash_extra_tags&#39;</span><span class="p">):</span>
+                <span class="k">return</span> <span class="n">callee</span>
+    <span class="k">return</span> <span class="kc">None</span>
+
+
+<div class="viewcode-block" id="crash_log_tags"><a class="viewcode-back" href="../../../apidoc/obci.utils.html#obci.utils.openbci_logging.crash_log_tags">[docs]</a><span class="k">def</span> <span class="nf">crash_log_tags</span><span class="p">(</span><span class="n">exception</span><span class="p">,</span> <span class="n">callee</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">callee</span><span class="p">,</span> <span class="s1">&#39;_crash_extra_tags&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">callee</span><span class="o">.</span><span class="n">_crash_extra_tags</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{}</span></div>
+
+
+<div class="viewcode-block" id="crash_log_msg"><a class="viewcode-back" href="../../../apidoc/obci.utils.html#obci.utils.openbci_logging.crash_log_msg">[docs]</a><span class="k">def</span> <span class="nf">crash_log_msg</span><span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">kwargs</span><span class="p">,</span> <span class="n">callee</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exc_info</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">exception</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="s1">&#39; </span><span class="se">\n\n</span><span class="s1">  CRASH INFO:</span><span class="se">\n</span><span class="s1">&#39;</span>
+    <span class="k">if</span> <span class="n">exception</span><span class="p">:</span>
+        <span class="n">msg</span> <span class="o">+=</span> <span class="s2">&quot;Peer crashed with exception </span><span class="si">%s</span><span class="se">\n</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">str</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">exc_info</span><span class="p">:</span>
+        <span class="n">fmt</span> <span class="o">=</span> <span class="n">traceback</span><span class="o">.</span><span class="n">format_exception</span><span class="p">(</span><span class="n">exc_info</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">exc_info</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">exc_info</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+        <span class="n">fmt_str</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">fmt</span><span class="p">)</span>
+        <span class="n">msg</span> <span class="o">+=</span> <span class="n">fmt_str</span>
+
+    <span class="n">msg</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">function/method  </span><span class="si">%s</span><span class="s2"> called with  args: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">func</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">kwargs:  </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">kwargs</span>
+
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">callee</span><span class="p">,</span> <span class="s1">&#39;_crash_extra_description&#39;</span><span class="p">):</span>
+        <span class="n">msg</span> <span class="o">+=</span> <span class="s2">&quot;</span><span class="se">\n\n</span><span class="s2">&quot;</span> <span class="o">+</span> <span class="n">callee</span><span class="o">.</span><span class="n">_crash_extra_description</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span>
+    <span class="k">del</span> <span class="n">exc_info</span>
+    <span class="k">return</span> <span class="n">msg</span></div>
+
+
+<div class="viewcode-block" id="crash_log_data"><a class="viewcode-back" href="../../../apidoc/obci.utils.html#obci.utils.openbci_logging.crash_log_data">[docs]</a><span class="k">def</span> <span class="nf">crash_log_data</span><span class="p">(</span><span class="n">exception</span><span class="p">,</span> <span class="n">callee</span><span class="p">):</span>
+    <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">callee</span><span class="p">,</span> <span class="s1">&#39;_crash_extra_data&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">callee</span><span class="o">.</span><span class="n">_crash_extra_data</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">{}</span></div>
+
+
+<div class="viewcode-block" id="caller_name"><a class="viewcode-back" href="../../../apidoc/obci.utils.html#obci.utils.openbci_logging.caller_name">[docs]</a><span class="k">def</span> <span class="nf">caller_name</span><span class="p">(</span><span class="n">skip</span><span class="o">=</span><span class="mi">2</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Get a name of a caller in the format module.class.method</span>
+
+<span class="sd">       `skip` specifies how many levels of stack to skip while getting caller</span>
+<span class="sd">       name. skip=1 means &quot;who calls me&quot;, skip=2 &quot;who calls my caller&quot; etc.</span>
+
+<span class="sd">       An empty string is returned if skipped levels exceed stack height</span>
+<span class="sd">       copied from gist:  https://gist.github.com/techtonik/2151727</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">stack</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">stack</span><span class="p">()</span>
+    <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span> <span class="o">+</span> <span class="n">skip</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">stack</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">start</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">parentframe</span> <span class="o">=</span> <span class="n">stack</span><span class="p">[</span><span class="n">start</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="n">name</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">module</span> <span class="o">=</span> <span class="n">inspect</span><span class="o">.</span><span class="n">getmodule</span><span class="p">(</span><span class="n">parentframe</span><span class="p">)</span>
+    <span class="c1"># `modname` can be None when frame is executed directly in console</span>
+    <span class="c1"># TODO(techtonik): consider using __main__</span>
+    <span class="k">if</span> <span class="n">module</span><span class="p">:</span>
+        <span class="n">name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">module</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+    <span class="c1"># detect classname</span>
+    <span class="k">if</span> <span class="s1">&#39;self&#39;</span> <span class="ow">in</span> <span class="n">parentframe</span><span class="o">.</span><span class="n">f_locals</span><span class="p">:</span>
+        <span class="c1"># I don&#39;t know any way to detect call from the object method</span>
+        <span class="c1"># XXX: there seems to be no way to detect static method call - it will</span>
+        <span class="c1">#      be just a function call</span>
+        <span class="n">name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">parentframe</span><span class="o">.</span><span class="n">f_locals</span><span class="p">[</span><span class="s1">&#39;self&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">__class__</span><span class="o">.</span><span class="n">__name__</span><span class="p">)</span>
+    <span class="n">codename</span> <span class="o">=</span> <span class="n">parentframe</span><span class="o">.</span><span class="n">f_code</span><span class="o">.</span><span class="n">co_name</span>
+    <span class="k">if</span> <span class="n">codename</span> <span class="o">!=</span> <span class="s1">&#39;&lt;module&gt;&#39;</span><span class="p">:</span>  <span class="c1"># top level usually</span>
+        <span class="n">name</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">codename</span><span class="p">)</span>  <span class="c1"># function or a method</span>
+    <span class="k">del</span> <span class="n">parentframe</span>
+    <span class="k">return</span> <span class="s2">&quot;.&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">name</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

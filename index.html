@@ -1,0 +1,173 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Welcome to OpenBCI 2 documentation! &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    './',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="#" />
+    <link rel="next" title="obci" href="apidoc/modules.html" />
+   
+  <link rel="stylesheet" href="_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="welcome-to-openbci-2-documentation">
+<h1>Welcome to OpenBCI 2 documentation!<a class="headerlink" href="#welcome-to-openbci-2-documentation" title="Permalink to this headline">¶</a></h1>
+<p>Welcome to the <a class="reference external" href="https://github.com/BrainTech/openbci">OpenBCI</a> framework.</p>
+<p>This documentation is written as a part of Alex Khrabrov&#8217;s Google Summer of Code 2016 project.</p>
+<p>This file contains documentation generated from whole OpenBCI project. Because most of OpenBCI&#8217;s code is undocumented only following modules, written during GSoC, have proper documentation:</p>
+<ul class="simple">
+<li><a class="reference internal" href="apidoc/obci.core.html#module-obci.core" title="obci.core"><code class="xref py py-mod docutils literal"><span class="pre">obci.core</span></code></a></li>
+<li><a class="reference internal" href="apidoc/obci.peers.html#module-obci.peers" title="obci.peers"><code class="xref py py-mod docutils literal"><span class="pre">obci.peers</span></code></a></li>
+<li><a class="reference internal" href="apidoc/obci.utils.html#module-obci.utils.zmq" title="obci.utils.zmq"><code class="xref py py-mod docutils literal"><span class="pre">obci.utils.zmq</span></code></a></li>
+<li><a class="reference internal" href="apidoc/obci.utils.html#module-obci.utils.debug" title="obci.utils.debug"><code class="xref py py-mod docutils literal"><span class="pre">obci.utils.debug</span></code></a></li>
+<li><a class="reference internal" href="apidoc/obci.utils.html#module-obci.utils.signal_generators" title="obci.utils.signal_generators"><code class="xref py py-mod docutils literal"><span class="pre">obci.utils.signal_generators</span></code></a></li>
+</ul>
+<div class="section" id="openbci-2-api">
+<h2>OpenBCI 2 API<a class="headerlink" href="#openbci-2-api" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="apidoc/modules.html">obci</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="apidoc/obci.html">obci package</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="apidoc/obci.acquisition.html">obci.acquisition package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidoc/obci.analysis.html">obci.analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidoc/obci.benchmark.html">obci.benchmark package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidoc/obci.cmd.html">obci.cmd package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidoc/obci.configs.html">obci.configs package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidoc/obci.control.html">obci.control package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidoc/obci.core.html">obci.core package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidoc/obci.drivers.html">obci.drivers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidoc/obci.gui.html">obci.gui package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidoc/obci.mx_legacy.html">obci.mx_legacy package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidoc/obci.peers.html">obci.peers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidoc/obci.scenarios.html">obci.scenarios package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="apidoc/obci.utils.html">obci.utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="glossary">
+<h2>Glossary<a class="headerlink" href="#glossary" title="Permalink to this headline">¶</a></h2>
+<p>Useful terms for easy understanding of the documentation:</p>
+<dl class="docutils">
+<dt><strong>peer</strong></dt>
+<dd>An OpenBCI module (most probably a Python program or module) which communicates with other running modules through the network. Typical examples: eeg signal amplifiers, filters, signal displays.</dd>
+<dt>(helper) <strong>module</strong></dt>
+<dd>A module which is not a peer. Helper modules are not explicitly mentioned in OpenBCI launch/configuration files because they are components of the peers.</dd>
+<dt><strong>peer config file</strong>, configuration file</dt>
+<dd>Text configuration file (of a peer). Stores necessary parameters and defines dependencies on other peers in the system.</dd>
+<dt><strong>experiment</strong>, OpenBCI instance, system instance</dt>
+<dd>A set of running OpenBCI peers. Each peer can be identified by its assigned peer_id, thus allowing for launching multiple instances of the same programs. Peer_ids, peer program paths and peer configurations are predefined in <em>launch files</em>.</dd>
+<dt><strong>launch file</strong>, experiment definition file/scenario</dt>
+<dd>Text file for defining an experiment. It contains paths to programs to be executed (peers),
+assignments of peer_id and paths to peer configurations.</dd>
+</dl>
+</div>
+<div class="section" id="obsolete-documentation">
+<h2>Obsolete documentation<a class="headerlink" href="#obsolete-documentation" title="Permalink to this headline">¶</a></h2>
+<p>Following tutorial is obsolete, but still can be useful for understanding OpenBCI 2 internals:</p>
+<p><a class="reference internal" href="configuration/tutorial.html"><span class="doc">Peer configuration tutorial</span></a></p>
+</div>
+<div class="section" id="indices-and-tables">
+<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></li>
+<li><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></li>
+<li><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="#">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="#">Documentation overview</a><ul>
+      <li>Next: <a href="apidoc/modules.html" title="next chapter">obci</a></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="_sources/index.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

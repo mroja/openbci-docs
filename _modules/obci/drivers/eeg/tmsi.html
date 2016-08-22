@@ -1,0 +1,1028 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.drivers.eeg.tmsi &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.drivers.eeg.tmsi</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># OpenBCI - framework for Brain-Computer Interfaces based on EEG signal</span>
+<span class="c1"># Project was initiated by Magdalena Michalska and Krzysztof Kulewski</span>
+<span class="c1"># as part of their MSc theses at the University of Warsaw.</span>
+<span class="c1"># Copyright (C) 2009 Krzysztof Kulewski</span>
+<span class="c1">#</span>
+<span class="c1"># Project home: OpenBCI.com</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1"># Author:</span>
+<span class="c1">#      Krzysztof Kulewski &lt;kulewski@gmail.com&gt;</span>
+<span class="kn">import</span> <span class="nn">math</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">reduce</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Library to handle protocol used by TMSi EEG Amplifiers.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="n">__author__</span> <span class="o">=</span> <span class="s2">&quot;kulewski@gmail.com (Krzysztof Kulewski)&quot;</span>
+
+<span class="n">WORD_SIZE</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1">#: word size in bytes</span>
+
+
+<div class="viewcode-block" id="number_to_string_word"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.number_to_string_word">[docs]</a><span class="k">def</span> <span class="nf">number_to_string_word</span><span class="p">(</span><span class="n">number</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a number 0..65535 to two byte string representation.</span>
+<span class="sd">    First byte is less significant.</span>
+
+<span class="sd">    :type number:   number</span>
+<span class="sd">    :param number:  number to be converted.</span>
+<span class="sd">    :rtype:         string</span>
+<span class="sd">    :return:        two byte string containing representation of a word.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">chr</span><span class="p">(</span><span class="n">number</span> <span class="o">%</span> <span class="mi">256</span><span class="p">)</span> <span class="o">+</span> <span class="nb">chr</span><span class="p">(</span><span class="n">number</span> <span class="o">/</span> <span class="mi">256</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="string_word_to_number"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.string_word_to_number">[docs]</a><span class="k">def</span> <span class="nf">string_word_to_number</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert a two byte string representation of a number back into number.</span>
+<span class="sd">    First byte is less significant.</span>
+
+<span class="sd">    :type data:     string</span>
+<span class="sd">    :param data:    two byte string containing representation of a word.</span>
+<span class="sd">    :rtype:         number</span>
+<span class="sd">    :return:        a number described by data parameter.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="n">WORD_SIZE</span><span class="p">,</span> <span class="s2">&quot;Word size invalid&quot;</span>
+    <span class="k">return</span> <span class="nb">ord</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> <span class="nb">ord</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span></div>
+
+
+<div class="viewcode-block" id="calculate_checksum"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.calculate_checksum">[docs]</a><span class="k">def</span> <span class="nf">calculate_checksum</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Calculates checksum of a packet and return two byte (one word) string</span>
+<span class="sd">    containing it.</span>
+
+<span class="sd">    :type data:     string</span>
+<span class="sd">    :param data:    data we want checksum of</span>
+<span class="sd">    :rtype:         string (two byte) representing checksum</span>
+<span class="sd">    :return:        checksum of data</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">word_sum</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)):</span>
+        <span class="n">word_sum</span> <span class="o">=</span> <span class="p">(</span><span class="n">word_sum</span> <span class="o">+</span> <span class="nb">ord</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">**</span> <span class="p">(</span><span class="n">i</span> <span class="o">%</span> <span class="mi">2</span><span class="p">))</span> <span class="o">%</span> <span class="mi">65536</span>
+    <span class="n">word_sum</span> <span class="o">=</span> <span class="p">(</span><span class="mi">65536</span> <span class="o">-</span> <span class="n">word_sum</span><span class="p">)</span> <span class="o">%</span> <span class="mi">65536</span>
+    <span class="k">return</span> <span class="n">number_to_string_word</span><span class="p">(</span><span class="n">word_sum</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="num_to_bits"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.num_to_bits">[docs]</a><span class="k">def</span> <span class="nf">num_to_bits</span><span class="p">(</span><span class="n">num</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert number into its binary representation (list of bits).</span>
+<span class="sd">    Number has to be from 0..255 range.</span>
+
+<span class="sd">    :type num:  number</span>
+<span class="sd">    :param num: number to be converted into bit representation</span>
+<span class="sd">    :rtype:     list of ints</span>
+<span class="sd">    :return:    list of bits representing number num</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bits</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">_</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">8</span><span class="p">):</span>
+        <span class="n">bits</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">num</span> <span class="o">%</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="n">num</span> <span class="o">/</span> <span class="mi">2</span>
+    <span class="k">return</span> <span class="n">bits</span></div>
+
+
+<div class="viewcode-block" id="bits_to_num"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.bits_to_num">[docs]</a><span class="k">def</span> <span class="nf">bits_to_num</span><span class="p">(</span><span class="n">bits</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert bit representation of a number (as large as you can imagine) back</span>
+<span class="sd">    into number - int.</span>
+
+<span class="sd">    :type bits:     list of ints</span>
+<span class="sd">    :param bits:    binary representation of a number</span>
+<span class="sd">    :rtype:         number</span>
+<span class="sd">    :return:        number represented by a given list of bits</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">bits2</span> <span class="o">=</span> <span class="n">bits</span><span class="p">[:]</span>
+    <span class="n">bits2</span><span class="o">.</span><span class="n">reverse</span><span class="p">()</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">bit</span> <span class="ow">in</span> <span class="n">bits2</span><span class="p">:</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">num</span> <span class="o">+</span> <span class="n">bit</span>
+    <span class="k">return</span> <span class="n">num</span></div>
+
+
+<div class="viewcode-block" id="encode_tmsi_bluetooth_number"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.encode_tmsi_bluetooth_number">[docs]</a><span class="k">def</span> <span class="nf">encode_tmsi_bluetooth_number</span><span class="p">(</span><span class="n">num</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert number into TMSi internal format.</span>
+
+<span class="sd">    :type num:      int</span>
+<span class="sd">    :param num:     number to be converted</span>
+<span class="sd">    :rtype:         string (3 bytes)</span>
+<span class="sd">    :return:        number represented in internal TMSi format</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">sign</span> <span class="o">=</span> <span class="n">num</span> <span class="o">&lt;</span> <span class="mi">0</span>
+    <span class="k">if</span> <span class="n">sign</span><span class="p">:</span>
+        <span class="n">num</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="mi">23</span> <span class="o">-</span> <span class="nb">abs</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="nb">chr</span><span class="p">(</span><span class="n">num</span> <span class="o">%</span> <span class="mi">256</span><span class="p">)</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="n">num</span> <span class="o">/</span> <span class="mi">256</span>
+    <span class="n">data</span> <span class="o">+=</span> <span class="nb">chr</span><span class="p">(</span><span class="n">num</span> <span class="o">%</span> <span class="mi">256</span><span class="p">)</span>
+    <span class="n">num</span> <span class="o">=</span> <span class="n">num</span> <span class="o">/</span> <span class="mi">256</span>
+    <span class="n">data</span> <span class="o">+=</span> <span class="nb">chr</span><span class="p">(</span><span class="n">num</span> <span class="o">%</span> <span class="mi">256</span> <span class="o">+</span> <span class="p">(</span><span class="mi">128</span> <span class="k">if</span> <span class="n">sign</span> <span class="k">else</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="k">assert</span> <span class="n">num</span> <span class="o">/</span> <span class="mi">256</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;To big number to be encoded in this format&quot;</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="decode_tmsi_bluetooth_number"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.decode_tmsi_bluetooth_number">[docs]</a><span class="k">def</span> <span class="nf">decode_tmsi_bluetooth_number</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Convert number in TMSi internal format into int.</span>
+
+<span class="sd">    :type data:     string (3 bytes)</span>
+<span class="sd">    :param data:    number represented in internal TMSi format</span>
+<span class="sd">    :rtype:         int</span>
+<span class="sd">    :return:        number after conversion</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">ord</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">+</span> \
+        <span class="nb">ord</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">*</span> <span class="mi">256</span> <span class="o">+</span> \
+        <span class="nb">ord</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">*</span> <span class="mi">65536</span> <span class="o">-</span> \
+           <span class="p">(</span><span class="mi">2</span> <span class="o">**</span> <span class="mi">24</span> <span class="k">if</span> <span class="nb">ord</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">&gt;</span> <span class="mi">128</span> <span class="k">else</span> <span class="mi">0</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PacketType"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.PacketType">[docs]</a><span class="k">class</span> <span class="nc">PacketType</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class names all suported packet types.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">TMS_ACKNOWLEDGE</span> <span class="o">=</span> <span class="mh">0x00</span>
+    <span class="n">TMS_CHANNEL_DATA</span> <span class="o">=</span> <span class="mh">0x01</span>
+    <span class="n">TMS_FRONTEND_INFO</span> <span class="o">=</span> <span class="mh">0x02</span>
+    <span class="n">TMS_FRONTEND_INFO_REQUEST</span> <span class="o">=</span> <span class="mh">0x03</span>
+    <span class="n">TMS_KEEP_ALIVE</span> <span class="o">=</span> <span class="mh">0x27</span>
+    <span class="n">TMS_VL_DELTA_DATA</span> <span class="o">=</span> <span class="mh">0x2f</span>
+    <span class="n">TMS_VL_DELTA_INFO_REQUEST</span> <span class="o">=</span> <span class="mh">0x30</span>
+    <span class="n">TMS_VL_DELTA_INFO</span> <span class="o">=</span> <span class="mh">0x31</span>
+
+    <span class="n">all_known_types</span> <span class="o">=</span> <span class="p">[]</span>  <span class="c1">#: list of all known types, dynamically generated</span>
+    <span class="n">names</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1">#: dict of name =&gt; value, dynamically generated</span>
+    <span class="n">values</span> <span class="o">=</span> <span class="p">{}</span>  <span class="c1">#: dict of value =&gt; name, dynamically generated</span>
+
+<div class="viewcode-block" id="PacketType.generate_internals"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.PacketType.generate_internals">[docs]</a>    <span class="k">def</span> <span class="nf">generate_internals</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generate internal fields: all_known_types, names, values</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="nb">dir</span><span class="p">(</span><span class="n">PacketType</span><span class="p">):</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__getattribute__</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">all_known_types</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">value</span><span class="p">]</span> <span class="o">=</span> <span class="n">key</span></div>
+
+<div class="viewcode-block" id="PacketType.print_types"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.PacketType.print_types">[docs]</a>    <span class="k">def</span> <span class="nf">print_types</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Show all available packet types.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">print</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">names</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Generates all_known_types, names, values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">PacketType</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">generate_internals</span><span class="p">()</span></div>
+
+<span class="n">PACKET_TYPE</span> <span class="o">=</span> <span class="n">PacketType</span><span class="p">()</span>  <span class="c1"># we want one instance of this class</span>
+
+
+<div class="viewcode-block" id="Header"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.Header">[docs]</a><span class="k">class</span> <span class="nc">Header</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Header of data block.</span>
+<span class="sd">    Does not support packets longer than 254 words (such packets)</span>
+<span class="sd">    have variable header length.</span>
+
+<span class="sd">    TMSi protocol header is in format:</span>
+<span class="sd">    - 2 start bytes: \xaa\xaa</span>
+<span class="sd">    - length byte: number of words in packet</span>
+<span class="sd">    - 1 byte: type of packet</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">HEADER_SIZE</span> <span class="o">=</span> <span class="mi">4</span>  <span class="c1">#: size of a header in bytes</span>
+    <span class="n">HEADER_START</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\xaa\xaa</span><span class="s2">&quot;</span>  <span class="c1">#: magic string starting header</span>
+    <span class="n">MAX_PACKET_LENGTH</span> <span class="o">=</span> <span class="mi">254</span>  <span class="c1">#: maximal supported packet length</span>
+    <span class="n">TYPE_OFFSET</span> <span class="o">=</span> <span class="mi">3</span>  <span class="c1">#: byte offset in header of packet type indicator</span>
+    <span class="n">LENGTH_OFFSET</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1">#: byte offset in header of packet length indicator</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Header.construct"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.Header.construct">[docs]</a>    <span class="k">def</span> <span class="nf">construct</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">packet_type</span><span class="p">,</span> <span class="n">length</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct packet header based on packet type and packet length.</span>
+<span class="sd">        Set raw representation of header based on given parameters.</span>
+<span class="sd">        Validate given packet type against list of all supported packet types.</span>
+
+<span class="sd">        :type packet_type:  number (one of PACKET_TYPE constants)</span>
+<span class="sd">        :param packet_type: type of a packet for which we are creating header</span>
+<span class="sd">        :type length:       number</span>
+<span class="sd">        :param length:      length of a packet (in bytes)</span>
+<span class="sd">        :rtype:             Header</span>
+<span class="sd">        :return:            new Header instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="n">length</span> <span class="o">%</span> <span class="mi">2</span> <span class="o">==</span> <span class="mi">0</span><span class="p">,</span> <span class="s2">&quot;Length should be an even number&quot;</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="n">cls</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">packet_type</span> <span class="o">=</span> <span class="n">packet_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="n">length</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">packet_type</span> <span class="ow">in</span> <span class="n">PACKET_TYPE</span><span class="o">.</span><span class="n">all_known_types</span><span class="p">,</span> \
+            <span class="s2">&quot;Invalid (or not supported) packet type&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">HEADER_START</span> <span class="o">+</span> <span class="nb">chr</span><span class="p">(</span><span class="n">length</span> <span class="o">/</span> <span class="mi">2</span><span class="p">)</span> <span class="o">+</span> <span class="nb">chr</span><span class="p">(</span><span class="n">packet_type</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Header.read_one"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.Header.read_one">[docs]</a>    <span class="k">def</span> <span class="nf">read_one</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="n">search</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads one header from stream and returns new Header instance.</span>
+<span class="sd">        If search options is present then search for header start in the stream</span>
+<span class="sd">        by dropping &quot;bad&quot; characters.</span>
+
+<span class="sd">        :type stream:   object with read(int) method (some file or stream)</span>
+<span class="sd">        :param stream:  Stream containing header data.</span>
+<span class="sd">        :type search:   bool</span>
+<span class="sd">        :param search:  True iff bytes not starting header should be dropped</span>
+<span class="sd">                        from the beginning of the stream.</span>
+<span class="sd">        :rtype:         Header</span>
+<span class="sd">        :return:        new Header instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="n">cls</span><span class="p">()</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">search</span><span class="p">:</span>
+            <span class="k">while</span> <span class="n">data</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">HEADER_START</span><span class="p">)]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">HEADER_START</span><span class="p">:</span>
+                <span class="n">new_data</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">new_data</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">,</span> <span class="s2">&quot;read(1) returned not 1 byte&quot;</span>
+                <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span> <span class="o">+</span> <span class="n">new_data</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="n">data</span><span class="p">[:</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">HEADER_START</span><span class="p">)]</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">HEADER_START</span><span class="p">,</span> \
+                <span class="s2">&quot;Invalid packet start&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">HEADER_SIZE</span><span class="p">,</span> <span class="s2">&quot;Header of invalid size&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">packet_type</span> <span class="o">=</span> <span class="nb">ord</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">TYPE_OFFSET</span><span class="p">])</span>  <span class="c1"># packet type</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">packet_type</span> <span class="ow">in</span> <span class="n">PACKET_TYPE</span><span class="o">.</span><span class="n">all_known_types</span><span class="p">,</span> \
+            <span class="s2">&quot;Invalid (or not supported) packet type&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> \
+            <span class="n">WORD_SIZE</span> <span class="o">*</span> <span class="nb">ord</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">LENGTH_OFFSET</span><span class="p">])</span>  <span class="c1"># decode packet length</span>
+        <span class="c1"># we do not support data block longer than 254 words</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">&lt;=</span> <span class="n">WORD_SIZE</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">MAX_PACKET_LENGTH</span><span class="p">,</span> \
+            <span class="s2">&quot;Packet length exceeds max length&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">packet_type</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># type of a packet, one defined in PACKET_TYPE</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">length</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>  <span class="c1"># packet length in bytes, not inc. header and checksum</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">raw</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># raw binary value of header</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;TMSi Packet Header describing packet of type </span><span class="si">%s</span><span class="s2"> and length &quot;</span> \
+            <span class="s2">&quot;of </span><span class="si">%d</span><span class="s2"> bytes.&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">PACKET_TYPE</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">packet_type</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">length</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Packet"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.Packet">[docs]</a><span class="k">class</span> <span class="nc">Packet</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Wire packet base class.</span>
+
+<span class="sd">    This class is the base of all packet classes. It provides common options</span>
+<span class="sd">    related functionaility.</span>
+
+<span class="sd">    TMSi protocol packet is in format:</span>
+<span class="sd">    - 4 byte header: if packet is shorter than 254 words (other are unsupported)</span>
+<span class="sd">    - packet data</span>
+<span class="sd">    - 2 byte checksum</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">CHECKSUM_SIZE</span> <span class="o">=</span> <span class="mi">2</span>  <span class="c1">#: size of a checksum field</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Packet.construct"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.Packet.construct">[docs]</a>    <span class="k">def</span> <span class="nf">construct</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">packet_type</span><span class="p">,</span> <span class="n">data</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct packet based on packet type and packet data.</span>
+<span class="sd">        Calculate checksum of a packet.</span>
+
+<span class="sd">        :type packet_type:  number (one of PACKET_TYPE constants)</span>
+<span class="sd">        :param packet_type: type of a packet for which we are creating header</span>
+<span class="sd">        :type data:         string</span>
+<span class="sd">        :param length:      data inside a packet</span>
+<span class="sd">        :rtype:             Packet</span>
+<span class="sd">        :return:            new Packet instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="n">cls</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">Header</span><span class="o">.</span><span class="n">construct</span><span class="p">(</span><span class="n">packet_type</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">recalculate_checksum</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Packet.read_one"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.Packet.read_one">[docs]</a>    <span class="k">def</span> <span class="nf">read_one</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="n">search</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Reads one data packet from stream and returns Packet instance.</span>
+
+<span class="sd">        :type stream:   object with read(int) method (some file or stream)</span>
+<span class="sd">        :param stream:  Stream containing packet (including header and checksum)</span>
+<span class="sd">        :type search:   bool</span>
+<span class="sd">        :param search:  True iff bytes not starting header should be dropped</span>
+<span class="sd">                        from the beginning of the stream.</span>
+<span class="sd">        :rtype:         Packet</span>
+<span class="sd">        :return:        new Packet instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span> <span class="o">=</span> <span class="n">cls</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="n">Header</span><span class="o">.</span><span class="n">read_one</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">search</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_type</span><span class="p">()</span>
+        <span class="n">rest</span> <span class="o">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">length</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">CHECKSUM_SIZE</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checksum</span> <span class="o">=</span> <span class="n">rest</span><span class="p">[</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">CHECKSUM_SIZE</span><span class="p">:]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">rest</span><span class="p">[:</span><span class="o">-</span><span class="bp">self</span><span class="o">.</span><span class="n">CHECKSUM_SIZE</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="n">calculate_checksum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">raw</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span> <span class="o">==</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">checksum</span><span class="p">,</span> <span class="s2">&quot;Invalid checksum&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span></div>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">object</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># packet data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">header</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># packet header</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checksum</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># packet checksum</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declared_type</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># enforce some packet type in subclasses</span>
+
+<div class="viewcode-block" id="Packet.get_word"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.Packet.get_word">[docs]</a>    <span class="k">def</span> <span class="nf">get_word</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get number represented by index-th word of packet.</span>
+
+<span class="sd">        :type index:    number</span>
+<span class="sd">        :param index:   index of word (in word-size units)</span>
+<span class="sd">        :rtype:         number</span>
+<span class="sd">        :return:        value represented by index-th word of packet</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">string_word_to_number</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="n">index</span> <span class="o">*</span> <span class="n">WORD_SIZE</span><span class="p">:</span>
+                                               <span class="n">index</span> <span class="o">*</span> <span class="n">WORD_SIZE</span> <span class="o">+</span> <span class="n">WORD_SIZE</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Packet.set_word"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.Packet.set_word">[docs]</a>    <span class="k">def</span> <span class="nf">set_word</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">index</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set a word in packet.</span>
+
+<span class="sd">        :type index:    number</span>
+<span class="sd">        :param index:   index of word (in word-size units)</span>
+<span class="sd">        :type value:    number</span>
+<span class="sd">        :param value:   value to be put into index-th word of packet</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">word</span> <span class="o">=</span> <span class="n">number_to_string_word</span><span class="p">(</span><span class="n">value</span><span class="p">)</span>
+        <span class="n">bits</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
+        <span class="n">bits</span><span class="p">[</span><span class="n">index</span> <span class="o">*</span> <span class="n">WORD_SIZE</span><span class="p">]</span> <span class="o">=</span> <span class="n">word</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">bits</span><span class="p">[</span><span class="n">index</span> <span class="o">*</span> <span class="n">WORD_SIZE</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="n">word</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">bits</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Packet.recalculate_checksum"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.Packet.recalculate_checksum">[docs]</a>    <span class="k">def</span> <span class="nf">recalculate_checksum</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Updates checksum of a packet after some changes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">checksum</span> <span class="o">=</span> <span class="n">calculate_checksum</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">raw</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Packet.get_raw"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.Packet.get_raw">[docs]</a>    <span class="k">def</span> <span class="nf">get_raw</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get raw packet data.</span>
+<span class="sd">        Serialize packet.</span>
+
+<span class="sd">        :rtype:     string</span>
+<span class="sd">        :return:    raw representation of packet (header, data, checksum)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">raw</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">checksum</span></div>
+
+<div class="viewcode-block" id="Packet.check_type"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.Packet.check_type">[docs]</a>    <span class="k">def</span> <span class="nf">check_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if packet has packet type coherent with declared packet type</span>
+<span class="sd">        (if any).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">declared_type</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">packet_type</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">declared_type</span><span class="p">,</span> \
+                <span class="s2">&quot;Wrong packet type&quot;</span></div>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;TMSi Packet of type </span><span class="si">%s</span><span class="s2"> with data length </span><span class="si">%s</span><span class="s2"> bytes [total &quot;</span> \
+            <span class="s2">&quot;</span><span class="si">%d</span><span class="s2"> bytes].&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">PACKET_TYPE</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">packet_type</span><span class="p">],</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">length</span><span class="p">,</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">HEADER_SIZE</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">header</span><span class="o">.</span><span class="n">length</span> <span class="o">+</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">CHECKSUM_SIZE</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Acknowledge"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.Acknowledge">[docs]</a><span class="k">class</span> <span class="nc">Acknowledge</span><span class="p">(</span><span class="n">Packet</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents acknowledge packet.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">ERRORS</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="mh">0x01</span><span class="p">:</span> <span class="s2">&quot;unknown or not implemented blocktype&quot;</span><span class="p">,</span>
+        <span class="mh">0x02</span><span class="p">:</span> <span class="s2">&quot;CRC error in received block&quot;</span><span class="p">,</span>
+        <span class="mh">0x03</span><span class="p">:</span> <span class="s2">&quot;error in command data (can&#39;t do that)&quot;</span><span class="p">,</span>
+        <span class="mh">0x04</span><span class="p">:</span> <span class="s2">&quot;wrong blocksize (too large)&quot;</span><span class="p">,</span>
+        <span class="mh">0x11</span><span class="p">:</span> <span class="s2">&quot;No external power supplied&quot;</span><span class="p">,</span>
+        <span class="mh">0x12</span><span class="p">:</span> <span class="s2">&quot;Not possible because the Front is recording&quot;</span><span class="p">,</span>
+        <span class="mh">0x13</span><span class="p">:</span> <span class="s2">&quot;Storage medium is busy&quot;</span><span class="p">,</span>
+        <span class="mh">0x14</span><span class="p">:</span> <span class="s2">&quot;Flash memory not present&quot;</span><span class="p">,</span>
+        <span class="mh">0x15</span><span class="p">:</span> <span class="s2">&quot;nr of words to read from flash memory out of range&quot;</span><span class="p">,</span>
+        <span class="mh">0x16</span><span class="p">:</span> <span class="s2">&quot;flash memory is write protected&quot;</span><span class="p">,</span>
+        <span class="mh">0x17</span><span class="p">:</span> <span class="s2">&quot;incorrect value for initial inflation pressure&quot;</span><span class="p">,</span>
+        <span class="mh">0x18</span><span class="p">:</span> <span class="s2">&quot;wrong size or values in BP cycle list&quot;</span><span class="p">,</span>
+        <span class="mh">0x19</span><span class="p">:</span> <span class="s2">&quot;sample frequency divider out of range (&lt;0, &gt;max)&quot;</span><span class="p">,</span>
+        <span class="mh">0x1A</span><span class="p">:</span> <span class="s2">&quot;wrong nr of user channels (&lt;=0, &gt;maxUSRchan)&quot;</span><span class="p">,</span>
+        <span class="mh">0x1B</span><span class="p">:</span> <span class="s2">&quot;adress flash memory out of range&quot;</span><span class="p">,</span>
+        <span class="mh">0x1C</span><span class="p">:</span> <span class="s2">&quot;Erasing not possible because battery low&quot;</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Acknowledge</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declared_type</span> <span class="o">=</span> <span class="n">PACKET_TYPE</span><span class="o">.</span><span class="n">TMS_ACKNOWLEDGE</span>
+
+<div class="viewcode-block" id="Acknowledge.get_error_code"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.Acknowledge.get_error_code">[docs]</a>    <span class="k">def</span> <span class="nf">get_error_code</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get error code.</span>
+
+<span class="sd">        :rtype:     number</span>
+<span class="sd">        :return:    error code</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_word</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Acknowledge.is_error"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.Acknowledge.is_error">[docs]</a>    <span class="k">def</span> <span class="nf">is_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if there is an error.</span>
+<span class="sd">        Use get_error method to get error text.</span>
+
+<span class="sd">        :rtype:     bool</span>
+<span class="sd">        :return:    True iff there is an error&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_error_code</span><span class="p">()</span> <span class="o">!=</span> <span class="mi">0</span></div>
+
+<div class="viewcode-block" id="Acknowledge.get_error"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.Acknowledge.get_error">[docs]</a>    <span class="k">def</span> <span class="nf">get_error</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get error string.</span>
+
+<span class="sd">        :rtype:     string or None</span>
+<span class="sd">        :return:    None if there is no error. Some error text (one from</span>
+<span class="sd">                    values from ERROR dictionary) in the opposite case.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">is_error</span><span class="p">():</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">ERRORS</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_error_code</span><span class="p">(),</span> <span class="s2">&quot;Unknown error&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div></div>
+
+
+<div class="viewcode-block" id="FrontendInfo"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.FrontendInfo">[docs]</a><span class="k">class</span> <span class="nc">FrontendInfo</span><span class="p">(</span><span class="n">Packet</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Represents FrontendInfo packet.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">BASE_SAMPLE_RATE_INDEX</span> <span class="o">=</span> <span class="mi">13</span>
+    <span class="n">NUMBER_OF_CHANNELS_INDEX</span> <span class="o">=</span> <span class="mi">12</span>
+    <span class="n">NUMBER_OF_HELP_CHANNELS</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">CURRENT_SAMPLE_RATE_INDEX</span> <span class="o">=</span> <span class="mi">1</span>
+    <span class="n">MODE_INDEX</span> <span class="o">=</span> <span class="mi">2</span>
+    <span class="n">MAX_DIVIDER</span> <span class="o">=</span> <span class="mi">4</span>
+    <span class="n">MODE_STREAM</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">MODE_STOP</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">FrontendInfo</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declared_type</span> <span class="o">=</span> <span class="n">PACKET_TYPE</span><span class="o">.</span><span class="n">TMS_FRONTEND_INFO</span>
+
+<div class="viewcode-block" id="FrontendInfo.get_base_sample_rate"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.FrontendInfo.get_base_sample_rate">[docs]</a>    <span class="k">def</span> <span class="nf">get_base_sample_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract base sample rate frequency from FrontendInfo packet.</span>
+
+<span class="sd">        :rtype: number</span>
+<span class="sd">        :return: base sample frequency of amplifier</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_word</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">BASE_SAMPLE_RATE_INDEX</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FrontendInfo.get_number_of_data_channels"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.FrontendInfo.get_number_of_data_channels">[docs]</a>    <span class="k">def</span> <span class="nf">get_number_of_data_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract number of channels from FrontendInfo packet.</span>
+
+<span class="sd">        :rtype: number</span>
+<span class="sd">        :return: number of hardware channels in amplifier</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_word</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">NUMBER_OF_CHANNELS_INDEX</span><span class="p">)</span> <span class="o">-</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">NUMBER_OF_HELP_CHANNELS</span></div>
+
+<div class="viewcode-block" id="FrontendInfo.modify_sample_rate"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.FrontendInfo.modify_sample_rate">[docs]</a>    <span class="k">def</span> <span class="nf">modify_sample_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">frequency</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set sample frequency in (obtained from device) FrontendInfo packet.</span>
+
+<span class="sd">        :type frequency:    number</span>
+<span class="sd">        :param frequency:   frequency to be set to</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_base_sample_rate</span><span class="p">()</span>
+        <span class="n">divider</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">log</span><span class="p">(</span><span class="n">base</span> <span class="o">/</span> <span class="n">frequency</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">divider</span> <span class="o">==</span> <span class="nb">int</span><span class="p">(</span><span class="n">divider</span><span class="p">),</span> <span class="s2">&quot;Frequency must be a power of two&quot;</span>
+        <span class="n">divider</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">divider</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">divider</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">MAX_DIVIDER</span> <span class="o">+</span> <span class="mi">1</span><span class="p">),</span> <span class="s2">&quot;Unsupported frequency&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_word</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">CURRENT_SAMPLE_RATE_INDEX</span><span class="p">,</span> <span class="n">divider</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FrontendInfo.start"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.FrontendInfo.start">[docs]</a>    <span class="k">def</span> <span class="nf">start</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Modify FrontendInfo packet to enable data streaming.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_word</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">MODE_INDEX</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">MODE_STREAM</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FrontendInfo.stop"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.FrontendInfo.stop">[docs]</a>    <span class="k">def</span> <span class="nf">stop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Modify FrontendInfo packet to disable streaming.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_word</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">MODE_INDEX</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">MODE_STOP</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="ChannelData"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.ChannelData">[docs]</a><span class="k">class</span> <span class="nc">ChannelData</span><span class="p">(</span><span class="n">Packet</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Packet containing channel data NOT encoded using VL Delta compression.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">OVERFLOW</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">**</span> <span class="mi">23</span>
+    <span class="n">ON_OFF_BUTTON</span> <span class="o">=</span> <span class="mh">0x01</span>
+    <span class="n">TRIGGER_ACTIVE</span> <span class="o">=</span> <span class="mh">0x04</span>
+    <span class="n">BATTERY_LOW</span> <span class="o">=</span> <span class="mh">0x40</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">ChannelData</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declared_type</span> <span class="o">=</span> <span class="n">PACKET_TYPE</span><span class="o">.</span><span class="n">TMS_CHANNEL_DATA</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_channels</span> <span class="o">=</span> <span class="o">-</span><span class="mi">1</span>
+
+<div class="viewcode-block" id="ChannelData.set_number_of_channels"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.ChannelData.set_number_of_channels">[docs]</a>    <span class="k">def</span> <span class="nf">set_number_of_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number_of_channels</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set number of channels (obtainted from FrontendInfo).</span>
+
+<span class="sd">        :type number_of_channels:   number</span>
+<span class="sd">        :param number_of_channels:  number of channels (from FrontendInfo)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">number_of_channels</span> <span class="o">=</span> <span class="n">number_of_channels</span></div>
+
+<div class="viewcode-block" id="ChannelData.extract_channel_data"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.ChannelData.extract_channel_data">[docs]</a>    <span class="k">def</span> <span class="nf">extract_channel_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">channel_number</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Extract data of single channel.</span>
+
+<span class="sd">        :type channel_number:   number</span>
+<span class="sd">        :param channel_number:  number of channel we want to extract data from</span>
+<span class="sd">        :rtype:                 number</span>
+<span class="sd">        :return:                value of channel_number-th channel data</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">decode_tmsi_bluetooth_number</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="n">channel_number</span><span class="p">:</span><span class="mi">3</span> <span class="o">*</span> <span class="n">channel_number</span> <span class="o">+</span> <span class="mi">3</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="ChannelData.get_digi"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.ChannelData.get_digi">[docs]</a>    <span class="k">def</span> <span class="nf">get_digi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get Digi channel status.</span>
+<span class="sd">        This channel contains data such as battery level, on off button status,</span>
+<span class="sd">        trigger status.</span>
+
+<span class="sd">        :rtype:     number</span>
+<span class="sd">        :return:    byte containing flags (on/off button etc.) set in packet</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">ord</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_channels</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="ChannelData.check_digi"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.ChannelData.check_digi">[docs]</a>    <span class="k">def</span> <span class="nf">check_digi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">condition</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if flag condition is set in digi channel.</span>
+
+<span class="sd">        :type condition:    number</span>
+<span class="sd">        :param condition:   Bit flag representing some state. Valid flags are:</span>
+<span class="sd">                            ON_OFF_BUTTON, TRIGGER_ACTIVE, BATTERY_LOW.</span>
+<span class="sd">        :rtype:             bool</span>
+<span class="sd">        :return:            True iff condition is set in digi channel.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_digi</span><span class="p">()</span> <span class="o">&amp;</span> <span class="n">condition</span> <span class="o">==</span> <span class="n">condition</span></div>
+
+<div class="viewcode-block" id="ChannelData.on_off_pressed"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.ChannelData.on_off_pressed">[docs]</a>    <span class="k">def</span> <span class="nf">on_off_pressed</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if on/off button is pressed.</span>
+
+<span class="sd">        :rtype:     bool</span>
+<span class="sd">        :return:    True iff on/off button is pressed.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_digi</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ON_OFF_BUTTON</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ChannelData.trigger_active"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.ChannelData.trigger_active">[docs]</a>    <span class="k">def</span> <span class="nf">trigger_active</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if trigger is active.</span>
+
+<span class="sd">        :rtype:     bool</span>
+<span class="sd">        :return:    True iff trigger is active.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_digi</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">TRIGGER_ACTIVE</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ChannelData.battery_low"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.ChannelData.battery_low">[docs]</a>    <span class="k">def</span> <span class="nf">battery_low</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Check if battery is low.</span>
+
+<span class="sd">        :rtype:     bool</span>
+<span class="sd">        :return:    True iff battery is low.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_digi</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">BATTERY_LOW</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ChannelData.decode"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.ChannelData.decode">[docs]</a>    <span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Decode channel data contained in this packet.</span>
+
+<span class="sd">        :rtype:     list of lists of ints</span>
+<span class="sd">        :return:    List indexed by channel numbers. Every list contains</span>
+<span class="sd">                    list of values in this channel.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[[</span><span class="bp">self</span><span class="o">.</span><span class="n">extract_channel_data</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span>
+                <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_channels</span><span class="p">)]</span></div></div>
+
+
+<div class="viewcode-block" id="VLDeltaInfo"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.VLDeltaInfo">[docs]</a><span class="k">class</span> <span class="nc">VLDeltaInfo</span><span class="p">(</span><span class="n">Packet</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Packet containing VL Delta information (like transmission frequency</span>
+<span class="sd">    divider).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">VLDeltaInfo</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declared_type</span> <span class="o">=</span> <span class="n">PACKET_TYPE</span><span class="o">.</span><span class="n">TMS_VL_DELTA_INFO</span>
+
+<div class="viewcode-block" id="VLDeltaInfo.get_trans_freq_div"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.VLDeltaInfo.get_trans_freq_div">[docs]</a>    <span class="k">def</span> <span class="nf">get_trans_freq_div</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Returns value of transmission frequency divider from current packet.</span>
+
+<span class="sd">        :rtype:     number</span>
+<span class="sd">        :return:    transmission frequency divider</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_word</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VLDeltaInfo.get_divider_list"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.VLDeltaInfo.get_divider_list">[docs]</a>    <span class="k">def</span> <span class="nf">get_divider_list</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">number_of_channels</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Decode dividers list from tha packet.</span>
+
+<span class="sd">        :type number_of_channels:   number</span>
+<span class="sd">        :param number_of_channels:  number of data channels (not including digi</span>
+<span class="sd">                                    and saw channels)</span>
+<span class="sd">        :rtype:                     list of ints</span>
+<span class="sd">        :return:                    list of all dividers (including digi</span>
+<span class="sd">                                    and saw channels)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="p">[</span><span class="mi">2</span> <span class="o">**</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_word</span><span class="p">(</span><span class="mi">3</span> <span class="o">+</span> <span class="n">a</span><span class="p">)</span> <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span>
+                <span class="nb">range</span><span class="p">(</span><span class="n">number_of_channels</span> <span class="o">+</span> <span class="n">FrontendInfo</span><span class="o">.</span><span class="n">NUMBER_OF_HELP_CHANNELS</span><span class="p">)]</span></div></div>
+
+
+<div class="viewcode-block" id="VLDeltaData"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.VLDeltaData">[docs]</a><span class="k">class</span> <span class="nc">VLDeltaData</span><span class="p">(</span><span class="n">ChannelData</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Packet containing VL Delta channel data.</span>
+<span class="sd">    Supports VL Delta compression.</span>
+
+<span class="sd">    Delta dat packet has the following format:</span>
+
+<span class="sd">    * header</span>
+<span class="sd">    * references: data in all channels at the beginning of quant of time,</span>
+<span class="sd">      including data for digi and saw channels, these values are encoded like</span>
+<span class="sd">      in normal ChannelData packet</span>
+<span class="sd">    * delta bits: see below</span>
+<span class="sd">    * filling (because delta bits len can not be divisible by 16bit = word size)</span>
+<span class="sd">    * checksum</span>
+
+<span class="sd">    Delta bits is raw stream of bits.</span>
+<span class="sd">    Every delta is encoded as 4 bit length + delta body.</span>
+<span class="sd">    Delta length can name values from 0 to 15. If length is 0, then delta body</span>
+<span class="sd">    has 2 bits! In opposit case, delta body has delta length bits.</span>
+<span class="sd">    Delta length 0 (so in length we have all 0bits: &quot;0000&quot; bits) is used to</span>
+<span class="sd">    encode special delta values:</span>
+
+<span class="sd">    * 0 - delta = 0</span>
+<span class="sd">    * 1 - this value is never used!</span>
+<span class="sd">    * 2 - channels is in overflow</span>
+<span class="sd">    * 3 - delta = -1</span>
+
+<span class="sd">    Every channel can have different divider. Lets consider an example, where</span>
+<span class="sd">    there are only two channels: A and B.</span>
+<span class="sd">    Channel A is send with 128Hz freq.</span>
+<span class="sd">    Channel B is send with 256Hz freq.</span>
+<span class="sd">    Base frequency is set to 64Hz.</span>
+<span class="sd">    Then in 1/64s we have 2 data in A and 4 data in B.</span>
+<span class="sd">    So the VLDelta packet will consist of reference samples: 1 for A and</span>
+<span class="sd">    1 for B. Then it will multiplex:</span>
+<span class="sd">    delta for channel B, delta for channel A, delta for channel B, delta for</span>
+<span class="sd">    channel B.</span>
+<span class="sd">    If some channel was in overflow at the beginning of quant of time then</span>
+<span class="sd">    it is not included later in deltas (till the end of this packet).</span>
+<span class="sd">    If some channel become in overflow in the middle of the packet,</span>
+<span class="sd">    this is signalised by using special delta, and later this channel will</span>
+<span class="sd">    not be send in deltas (till the end of this packet).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">VLDeltaData</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">declared_type</span> <span class="o">=</span> <span class="n">PACKET_TYPE</span><span class="o">.</span><span class="n">TMS_VL_DELTA_DATA</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channel_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vldelta_info</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta_bits</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="VLDeltaData.set_vldelta_info"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.VLDeltaData.set_vldelta_info">[docs]</a>    <span class="k">def</span> <span class="nf">set_vldelta_info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">vldelta_info</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Set VLDelta Info (user should obtain one from device before calling</span>
+<span class="sd">        decode method).</span>
+
+<span class="sd">        :type vldelta_info:     VLDeltaInfo</span>
+<span class="sd">        :param vldelta_info:    packet of type vldelta info containing divider</span>
+<span class="sd">                                list</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">vldelta_info</span> <span class="o">=</span> <span class="n">vldelta_info</span></div>
+
+<div class="viewcode-block" id="VLDeltaData.decode_next_delta"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.VLDeltaData.decode_next_delta">[docs]</a>    <span class="k">def</span> <span class="nf">decode_next_delta</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Decode one delta data from delta_bits attribute.</span>
+<span class="sd">        Later delete decoded data from delta_bits.</span>
+
+<span class="sd">        :rtype:     tuple (bool, int)</span>
+<span class="sd">        :return:    (was this delta special, value of delta)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delta_bits</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;Not enough bits to decode delta len&quot;</span>
+        <span class="n">delta_len</span> <span class="o">=</span> <span class="n">original_delta_len</span> <span class="o">=</span> \
+            <span class="n">bits_to_num</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delta_bits</span><span class="p">[:</span><span class="mi">4</span><span class="p">])</span>
+        <span class="k">if</span> <span class="n">delta_len</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">delta_len</span> <span class="o">=</span> <span class="mi">2</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delta_bits</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">4</span> <span class="o">+</span> <span class="n">delta_len</span><span class="p">,</span> \
+            <span class="s2">&quot;Not enough bits to decode delta body&quot;</span>
+        <span class="n">delta</span> <span class="o">=</span> <span class="n">bits_to_num</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">delta_bits</span><span class="p">[</span><span class="mi">4</span><span class="p">:</span><span class="mi">4</span> <span class="o">+</span> <span class="n">delta_len</span><span class="p">])</span>
+        <span class="n">special</span> <span class="o">=</span> <span class="n">original_delta_len</span> <span class="o">==</span> <span class="mi">0</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">special</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta_bits</span><span class="p">[</span><span class="mi">4</span> <span class="o">+</span> <span class="n">delta_len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">delta</span> <span class="o">=</span> <span class="o">-</span><span class="n">delta</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta_bits</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">delta_bits</span><span class="p">[</span><span class="mi">4</span> <span class="o">+</span> <span class="n">delta_len</span><span class="p">:]</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">special</span><span class="p">,</span> <span class="n">delta</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="VLDeltaData.decode"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.VLDeltaData.decode">[docs]</a>    <span class="k">def</span> <span class="nf">decode</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Decode channel data contained in this packet.</span>
+<span class="sd">        Supports VL Delta compression.</span>
+
+<span class="sd">        :rtype:     list of lists of ints</span>
+<span class="sd">        :return:    List indexed by channel numbers. Every list contains</span>
+<span class="sd">                    list of values in this channel.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">divider_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">vldelta_info</span><span class="o">.</span><span class="n">get_divider_list</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">number_of_channels</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">divider_list</span><span class="p">)</span> <span class="o">==</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">number_of_channels</span> <span class="o">+</span> <span class="n">FrontendInfo</span><span class="o">.</span><span class="n">NUMBER_OF_HELP_CHANNELS</span><span class="p">,</span> \
+            <span class="s2">&quot;Divider list of invalid length&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">channel_data</span> <span class="o">=</span> <span class="p">[[</span><span class="bp">self</span><span class="o">.</span><span class="n">extract_channel_data</span><span class="p">(</span><span class="n">x</span><span class="p">)]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span>
+                             <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_channels</span><span class="p">)]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">channel_data</span> <span class="o">+=</span> <span class="p">[[</span><span class="nb">ord</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_channels</span><span class="p">])],</span>
+                              <span class="p">[</span><span class="nb">ord</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">1</span> <span class="o">+</span> <span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_channels</span><span class="p">])]]</span>
+        <span class="n">overflow</span> <span class="o">=</span> <span class="p">[</span><span class="n">x</span> <span class="o">==</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">OVERFLOW</span><span class="p">]</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_data</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">delta_bits</span> <span class="o">=</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span>
+                                 <span class="p">(</span><span class="n">num_to_bits</span><span class="p">(</span><span class="nb">ord</span><span class="p">(</span><span class="n">x</span><span class="p">))</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span>
+                                  <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="mi">3</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">number_of_channels</span> <span class="o">+</span>
+                                            <span class="n">FrontendInfo</span><span class="o">.</span><span class="n">NUMBER_OF_HELP_CHANNELS</span><span class="p">:]))</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">vldelta_info</span><span class="o">.</span><span class="n">get_trans_freq_div</span><span class="p">()</span> <span class="o">+</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_channels</span> <span class="o">+</span>
+                           <span class="n">FrontendInfo</span><span class="o">.</span><span class="n">NUMBER_OF_HELP_CHANNELS</span><span class="p">):</span>
+                <span class="k">if</span> <span class="n">i</span> <span class="o">%</span> <span class="n">divider_list</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">overflow</span><span class="p">[</span><span class="n">j</span><span class="p">]:</span>
+                        <span class="n">special</span><span class="p">,</span> <span class="n">delta</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">decode_next_delta</span><span class="p">()</span>
+                        <span class="k">if</span> <span class="n">special</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="n">delta</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">channel_data</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">channel_data</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                            <span class="k">elif</span> <span class="n">delta</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                                <span class="k">assert</span> <span class="kc">False</span><span class="p">,</span> <span class="s2">&quot;Special delta 1 not used&quot;</span>
+                            <span class="k">elif</span> <span class="n">delta</span> <span class="o">==</span> <span class="mi">2</span><span class="p">:</span>
+                                <span class="n">overflow</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">=</span> <span class="kc">True</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">channel_data</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">OVERFLOW</span><span class="p">)</span>
+                            <span class="k">elif</span> <span class="n">delta</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">channel_data</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">channel_data</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="bp">self</span><span class="o">.</span><span class="n">channel_data</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">channel_data</span><span class="p">[</span><span class="n">j</span><span class="p">][</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="n">delta</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">channel_data</span><span class="p">[</span><span class="n">j</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">OVERFLOW</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">channel_data</span><span class="p">[:</span><span class="o">-</span><span class="n">FrontendInfo</span><span class="o">.</span><span class="n">NUMBER_OF_HELP_CHANNELS</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="VLDeltaData.get_digi"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.tmsi.VLDeltaData.get_digi">[docs]</a>    <span class="k">def</span> <span class="nf">get_digi</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Get Digi channel status.</span>
+<span class="sd">        This channel contains data such as battery level, on off button status,</span>
+<span class="sd">        trigger status.</span>
+
+<span class="sd">        For VLDelta Data packet, which can contain multiple information</span>
+<span class="sd">        in digi channel, this is done by taking binary alternative of all</span>
+<span class="sd">        digi channel values.</span>
+
+<span class="sd">        :rtype:     number</span>
+<span class="sd">        :return:    byte containing flags (on/off button etc.) set in packet</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">|</span> <span class="n">y</span><span class="p">,</span>
+                      <span class="bp">self</span><span class="o">.</span><span class="n">channel_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">number_of_channels</span><span class="p">])</span></div></div>
+
+
+<span class="k">def</span> <span class="nf">__test</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Test functionality of this module by:</span>
+<span class="sd">    - interpreting one Frontend Info Packet</span>
+<span class="sd">    - interpreting one VLDelta Info Packet</span>
+<span class="sd">    - interpreting and decoding one VLDelta Data Packet using previous packets</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span> <span class="nn">io</span>
+
+    <span class="n">bad_acknowledge_str</span> <span class="o">=</span> <span class="s2">&quot;</span><span class="se">\xaa\xaa\x02\x00\x10\x02\x19\x00\x2b\x53</span><span class="s2">&quot;</span>
+
+    <span class="n">frontend_info_str</span> <span class="o">=</span> \
+        <span class="s1">&#39;</span><span class="se">\xaa\xaa\x10\x02</span><span class="s1">&quot;</span><span class="se">\x00\x03\x00\x01\x00\x00\x02</span><span class="s1">X</span><span class="se">\xf1</span><span class="s1">W</span><span class="se">\x0c\x18</span><span class="s1">&#39;</span>\
+        <span class="s1">&#39;</span><span class="se">\x00\x08\x00</span><span class="s1"> </span><span class="se">\x07</span><span class="s1">%</span><span class="se">\x07\x8c\x00\x8a\x00</span><span class="s1">&quot;</span><span class="se">\x00\x00\x08\xff\xff\xff\xff\xd6</span><span class="s1">;&#39;</span>
+
+    <span class="n">vldelta_info_str</span> <span class="o">=</span> \
+        <span class="s1">&#39;</span><span class="se">\xaa\xaa</span><span class="s1">%1</span><span class="se">\x00\x00\x04\x00\x07\x00\x01\x00\x01\x00\x01\x00\x01</span><span class="s1">&#39;</span>\
+        <span class="s1">&#39;</span><span class="se">\x00\x01\x00\x01\x00\x01\x00\x01\x00\x01\x00\x01\x00\x01\x00\x01\x00\x01\x00</span><span class="s1">&#39;</span>\
+        <span class="s1">&#39;</span><span class="se">\x01\x00\x01\x00\x01\x00\x01\x00\x01\x00\x01\x00\x01\x00\x01\x00\x01\x00\x01</span><span class="s1">&#39;</span>\
+        <span class="s1">&#39;</span><span class="se">\x00\x01\x00\x00\x00\x00\x00\x00\x00\x00\x00\x03\x00\x03\x00\x03\x00\x03\x00</span><span class="s1">&#39;</span>\
+        <span class="s1">&#39;</span><span class="se">\x00\x00\x00\x00\x02</span><span class="s1">$&#39;</span>
+
+    <span class="n">vldelta_data_str</span> <span class="o">=</span> \
+        <span class="s1">&#39;</span><span class="se">\xaa\xaa</span><span class="s1">I/</span><span class="se">\xdf</span><span class="s1">o</span><span class="se">\x01\xde\xbe\x01\x98\xd4\xfd\x00\x00\x80\xbe</span><span class="s1">^&#39;</span>\
+        <span class="s1">&#39;</span><span class="se">\x01\x05</span><span class="s1">y</span><span class="se">\x03\x00\x00\x80\x00\x00\x80\x00\x00\x80\x00\x00\x80\x00\x00\x80\x00</span><span class="s1">&#39;</span>\
+        <span class="s1">&#39;</span><span class="se">\x00\x80\x00\x00\x80\x00\x00\x80\x00\x00\x80\x00\x00\x80\x00\x00\x80\x00\x00</span><span class="s1">&#39;</span>\
+        <span class="s1">&#39;</span><span class="se">\x80\x00\x00\x80\x00\x00\x80\x00\x00\x80\x00\x00\x80\x00\x00\x80\x00\x00\x80</span><span class="s1">&#39;</span>\
+        <span class="s1">&#39;</span><span class="se">\x00\x00\x80\x00\x00\x80\x00\x00\x80\x00\x00\x80\x00\x00\x80\x00\x00\x80\x00</span><span class="s1">&#39;</span>\
+        <span class="s1">&#39;</span><span class="se">\x00\x80\x00\x00\x80\x02</span><span class="s1">1</span><span class="se">\x80\xf8\x01\x80\x0f\x00</span><span class="s1">|</span><span class="se">\x00\xe0\x03\x00\x1f\x00</span><span class="s1">&#39;</span>\
+        <span class="s1">&#39;</span><span class="se">\x00</span><span class="s1">D@</span><span class="se">\xfc\x00\xc0\x07\x00</span><span class="s1">&gt;</span><span class="se">\x00\xf0\x01\x80\x0f\x00\x00</span><span class="s1">&quot; ~</span><span class="se">\x00\xe0\x03\x00</span><span class="s1">&#39;</span>\
+        <span class="s1">&#39;</span><span class="se">\x1f\x00\xf8\x00\xc0\x97</span><span class="s1">*</span><span class="se">\x00\x11\x10\x01\xaf\xee\xf6</span><span class="s1">&#39;</span>
+
+    <span class="n">decode_result</span> <span class="o">=</span> <span class="p">[[</span><span class="mi">94175</span><span class="p">,</span> <span class="mi">94174</span><span class="p">,</span> <span class="mi">94173</span><span class="p">,</span> <span class="mi">94172</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">114398</span><span class="p">,</span> <span class="mi">114397</span><span class="p">,</span> <span class="mi">114396</span><span class="p">,</span> <span class="mi">114395</span><span class="p">],</span>
+                     <span class="p">[</span><span class="o">-</span><span class="mi">142184</span><span class="p">,</span> <span class="o">-</span><span class="mi">142185</span><span class="p">,</span> <span class="o">-</span><span class="mi">142186</span><span class="p">,</span> <span class="o">-</span><span class="mi">142187</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">89790</span><span class="p">,</span> <span class="mi">89789</span><span class="p">,</span> <span class="mi">89788</span><span class="p">,</span> <span class="mi">89787</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">227589</span><span class="p">,</span> <span class="mi">227588</span><span class="p">,</span> <span class="mi">227587</span><span class="p">,</span> <span class="mi">224862</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span>
+                      <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span>
+                      <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span>
+                      <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span> <span class="mi">8388608</span><span class="p">,</span>
+                      <span class="mi">8388608</span><span class="p">],</span>
+                     <span class="p">[</span><span class="mi">8388608</span><span class="p">],</span> <span class="p">[</span><span class="mi">8388608</span><span class="p">],</span> <span class="p">[</span><span class="mi">8388608</span><span class="p">],</span> <span class="p">[</span><span class="mi">8388608</span><span class="p">]]</span>
+    <span class="n">digi_status_result</span> <span class="o">=</span> <span class="p">[</span><span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">,</span> <span class="kc">False</span><span class="p">]</span>
+    <span class="n">acknowledge_result</span> <span class="o">=</span> <span class="p">[</span><span class="kc">True</span><span class="p">,</span>
+                          <span class="s2">&quot;sample frequency divider out of range (&lt;0, &gt;max)&quot;</span><span class="p">,</span> <span class="mi">25</span><span class="p">]</span>
+
+    <span class="c1"># Test Acknowledge packet</span>
+    <span class="n">acknowledge_packet</span> <span class="o">=</span> <span class="n">Acknowledge</span><span class="o">.</span><span class="n">read_one</span><span class="p">(</span><span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span>
+        <span class="n">bad_acknowledge_str</span><span class="p">))</span>
+
+    <span class="k">assert</span> <span class="p">[</span><span class="n">acknowledge_packet</span><span class="o">.</span><span class="n">is_error</span><span class="p">(),</span> <span class="n">acknowledge_packet</span><span class="o">.</span><span class="n">get_error</span><span class="p">(),</span>
+            <span class="n">acknowledge_packet</span><span class="o">.</span><span class="n">get_error_code</span><span class="p">()]</span> <span class="o">==</span> <span class="n">acknowledge_result</span><span class="p">,</span> \
+        <span class="s2">&quot;Acknowledge packet decoding error&quot;</span>
+
+    <span class="c1"># Test FrontendInfo packet</span>
+    <span class="n">frontend_info_packet</span> <span class="o">=</span> <span class="n">FrontendInfo</span><span class="o">.</span><span class="n">read_one</span><span class="p">(</span>
+        <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="n">frontend_info_str</span><span class="p">))</span>
+
+    <span class="c1"># Test VLDeltaInfo packet</span>
+    <span class="n">vldelta_info_packet</span> <span class="o">=</span> <span class="n">VLDeltaInfo</span><span class="o">.</span><span class="n">read_one</span><span class="p">(</span>
+        <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="n">vldelta_info_str</span><span class="p">))</span>
+
+    <span class="c1"># Test VLDeltaData packet</span>
+    <span class="n">vldelta_data_packet</span> <span class="o">=</span> <span class="n">VLDeltaData</span><span class="o">.</span><span class="n">read_one</span><span class="p">(</span>
+        <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="n">vldelta_data_str</span><span class="p">))</span>
+    <span class="n">vldelta_data_packet</span><span class="o">.</span><span class="n">set_number_of_channels</span><span class="p">(</span>
+        <span class="n">frontend_info_packet</span><span class="o">.</span><span class="n">get_number_of_data_channels</span><span class="p">())</span>
+    <span class="n">vldelta_data_packet</span><span class="o">.</span><span class="n">set_vldelta_info</span><span class="p">(</span><span class="n">vldelta_info_packet</span><span class="p">)</span>
+
+    <span class="c1"># Test VLDeltaData packet decode</span>
+    <span class="k">assert</span> <span class="n">vldelta_data_packet</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span> <span class="o">==</span> <span class="n">decode_result</span><span class="p">,</span> <span class="s2">&quot;VLDelta decode error&quot;</span>
+    <span class="c1"># Test VLDeltaData trigget check</span>
+    <span class="k">assert</span> <span class="p">[</span><span class="n">vldelta_data_packet</span><span class="o">.</span><span class="n">trigger_active</span><span class="p">(),</span>
+            <span class="n">vldelta_data_packet</span><span class="o">.</span><span class="n">battery_low</span><span class="p">(),</span>
+            <span class="n">vldelta_data_packet</span><span class="o">.</span><span class="n">on_off_pressed</span><span class="p">()]</span> <span class="o">==</span> <span class="n">digi_status_result</span><span class="p">,</span> \
+        <span class="s2">&quot;Digi status decode error&quot;</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Test: OK&quot;</span><span class="p">)</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">__test</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

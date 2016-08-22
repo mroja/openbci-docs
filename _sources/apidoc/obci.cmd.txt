@@ -1,0 +1,70 @@
+obci.cmd package
+================
+
+Submodules
+----------
+
+obci.cmd.obci module
+--------------------
+
+.. automodule:: obci.cmd.obci
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.cmd.obci_broker module
+---------------------------
+
+.. automodule:: obci.cmd.obci_broker
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.cmd.obci_experiment module
+-------------------------------
+
+.. automodule:: obci.cmd.obci_experiment
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.cmd.obci_gui module
+------------------------
+
+.. automodule:: obci.cmd.obci_gui
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.cmd.obci_process_supervisor module
+---------------------------------------
+
+.. automodule:: obci.cmd.obci_process_supervisor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.cmd.obci_run_peer module
+-----------------------------
+
+.. automodule:: obci.cmd.obci_run_peer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.cmd.obci_server module
+---------------------------
+
+.. automodule:: obci.cmd.obci_server
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.cmd
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,20 @@
+obci.control package
+====================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    obci.control.common
+    obci.control.gui
+    obci.control.launcher
+    obci.control.peer
+
+Module contents
+---------------
+
+.. automodule:: obci.control
+    :members:
+    :undoc-members:
+    :show-inheritance:

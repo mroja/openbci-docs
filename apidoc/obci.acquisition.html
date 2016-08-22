@@ -1,0 +1,275 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.acquisition package &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../index.html" />
+    <link rel="up" title="obci package" href="obci.html" />
+    <link rel="next" title="obci.analysis package" href="obci.analysis.html" />
+    <link rel="prev" title="obci package" href="obci.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="obci-acquisition-package">
+<h1>obci.acquisition package<a class="headerlink" href="#obci-acquisition-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-obci.acquisition.acquisition_control">
+<span id="obci-acquisition-acquisition-control-module"></span><h2>obci.acquisition.acquisition_control module<a class="headerlink" href="#module-obci.acquisition.acquisition_control" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.acquisition.acquisition_control.AcquisitionControl">
+<em class="property">class </em><code class="descclassname">obci.acquisition.acquisition_control.</code><code class="descname">AcquisitionControl</code><span class="sig-paren">(</span><em>addresses, s_types=['eeg']</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/acquisition/acquisition_control.html#AcquisitionControl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.acquisition.acquisition_control.AcquisitionControl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="obci.mx_legacy.html#obci.mx_legacy.clients.BaseMultiplexerServer" title="obci.mx_legacy.clients.BaseMultiplexerServer"><code class="xref py py-class docutils literal"><span class="pre">obci.mx_legacy.clients.BaseMultiplexerServer</span></code></a></p>
+<p>A class for creating a manifest file with metadata.</p>
+<dl class="method">
+<dt id="obci.acquisition.acquisition_control.AcquisitionControl.handle_message">
+<code class="descname">handle_message</code><span class="sig-paren">(</span><em>mxmsg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/acquisition/acquisition_control.html#AcquisitionControl.handle_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.acquisition.acquisition_control.AcquisitionControl.handle_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.acquisition.acquisition_control.AcquisitionControl.send_finish_saving">
+<code class="descname">send_finish_saving</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/acquisition/acquisition_control.html#AcquisitionControl.send_finish_saving"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.acquisition.acquisition_control.AcquisitionControl.send_finish_saving" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="obci.acquisition.acquisition_control.finish_saving">
+<code class="descclassname">obci.acquisition.acquisition_control.</code><code class="descname">finish_saving</code><span class="sig-paren">(</span><em>mx_addresses=[('0.0.0.0', 31889)], s_types=['eeg']</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/acquisition/acquisition_control.html#finish_saving"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.acquisition.acquisition_control.finish_saving" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="obci.acquisition.acquisition_control.wait_saving_finished">
+<code class="descclassname">obci.acquisition.acquisition_control.</code><code class="descname">wait_saving_finished</code><span class="sig-paren">(</span><em>mx_addresses=[('0.0.0.0', 31889)], s_types=['eeg']</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/acquisition/acquisition_control.html#wait_saving_finished"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.acquisition.acquisition_control.wait_saving_finished" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-obci.acquisition.acquisition_helper">
+<span id="obci-acquisition-acquisition-helper-module"></span><h2>obci.acquisition.acquisition_helper module<a class="headerlink" href="#module-obci.acquisition.acquisition_helper" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="obci.acquisition.acquisition_helper.finish_saving">
+<code class="descclassname">obci.acquisition.acquisition_helper.</code><code class="descname">finish_saving</code><span class="sig-paren">(</span><em>mx_addresses=None, s_types=['eeg']</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/acquisition/acquisition_helper.html#finish_saving"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.acquisition.acquisition_helper.finish_saving" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="obci.acquisition.acquisition_helper.get_file_path">
+<code class="descclassname">obci.acquisition.acquisition_helper.</code><code class="descname">get_file_path</code><span class="sig-paren">(</span><em>dir_name</em>, <em>file_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/acquisition/acquisition_helper.html#get_file_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.acquisition.acquisition_helper.get_file_path" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="obci.acquisition.acquisition_helper.send_finish_saving">
+<code class="descclassname">obci.acquisition.acquisition_helper.</code><code class="descname">send_finish_saving</code><span class="sig-paren">(</span><em>conn</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/acquisition/acquisition_helper.html#send_finish_saving"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.acquisition.acquisition_helper.send_finish_saving" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="obci.acquisition.acquisition_helper.wait_saving_finished">
+<code class="descclassname">obci.acquisition.acquisition_helper.</code><code class="descname">wait_saving_finished</code><span class="sig-paren">(</span><em>mx_addresses=None, s_types=['eeg']</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/acquisition/acquisition_helper.html#wait_saving_finished"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.acquisition.acquisition_helper.wait_saving_finished" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-obci.acquisition.acquisition_logging">
+<span id="obci-acquisition-acquisition-logging-module"></span><h2>obci.acquisition.acquisition_logging module<a class="headerlink" href="#module-obci.acquisition.acquisition_logging" title="Permalink to this headline">¶</a></h2>
+<p>Module defines a single method get_logger that returns logger with
+set logging level. Change loggin.INFO lines to change logging level.</p>
+<dl class="function">
+<dt id="obci.acquisition.acquisition_logging.get_logger">
+<code class="descclassname">obci.acquisition.acquisition_logging.</code><code class="descname">get_logger</code><span class="sig-paren">(</span><em>p_name</em>, <em>p_level='info'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/acquisition/acquisition_logging.html#get_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.acquisition.acquisition_logging.get_logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return logger with p_name as name. And logging level p_level.
+p_level should be in (starting with the most talkactive):
+&#8216;debug&#8217;, &#8216;info&#8217;, &#8216;warning&#8217;, &#8216;error&#8217;, &#8216;critical&#8217;.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.acquisition.info_saver_peer">
+<span id="obci-acquisition-info-saver-peer-module"></span><h2>obci.acquisition.info_saver_peer module<a class="headerlink" href="#module-obci.acquisition.info_saver_peer" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.acquisition.info_saver_peer.InfoSaver">
+<em class="property">class </em><code class="descclassname">obci.acquisition.info_saver_peer.</code><code class="descname">InfoSaver</code><span class="sig-paren">(</span><em>addresses</em>, <em>peer_type=134</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/acquisition/info_saver_peer.html#InfoSaver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.acquisition.info_saver_peer.InfoSaver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="obci.control.peer.html#obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer" title="obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer</span></code></a></p>
+<p>A class for creating a manifest file with metadata.</p>
+<dl class="method">
+<dt id="obci.acquisition.info_saver_peer.InfoSaver.handle_message">
+<code class="descname">handle_message</code><span class="sig-paren">(</span><em>mxmsg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/acquisition/info_saver_peer.html#InfoSaver.handle_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.acquisition.info_saver_peer.InfoSaver.handle_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle messages:
+* signal_saver_control_message - a message from signal saver
+being a signal to finish saving.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.acquisition.saver_control_peer">
+<span id="obci-acquisition-saver-control-peer-module"></span><h2>obci.acquisition.saver_control_peer module<a class="headerlink" href="#module-obci.acquisition.saver_control_peer" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.acquisition.saver_control_peer.SaverControl">
+<em class="property">class </em><code class="descclassname">obci.acquisition.saver_control_peer.</code><code class="descname">SaverControl</code><span class="sig-paren">(</span><em>addresses</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/acquisition/saver_control_peer.html#SaverControl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.acquisition.saver_control_peer.SaverControl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="obci.control.peer.html#obci.control.peer.configured_client.ConfiguredClient" title="obci.control.peer.configured_client.ConfiguredClient"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.configured_client.ConfiguredClient</span></code></a></p>
+<dl class="method">
+<dt id="obci.acquisition.saver_control_peer.SaverControl.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/acquisition/saver_control_peer.html#SaverControl.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.acquisition.saver_control_peer.SaverControl.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.acquisition.signal_saver_peer">
+<span id="obci-acquisition-signal-saver-peer-module"></span><h2>obci.acquisition.signal_saver_peer module<a class="headerlink" href="#module-obci.acquisition.signal_saver_peer" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.acquisition.signal_saver_peer.SignalSaver">
+<em class="property">class </em><code class="descclassname">obci.acquisition.signal_saver_peer.</code><code class="descname">SignalSaver</code><span class="sig-paren">(</span><em>addresses</em>, <em>peer_type=124</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/acquisition/signal_saver_peer.html#SignalSaver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.acquisition.signal_saver_peer.SignalSaver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="obci.control.peer.html#obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer" title="obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer</span></code></a></p>
+<dl class="method">
+<dt id="obci.acquisition.signal_saver_peer.SignalSaver.handle_message">
+<code class="descname">handle_message</code><span class="sig-paren">(</span><em>mxmsg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/acquisition/signal_saver_peer.html#SignalSaver.handle_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.acquisition.signal_saver_peer.SignalSaver.handle_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle messages:
+* amplifier_signal_message - raw data from mx.
+If session is active convey data to save_manager.
+* signal_saver_finish_message - finish saving session</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.acquisition.tag_saver_peer">
+<span id="obci-acquisition-tag-saver-peer-module"></span><h2>obci.acquisition.tag_saver_peer module<a class="headerlink" href="#module-obci.acquisition.tag_saver_peer" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.acquisition.tag_saver_peer.TagSaver">
+<em class="property">class </em><code class="descclassname">obci.acquisition.tag_saver_peer.</code><code class="descname">TagSaver</code><span class="sig-paren">(</span><em>addresses</em>, <em>peer_type=133</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/acquisition/tag_saver_peer.html#TagSaver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.acquisition.tag_saver_peer.TagSaver" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="obci.control.peer.html#obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer" title="obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer</span></code></a></p>
+<p>Init slots.</p>
+<dl class="method">
+<dt id="obci.acquisition.tag_saver_peer.TagSaver.handle_message">
+<code class="descname">handle_message</code><span class="sig-paren">(</span><em>mxmsg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/acquisition/tag_saver_peer.html#TagSaver.handle_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.acquisition.tag_saver_peer.TagSaver.handle_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Handle messages:
+* Tag message - raw data from mx (TAG)
+If session is active convey data to save_manager.
+* signal_saver_control_message - a message from signal saver
+is a signal to finishing saving tags.
+depending on data received.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.acquisition">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-obci.acquisition" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">obci</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="obci.html">obci package</a><ul class="current">
+<li class="toctree-l3 current"><a class="current reference internal" href="#">obci.acquisition package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.analysis.html">obci.analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.benchmark.html">obci.benchmark package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.cmd.html">obci.cmd package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.configs.html">obci.configs package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.control.html">obci.control package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.core.html">obci.core package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.drivers.html">obci.drivers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.gui.html">obci.gui package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.mx_legacy.html">obci.mx_legacy package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.peers.html">obci.peers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.scenarios.html">obci.scenarios package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.utils.html">obci.utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">obci</a><ul>
+  <li><a href="obci.html">obci package</a><ul>
+      <li>Previous: <a href="obci.html" title="previous chapter">obci package</a></li>
+      <li>Next: <a href="obci.analysis.html" title="next chapter">obci.analysis package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/apidoc/obci.acquisition.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

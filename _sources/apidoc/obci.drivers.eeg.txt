@@ -1,0 +1,69 @@
+obci.drivers.eeg package
+========================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    obci.drivers.eeg.driver_discovery
+
+Submodules
+----------
+
+obci.drivers.eeg.amplifier_file module
+--------------------------------------
+
+.. automodule:: obci.drivers.eeg.amplifier_file
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.drivers.eeg.amplifier_virtual module
+-----------------------------------------
+
+.. automodule:: obci.drivers.eeg.amplifier_virtual
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.drivers.eeg.binary_driver_wrapper module
+---------------------------------------------
+
+.. automodule:: obci.drivers.eeg.binary_driver_wrapper
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.drivers.eeg.driver_comm module
+-----------------------------------
+
+.. automodule:: obci.drivers.eeg.driver_comm
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.drivers.eeg.tags_to_mxmsg module
+-------------------------------------
+
+.. automodule:: obci.drivers.eeg.tags_to_mxmsg
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.drivers.eeg.tmsi module
+----------------------------
+
+.. automodule:: obci.drivers.eeg.tmsi
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.drivers.eeg
+    :members:
+    :undoc-members:
+    :show-inheritance:

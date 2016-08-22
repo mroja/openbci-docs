@@ -1,0 +1,432 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.analysis.obci_signal_processing.signal.generic_info_file_proxy &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.analysis.obci_signal_processing.signal.generic_info_file_proxy</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># OpenBCI - framework for Brain-Computer Interfaces based on EEG signal</span>
+<span class="c1"># Project was initiated by Magdalena Michalska and Krzysztof Kulewski</span>
+<span class="c1"># as part of their MSc theses at the University of Warsaw.</span>
+<span class="c1"># Copyright (C) 2008-2009 Krzysztof Kulewski and Magdalena Michalska</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1"># Author:</span>
+<span class="c1">#     Mateusz Kruszyński &lt;mateusz.kruszynski@gmail.com&gt;</span>
+<span class="c1">#</span>
+<span class="kn">import</span> <span class="nn">xml.dom.minidom</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">signal_logging</span> <span class="k">as</span> <span class="n">logger</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">signal_exceptions</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">types_utils</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="s2">&quot;generic_info_file_proxy&quot;</span><span class="p">)</span>
+
+<span class="n">TAGS_DEFINITIONS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;channels_names&#39;</span><span class="p">:</span>
+    <span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;channelLabels&#39;</span><span class="p">,</span> <span class="s1">&#39;label&#39;</span><span class="p">]),</span>
+    <span class="s1">&#39;channels_numbers&#39;</span><span class="p">:</span>
+    <span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;channelNumbers&#39;</span><span class="p">,</span> <span class="s1">&#39;number&#39;</span><span class="p">]),</span>
+    <span class="s1">&#39;channels_gains&#39;</span><span class="p">:</span>
+    <span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;calibrationGain&#39;</span><span class="p">,</span> <span class="s1">&#39;calibrationParam&#39;</span><span class="p">]),</span>
+    <span class="s1">&#39;channels_offsets&#39;</span><span class="p">:</span>
+    <span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;calibrationOffset&#39;</span><span class="p">,</span> <span class="s1">&#39;calibrationParam&#39;</span><span class="p">]),</span>
+    <span class="s1">&#39;number_of_samples&#39;</span><span class="p">:</span>
+    <span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;sampleCount&#39;</span><span class="p">]),</span>
+    <span class="s1">&#39;number_of_channels&#39;</span><span class="p">:</span>
+    <span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;channelCount&#39;</span><span class="p">]),</span>
+    <span class="s1">&#39;sampling_frequency&#39;</span><span class="p">:</span>
+    <span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;samplingFrequency&#39;</span><span class="p">]),</span>
+    <span class="s1">&#39;first_sample_timestamp&#39;</span><span class="p">:</span>
+    <span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;firstSampleTimestamp&#39;</span><span class="p">]),</span>
+    <span class="s1">&#39;file&#39;</span><span class="p">:</span>
+    <span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;sourceFileName&#39;</span><span class="p">]),</span>
+    <span class="s1">&#39;file_format&#39;</span><span class="p">:</span>
+    <span class="p">(</span><span class="s1">&#39;list&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;sourceFileFormat&#39;</span><span class="p">,</span> <span class="s1">&#39;rawSignalInfo&#39;</span><span class="p">]),</span>
+    <span class="s1">&#39;calibration&#39;</span><span class="p">:</span>
+    <span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;calibration&#39;</span><span class="p">]),</span>
+    <span class="s1">&#39;sample_type&#39;</span><span class="p">:</span>
+    <span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;sampleType&#39;</span><span class="p">]),</span>
+    <span class="s1">&#39;byte_order&#39;</span><span class="p">:</span>
+    <span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;byteOrder&#39;</span><span class="p">]),</span>
+    <span class="s1">&#39;page_size&#39;</span><span class="p">:</span>
+    <span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;pageSize&#39;</span><span class="p">]),</span>
+    <span class="s1">&#39;blocks_per_page&#39;</span><span class="p">:</span>
+    <span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;blocksPerPage&#39;</span><span class="p">]),</span>
+    <span class="s1">&#39;export_file_name&#39;</span><span class="p">:</span>
+    <span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;exportFileName&#39;</span><span class="p">]),</span>
+    <span class="s1">&#39;export_date&#39;</span><span class="p">:</span>
+    <span class="p">(</span><span class="s1">&#39;simple&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;exportDate&#39;</span><span class="p">])</span>
+<span class="p">}</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">For every tag we have entry in format::</span>
+
+<span class="sd">    &#39;tag_universal_name&#39;: (tag_type(&#39;list&#39; or &#39;simple&#39;),</span>
+<span class="sd">                           list of tag translations (one element for &#39;simple&#39;</span>
+<span class="sd">                                                     two elements for &#39;list&#39;)</span>
+<span class="sd">                           )</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="OpenBciDocument"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.signal.html#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.OpenBciDocument">[docs]</a><span class="k">class</span> <span class="nc">OpenBciDocument</span><span class="p">(</span><span class="n">xml</span><span class="o">.</span><span class="n">dom</span><span class="o">.</span><span class="n">minidom</span><span class="o">.</span><span class="n">Document</span><span class="p">,</span> <span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Abstract class for future developement, used in proxies.&quot;&quot;&quot;</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="GenericInfoFileWriteProxy"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.signal.html#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileWriteProxy">[docs]</a><span class="k">class</span> <span class="nc">GenericInfoFileWriteProxy</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;A class that is responsible for implementing logics of openbci</span>
+<span class="sd">    signal parameters storage in info file.</span>
+<span class="sd">    The file is supposed to be compatible with signalml2.0. By now it isn`t:)</span>
+<span class="sd">    The class should be separated from all multiplexer-stuff logics.</span>
+<span class="sd">    InfoFileProxy represents a process of saving one signal parameters.</span>
+<span class="sd">    Init method gets a dictionary of signal params in format understadable by InfoFileProxy.</span>
+<span class="sd">    See __init__ metod for more details.</span>
+<span class="sd">    Wanna extend info file with a new param? See __init__ method for more details.</span>
+<span class="sd">    Public interface:</span>
+<span class="sd">    - finish_saving()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_file_path</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Init xml structure. &quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_file_path</span> <span class="o">=</span> <span class="n">p_file_path</span>
+        <span class="c1"># TODO works in windows and linux on path with spaces?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_xml_factory</span><span class="p">()</span>
+        <span class="c1"># an object useful in the future to easily create xml elements</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_xml_root</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_tags_controls</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_create_xml_factory</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">OpenBciDocument</span><span class="p">()</span>
+
+<div class="viewcode-block" id="GenericInfoFileWriteProxy.set_attributes"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.signal.html#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileWriteProxy.set_attributes">[docs]</a>    <span class="k">def</span> <span class="nf">set_attributes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_attrs_dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For every pair key-&gt; value in p_attrs_dict create tag.</span>
+<span class="sd">        The type of tag depends on self._tags_control.&quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i_key</span><span class="p">,</span> <span class="n">i_value</span> <span class="ow">in</span> <span class="n">p_attrs_dict</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_tag</span><span class="p">(</span><span class="n">i_key</span><span class="p">,</span> <span class="n">i_value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="GenericInfoFileWriteProxy.finish_saving"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.signal.html#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileWriteProxy.finish_saving">[docs]</a>    <span class="k">def</span> <span class="nf">finish_saving</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_signal_params</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="sd">&quot;&quot;&quot;Write xml_doc to the file, return the file`s path.</span>
+<span class="sd">        Arguments:</span>
+<span class="sd">        - p_file_name - a name of to-be-created info file</span>
+<span class="sd">        - p_dir_path - a dir-path where p_file_name is to be created</span>
+<span class="sd">        - p_signal_params - a dictionary of all signal parameters that should be stored in info file.</span>
+
+<span class="sd">        What is the logics flow of analysing parameters?</span>
+<span class="sd">        p_signal_params has keys representing signal parameters identificators.</span>
+<span class="sd">        self._create_tags_controls creates a dictionary with the same keys, values are functions being &#39;able&#39;</span>
+<span class="sd">        to understand particular param values.</span>
+<span class="sd">        Method self._process_signal_params, for every key in p_signal_params fires corresponding function</span>
+<span class="sd">        from self._tags_control,</span>
+<span class="sd">        giving as argument value from p_signal_params...</span>
+
+<span class="sd">        So, how can I implement a new parameter usage? Let`s say that the parameter is signal`s colour.</span>
+<span class="sd">        Let`s call it &#39;color&#39;, values are strings.</span>
+<span class="sd">        p_signal_params should contain a pair &#39;color&#39; -&gt; &#39;color_value&#39;.</span>
+<span class="sd">        1. Create function self._set_color(self, p_color)</span>
+<span class="sd">        2. Add pair &#39;color&#39; -&gt; self._set_color to self._tags_control in self._create_tags_control()</span>
+<span class="sd">        3. Implement the function so that it creates xml element for color parameter and appends it to self._xml_root.</span>
+<span class="sd">        For simple params (with one value) you can fire self._set_simple_tag(&#39;color&#39;, &#39;color_value&#39;).</span>
+
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO - lapac bledy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_attributes</span><span class="p">(</span><span class="n">p_signal_params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_remaining_tags</span><span class="p">()</span>
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_path</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span><span class="o">.</span><span class="n">toxml</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_path</span></div>
+
+    <span class="k">def</span> <span class="nf">_set_remaining_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set all default (hardcoded) tags and other tags as now we</span>
+<span class="sd">        we have all needed data.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_attributes</span><span class="p">({</span>
+            <span class="s1">&#39;byte_order&#39;</span><span class="p">:</span> <span class="s1">&#39;LITTLE_ENDIAN&#39;</span><span class="p">,</span>
+        <span class="p">})</span>
+
+    <span class="k">def</span> <span class="nf">_create_xml_root</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create root xml element and add standard parameters:</span>
+<span class="sd">        &#39;sample_type&#39; (double by now)</span>
+<span class="sd">        &#39;file&#39; (data file`s name).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xml_root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="s1">&#39;OpenBciDataFormat&#39;</span><span class="p">)</span>
+        <span class="c1"># this is going to be an in-memory representation of xml info file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xml_root</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_tag_name</span><span class="p">,</span> <span class="n">p_tag_params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For given tag name and tag parameters create in-memory</span>
+<span class="sd">        representation of xml tag. Tag type is defined in self._tags_control</span>
+<span class="sd">        so use it to determine specific action.&quot;&quot;&quot;</span>
+        <span class="c1"># first get a tupe (function, list_of_function_params)</span>
+        <span class="n">l_ctr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags_controls</span><span class="p">[</span><span class="n">p_tag_name</span><span class="p">]</span>
+        <span class="n">l_std_params</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">l_ctr</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">])</span>
+        <span class="c1"># then take list of params and append p_tag_params to it</span>
+        <span class="n">l_std_params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p_tag_params</span><span class="p">)</span>
+
+        <span class="c1"># fire the function with all params from l_std_params</span>
+        <span class="n">l_ctr</span><span class="p">[</span><span class="s1">&#39;function&#39;</span><span class="p">](</span><span class="o">*</span><span class="n">l_std_params</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_simple_tag</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_tag_name</span><span class="p">,</span> <span class="n">p_tag_value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A generic method for adding an xml element with</span>
+<span class="sd">        - tag name: &#39;param&#39;,</span>
+<span class="sd">        - id: &#39;p_tag_name&#39;,</span>
+<span class="sd">        - value: p_tag_value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">l_xml_element</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_xml_text_element</span><span class="p">(</span>
+            <span class="n">p_tag_name</span><span class="p">,</span> <span class="n">types_utils</span><span class="o">.</span><span class="n">to_string</span><span class="p">(</span><span class="n">p_tag_value</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xml_root</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">l_xml_element</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_list_tag</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span> <span class="n">p_tag_name</span><span class="p">,</span> <span class="n">p_subtag_name</span><span class="p">,</span> <span class="n">p_tag_values</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Ad xml tag like:</span>
+<span class="sd">        &lt;p_tag_name&gt;</span>
+<span class="sd">           &lt;p_subtag_name&gt;p_tag_values[0]&lt;/p_subtag_name&gt;</span>
+<span class="sd">           &lt;p_subtag_name&gt;p_tag_values[1]&lt;/p_subtag_name&gt;</span>
+<span class="sd">           ...</span>
+<span class="sd">        &lt;/p_tag_name&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">l_xml_list_root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="n">p_tag_name</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">i_value</span> <span class="ow">in</span> <span class="n">p_tag_values</span><span class="p">:</span>
+            <span class="n">l_xml_elem</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_xml_text_element</span><span class="p">(</span>
+                <span class="n">p_subtag_name</span><span class="p">,</span> <span class="n">types_utils</span><span class="o">.</span><span class="n">to_string</span><span class="p">(</span><span class="n">i_value</span><span class="p">))</span>
+            <span class="n">l_xml_list_root</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">l_xml_elem</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xml_root</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">l_xml_list_root</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_create_xml_text_element</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_tag_name</span><span class="p">,</span> <span class="n">p_text_value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;A generic method for adding an xml text element with</span>
+<span class="sd">        - tag name: &#39;p_tag_name&#39;,</span>
+<span class="sd">        - value: p_text_value.</span>
+<span class="sd">        - id: &#39;p_id_value&#39; if different from &#39;&#39;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">l_xml_element</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="n">p_tag_name</span><span class="p">)</span>
+        <span class="n">l_xml_element</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span><span class="o">.</span><span class="n">createTextNode</span><span class="p">(</span><span class="n">p_text_value</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">l_xml_element</span>
+
+    <span class="k">def</span> <span class="nf">_create_tags_controls</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Define tags control functions for every recognisable parameter.</span>
+<span class="sd">        See self.__init__ for more details.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tags_controls</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i_tag_name</span><span class="p">,</span> <span class="n">i_tag_def</span> <span class="ow">in</span> <span class="n">TAGS_DEFINITIONS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">i_tag_def</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;simple&#39;</span><span class="p">:</span>
+                <span class="n">l_new_tag</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;function&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_simple_tag</span><span class="p">,</span>
+                             <span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">i_tag_def</span><span class="p">[</span><span class="mi">1</span><span class="p">])}</span>
+            <span class="k">elif</span> <span class="n">i_tag_def</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;list&#39;</span><span class="p">:</span>
+                <span class="n">l_new_tag</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;function&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_list_tag</span><span class="p">,</span>
+                             <span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">i_tag_def</span><span class="p">[</span><span class="mi">1</span><span class="p">])}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tags_controls</span><span class="p">[</span><span class="n">i_tag_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">l_new_tag</span></div>
+
+
+<div class="viewcode-block" id="GenericInfoFileReadProxy"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.signal.html#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileReadProxy">[docs]</a><span class="k">class</span> <span class="nc">GenericInfoFileReadProxy</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Info file reader.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_file_path</span><span class="p">):</span>
+        <span class="s2">&quot;...&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_file_path</span> <span class="o">=</span> <span class="n">p_file_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_create_tags_control</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_reading</span><span class="p">()</span>
+
+<div class="viewcode-block" id="GenericInfoFileReadProxy.start_reading"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.signal.html#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileReadProxy.start_reading">[docs]</a>    <span class="k">def</span> <span class="nf">start_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Load xml to memory.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">l_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_path</span><span class="p">,</span> <span class="s1">&#39;rt&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;An error occured while opening the info file!&quot;</span><span class="p">)</span>
+            <span class="k">raise</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Analyse xml info file, get what we want and close the file.</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_parse_info_file</span><span class="p">(</span><span class="n">l_file</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">xml</span><span class="o">.</span><span class="n">parsers</span><span class="o">.</span><span class="n">expat</span><span class="o">.</span><span class="n">ExpatError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Info file is not a well-formatted xml file. </span><span class="se">\</span>
+<span class="s2">Reading aborted!&quot;</span><span class="p">)</span>
+                <span class="k">raise</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">finally</span><span class="p">:</span>
+                <span class="n">l_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_parse_info_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_info_file</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parse p_info_file xml info file and store it in memory.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO - validate xml regarding dtd</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xml_doc</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">dom</span><span class="o">.</span><span class="n">minidom</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">p_info_file</span><span class="p">)</span>
+
+<div class="viewcode-block" id="GenericInfoFileReadProxy.get_params"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.signal.html#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileReadProxy.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">TAGS_DEFINITIONS</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="n">key</span><span class="p">)</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="k">except</span> <span class="n">signal_exceptions</span><span class="o">.</span><span class="n">NoParameter</span><span class="p">:</span>
+                <span class="k">pass</span>
+        <span class="k">return</span> <span class="n">params</span></div>
+
+<div class="viewcode-block" id="GenericInfoFileReadProxy.get_param"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.signal.html#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileReadProxy.get_param">[docs]</a>    <span class="k">def</span> <span class="nf">get_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_param_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return parameter value for p_param_name.</span>
+<span class="sd">        Raise NoParameter exception if p_param_name</span>
+<span class="sd">        parameters was not found.&quot;&quot;&quot;</span>
+
+        <span class="c1"># first get a tupe (function, list_of_function_params)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">l_ctr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags_controls</span><span class="p">[</span><span class="n">p_param_name</span><span class="p">]</span>
+            <span class="n">l_std_params</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">l_ctr</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">])</span>
+            <span class="c1"># fire the function with all params from l_std_params</span>
+            <span class="k">return</span> <span class="n">l_ctr</span><span class="p">[</span><span class="s1">&#39;function&#39;</span><span class="p">](</span><span class="o">*</span><span class="n">l_std_params</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">KeyError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">signal_exceptions</span><span class="o">.</span><span class="n">NoParameter</span><span class="p">(</span><span class="n">p_param_name</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">signal_exceptions</span><span class="o">.</span><span class="n">NoParameter</span><span class="p">(</span><span class="n">p_param_name</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_simple_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_param_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return text value from tag in format:</span>
+<span class="sd">        &lt;param id=p_param_name&gt;text_value&lt;/param&gt;.&quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Read &quot;</span> <span class="o">+</span> <span class="n">p_param_name</span> <span class="o">+</span> <span class="s2">&quot; tag from in-memory info xml.&quot;</span><span class="p">)</span>
+        <span class="n">l_name</span> <span class="o">=</span> <span class="n">p_param_name</span>
+        <span class="n">l_param</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xml_doc</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="n">l_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">l_param</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">nodeValue</span>
+
+    <span class="k">def</span> <span class="nf">_get_list_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_param_name</span><span class="p">,</span> <span class="n">p_subparam_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of text values form tag in format:</span>
+<span class="sd">        &lt;p_param_name&gt;</span>
+<span class="sd">            &lt;param&gt;text value1&lt;/param&gt;</span>
+<span class="sd">            &lt;param&gt;text value2&lt;/param&gt;</span>
+<span class="sd">            ...</span>
+<span class="sd">        &lt;/p_param_name&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">l_xml_root_element</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xml_doc</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="n">p_param_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Will look for subtags: &quot;</span> <span class="o">+</span> <span class="n">p_subparam_name</span> <span class="o">+</span> <span class="s2">&quot; in node: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l_xml_root_element</span><span class="p">))</span>
+        <span class="n">l_elements</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i_node</span> <span class="ow">in</span> <span class="n">l_xml_root_element</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="n">p_subparam_name</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">elem</span> <span class="o">=</span> <span class="n">i_node</span><span class="o">.</span><span class="n">firstChild</span><span class="o">.</span><span class="n">nodeValue</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;An empty node occured in tag: &quot;</span> <span class="o">+</span> <span class="n">p_subparam_name</span><span class="p">)</span>
+                <span class="n">elem</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Found subtag node: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i_node</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; with node value: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">elem</span><span class="p">))</span>
+            <span class="n">l_elements</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">l_elements</span>
+
+    <span class="k">def</span> <span class="nf">_create_tags_control</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Define tags control functions for every recognisable parameter.</span>
+<span class="sd">        See self.__init__ for more details.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tags_controls</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i_tag_name</span><span class="p">,</span> <span class="n">i_tag_def</span> <span class="ow">in</span> <span class="n">TAGS_DEFINITIONS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">i_tag_def</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;simple&#39;</span><span class="p">:</span>
+                <span class="n">l_new_tag</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;function&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_simple_param</span><span class="p">,</span>
+                             <span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">i_tag_def</span><span class="p">[</span><span class="mi">1</span><span class="p">])}</span>
+            <span class="k">elif</span> <span class="n">i_tag_def</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;list&#39;</span><span class="p">:</span>
+                <span class="n">l_new_tag</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;function&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_list_param</span><span class="p">,</span>
+                             <span class="s1">&#39;params&#39;</span><span class="p">:</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">i_tag_def</span><span class="p">[</span><span class="mi">1</span><span class="p">])}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tags_controls</span><span class="p">[</span><span class="n">i_tag_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">l_new_tag</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

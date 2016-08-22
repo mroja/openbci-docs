@@ -1,0 +1,427 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.core.broker &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.core.broker</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
+
+<span class="kn">import</span> <span class="nn">zmq</span>
+<span class="kn">import</span> <span class="nn">zmq.asyncio</span>
+
+<span class="kn">from</span> <span class="nn">.messages</span> <span class="k">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">types</span> <span class="k">as</span> <span class="n">msg_types</span>
+<span class="kn">from</span> <span class="nn">.message_handler_mixin</span> <span class="k">import</span> <span class="n">MessageHandlerMixin</span>
+<span class="kn">from</span> <span class="nn">.peer</span> <span class="k">import</span> <span class="n">Peer</span><span class="p">,</span> <span class="n">PeerInitUrls</span>
+<span class="kn">from</span> <span class="nn">.zmq_asyncio_task_manager</span> <span class="k">import</span> <span class="n">ZmqAsyncioTaskManager</span>
+<span class="kn">from</span> <span class="nn">..utils.zmq</span> <span class="k">import</span> <span class="n">bind_to_urls</span>
+
+
+<div class="viewcode-block" id="PeerInfo"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.broker.PeerInfo">[docs]</a><span class="k">class</span> <span class="nc">PeerInfo</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Used by Broker to hold information about connected peers.</span>
+
+<span class="sd">        :param peer_id: unique peer ID</span>
+<span class="sd">        :param url: URL of peer REP socket</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">id</span> <span class="o">=</span> <span class="n">peer_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">url</span> <span class="o">=</span> <span class="n">url</span></div>
+
+
+<div class="viewcode-block" id="MsgProxy"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.broker.MsgProxy">[docs]</a><span class="k">class</span> <span class="nc">MsgProxy</span><span class="p">:</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">xpub_urls</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+                 <span class="n">xsub_urls</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+                 <span class="n">io_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="n">hwm</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Message proxy is an integral part of Broker. It routes messages from</span>
+<span class="sd">        multiple publishers to multiple subscribers.</span>
+
+<span class="sd">        `MsgProxy` opens an XSUB socket, an XPUB socket, and binds them to</span>
+<span class="sd">        specified IP addresses and ports. Then, all peers connect to the proxy,</span>
+<span class="sd">        instead of to each other. By using such pattern it becomes trivial to</span>
+<span class="sd">        add more subscribers or publishers.</span>
+
+<span class="sd">        :param xpub_urls: list of URLs to bind XPUB socket to</span>
+<span class="sd">        :param xsub_urls: list of URLs to bind XSUB socket to</span>
+<span class="sd">        :param io_threads: size of the ZMQ threads pool to handle I/O operations</span>
+<span class="sd">        :param hwm: High Water Mark set on all ZMQ sockets</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ready</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xpub_listening_urls</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xsub_listening_urls</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xpub_urls</span> <span class="o">=</span> <span class="n">xpub_urls</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xsub_urls</span> <span class="o">=</span> <span class="n">xsub_urls</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_io_threads</span> <span class="o">=</span> <span class="n">io_threads</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hwm</span> <span class="o">=</span> <span class="n">hwm</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">(</span><span class="n">io_threads</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_io_threads</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s1">&#39;MsgProxy&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">__run</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;MsgProxy&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+<div class="viewcode-block" id="MsgProxy.shutdown"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.broker.MsgProxy.shutdown">[docs]</a>    <span class="k">def</span> <span class="nf">shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Shutdown message proxy. Release all associated resources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span><span class="o">.</span><span class="n">term</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">__run</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">xpub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">XPUB</span><span class="p">)</span>
+        <span class="n">xsub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">XSUB</span><span class="p">)</span>
+
+        <span class="n">xpub</span><span class="o">.</span><span class="n">set_hwm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hwm</span><span class="p">)</span>
+        <span class="n">xsub</span><span class="o">.</span><span class="n">set_hwm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hwm</span><span class="p">)</span>
+
+        <span class="n">xpub</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">LINGER</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">xsub</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">LINGER</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="c1"># xpub.set(zmq.XPUB_VERBOSE, 1)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">xpub_listening_urls</span> <span class="o">=</span> <span class="n">bind_to_urls</span><span class="p">(</span><span class="n">xpub</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xpub_urls</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">xsub_listening_urls</span> <span class="o">=</span> <span class="n">bind_to_urls</span><span class="p">(</span><span class="n">xsub</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xsub_urls</span><span class="p">)</span>
+
+        <span class="c1"># TODO: get explicit list of interfaces (IP&#39;s) that socket was bound to</span>
+        <span class="c1"># As a temporary hack: replace 0.0.0.0 by 127.0.0.1, because</span>
+        <span class="c1"># in every sane environment binding to 0.0.0.0 implies 127.0.0.1.</span>
+        <span class="c1"># This will limit peers that can connect to proxy to local ones,</span>
+        <span class="c1"># but at that stage of development we can deal with it.</span>
+
+        <span class="k">if</span> <span class="s1">&#39;0.0.0.0&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">xpub_listening_urls</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xpub_listening_urls</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xpub_listening_urls</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="s1">&#39;127.0.0.1&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="s1">&#39;0.0.0.0&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">xsub_listening_urls</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">xsub_listening_urls</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">xsub_listening_urls</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="s1">&#39;127.0.0.1&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">MsgProxy: XPUB: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">MsgProxy: XSUB: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                          <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xpub_listening_urls</span><span class="p">),</span>
+                                  <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">xsub_listening_urls</span><span class="p">)))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ready</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_debug</span><span class="p">:</span>
+                <span class="n">poller</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Poller</span><span class="p">()</span>
+                <span class="n">poller</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">xpub</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">POLLIN</span><span class="p">)</span>
+                <span class="n">poller</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">xsub</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">POLLIN</span><span class="p">)</span>
+                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="n">events</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">poller</span><span class="o">.</span><span class="n">poll</span><span class="p">(</span><span class="mi">1000</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="n">xpub</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
+                        <span class="n">message</span> <span class="o">=</span> <span class="n">xpub</span><span class="o">.</span><span class="n">recv_multipart</span><span class="p">()</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;[BROKER_PROXY] subscription message: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+                        <span class="n">xsub</span><span class="o">.</span><span class="n">send_multipart</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="n">xsub</span> <span class="ow">in</span> <span class="n">events</span><span class="p">:</span>
+                        <span class="n">message</span> <span class="o">=</span> <span class="n">xsub</span><span class="o">.</span><span class="n">recv_multipart</span><span class="p">()</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;[BROKER_PROXY] publishing message: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+                        <span class="n">xpub</span><span class="o">.</span><span class="n">send_multipart</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">zmq</span><span class="o">.</span><span class="n">proxy</span><span class="p">(</span><span class="n">xsub</span><span class="p">,</span> <span class="n">xpub</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">zmq</span><span class="o">.</span><span class="n">ContextTerminated</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">ready</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="n">xsub</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">linger</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+            <span class="n">xpub</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">linger</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+<span class="k">class</span> <span class="nc">_BrokerPeer</span><span class="p">(</span><span class="n">Peer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Broker&#39;s internal peer.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">pass</span>
+
+
+<div class="viewcode-block" id="Broker"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.broker.Broker">[docs]</a><span class="k">class</span> <span class="nc">Broker</span><span class="p">(</span><span class="n">ZmqAsyncioTaskManager</span><span class="p">,</span> <span class="n">MessageHandlerMixin</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">rep_urls</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+                 <span class="n">xpub_urls</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+                 <span class="n">xsub_urls</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span>
+                 <span class="n">asyncio_loop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">zmq</span><span class="o">.</span><span class="n">asyncio</span><span class="o">.</span><span class="n">ZMQEventLoop</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">zmq_context</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">zmq</span><span class="o">.</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Context</span><span class="p">]</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">zmq_io_threads</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">hwm</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">1000</span><span class="p">,</span>
+                 <span class="n">msg_proxy_io_threads</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
+                 <span class="n">msg_proxy_hwm</span><span class="p">:</span> <span class="nb">int</span><span class="o">=</span><span class="mi">1000</span>
+                 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Broker is as essential component of OpenBCI experiment. It consists of</span>
+<span class="sd">        REP socket, XPUB/XSUB message proxy and internal peer (with ID &#39;0&#39;).</span>
+<span class="sd">        Every peer connects to broker on initialization and registers. Broker</span>
+<span class="sd">        also acts as a message proxy and/or router between peers.</span>
+
+<span class="sd">        :param rep_urls: list of URLs to bind REP socket to</span>
+<span class="sd">        :param xpub_urls: list of URLs to bind message proxy XPUB socket to</span>
+<span class="sd">        :param xsub_urls: list of URLs to bind message proxy XSUB socket to</span>
+<span class="sd">        :param asyncio_loop: existing message loop to use or `None` if new message loop is requested</span>
+<span class="sd">        :param zmq_context: existing ZMQ asyncio context or `None` if new context is requested</span>
+<span class="sd">        :param zmq_io_threads: number of ZMQ I/O threads to use in broker</span>
+<span class="sd">        :param hwm: ZMQ High Water Mark for broker</span>
+<span class="sd">        :param msg_proxy_io_threads: number of ZMQ I/O threads to use in message proxy</span>
+<span class="sd">        :param msg_proxy_hwm: ZMQ High Water Mark for message proxy</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">broker_name</span> <span class="o">=</span> <span class="s1">&#39;Broker&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_thread_name</span> <span class="o">=</span> <span class="n">broker_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger_name</span> <span class="o">=</span> <span class="n">broker_name</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">asyncio_loop</span><span class="p">,</span> <span class="n">zmq_context</span><span class="p">,</span> <span class="n">zmq_io_threads</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hwm</span> <span class="o">=</span> <span class="n">hwm</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rep</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rep_urls</span> <span class="o">=</span> <span class="n">rep_urls</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xpub_urls</span> <span class="o">=</span> <span class="n">xpub_urls</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xsub_urls</span> <span class="o">=</span> <span class="n">xsub_urls</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rep_listening_urls</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># run XPUB &amp; XSUB proxy in different thread</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_msg_proxy</span> <span class="o">=</span> <span class="n">MsgProxy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xpub_urls</span><span class="p">,</span>
+                                   <span class="bp">self</span><span class="o">.</span><span class="n">_xsub_urls</span><span class="p">,</span>
+                                   <span class="n">io_threads</span><span class="o">=</span><span class="n">msg_proxy_io_threads</span><span class="p">,</span>
+                                   <span class="n">hwm</span><span class="o">=</span><span class="n">msg_proxy_hwm</span><span class="p">)</span>
+
+        <span class="c1"># built-in peer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_peer</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_peers</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># self._query_handlers are stored as follows:</span>
+        <span class="c1"># {</span>
+        <span class="c1">#   &#39;msg_type_1&#39;: set([peer_1_info, peer_2_info]),</span>
+        <span class="c1">#   &#39;msg_type_2&#39;: set([peer_1_info, peer_2_info])</span>
+        <span class="c1"># }</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_query_handlers</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_messages</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_message_handler</span><span class="p">(</span><span class="n">msg_types</span><span class="o">.</span><span class="n">BROKER_HELLO</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_hello</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_message_handler</span><span class="p">(</span><span class="n">msg_types</span><span class="o">.</span><span class="n">BROKER_REGISTER_PEER</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_register_peer</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_message_handler</span><span class="p">(</span><span class="n">msg_types</span><span class="o">.</span><span class="n">BROKER_REGISTER_QUERY_HANDLER</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_handle_register_query_handler</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_message_handler</span><span class="p">(</span><span class="n">msg_types</span><span class="o">.</span><span class="n">BROKER_UNREGISTER_QUERY_HANDLER</span><span class="p">,</span>
+                                      <span class="bp">self</span><span class="o">.</span><span class="n">_handle_unregister_query_handler</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_initialize_broker</span><span class="p">())</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_initialize_broker</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REP</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rep</span><span class="o">.</span><span class="n">set_hwm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hwm</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rep</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">LINGER</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rep_listening_urls</span> <span class="o">=</span> <span class="n">bind_to_urls</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rep_urls</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Broker: listening on REP: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep_listening_urls</span><span class="p">)))</span>
+
+        <span class="c1"># block until MsgProxy is ready</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msg_proxy</span><span class="o">.</span><span class="n">ready</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+
+        <span class="n">urls</span> <span class="o">=</span> <span class="n">PeerInitUrls</span><span class="p">(</span><span class="n">pub_urls</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;tcp://127.0.0.1:*&#39;</span><span class="p">],</span>
+                            <span class="n">rep_urls</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;tcp://127.0.0.1:*&#39;</span><span class="p">],</span>
+                            <span class="n">broker_rep_url</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep_listening_urls</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_peer</span> <span class="o">=</span> <span class="n">_BrokerPeer</span><span class="p">(</span><span class="n">peer_id</span><span class="o">=</span><span class="s1">&#39;0&#39;</span><span class="p">,</span>
+                                 <span class="n">urls</span><span class="o">=</span><span class="n">urls</span><span class="p">,</span>
+                                 <span class="n">zmq_io_threads</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_zmq_io_threads</span><span class="p">,</span>
+                                 <span class="n">hwm</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_hwm</span><span class="p">,</span>
+                                 <span class="n">zmq_context</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_receive_and_handle_requests</span><span class="p">())</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_handle_hello</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">subtype</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_peers</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Message</span><span class="p">(</span><span class="n">msg_types</span><span class="o">.</span><span class="n">INVALID_REQUEST</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span>
+                           <span class="s1">&#39;Peer with such ID is already registered&#39;</span><span class="p">)</span>
+        <span class="n">pi</span> <span class="o">=</span> <span class="n">PeerInfo</span><span class="p">(</span><span class="n">peer_id</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">subtype</span><span class="p">,</span>
+                      <span class="n">url</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;rep_urls&#39;</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_peers</span><span class="p">[</span><span class="n">pi</span><span class="o">.</span><span class="n">id</span><span class="p">]</span> <span class="o">=</span> <span class="n">pi</span>
+        <span class="k">return</span> <span class="n">Message</span><span class="p">(</span>
+            <span class="n">msg_types</span><span class="o">.</span><span class="n">BROKER_HELLO_RESPONSE</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;extra_pub_urls&#39;</span><span class="p">:</span> <span class="p">[],</span>
+                <span class="s1">&#39;extra_rep_urls&#39;</span><span class="p">:</span> <span class="p">[]})</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_handle_register_peer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">subtype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_peers</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Message</span><span class="p">(</span><span class="n">msg_types</span><span class="o">.</span><span class="n">INVALID_REQUEST</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;Say HELLO first!&#39;</span><span class="p">)</span>
+        <span class="c1"># TODO: intelligently select proper xpub_url and xsub_url (in case when peer isn&#39;t local)</span>
+        <span class="k">return</span> <span class="n">Message</span><span class="p">(</span>
+            <span class="n">msg_types</span><span class="o">.</span><span class="n">BROKER_REGISTER_PEER_RESPONSE</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;xpub_url&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msg_proxy</span><span class="o">.</span><span class="n">xpub_listening_urls</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                <span class="s1">&#39;xsub_url&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_msg_proxy</span><span class="o">.</span><span class="n">xsub_listening_urls</span><span class="p">[</span><span class="mi">0</span><span class="p">]})</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_handle_register_query_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">subtype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_peers</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Message</span><span class="p">(</span><span class="n">msg_types</span><span class="o">.</span><span class="n">INVALID_REQUEST</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;Say HELLO first!&#39;</span><span class="p">)</span>
+        <span class="n">peer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_peers</span><span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">subtype</span><span class="p">]</span>
+        <span class="n">msg_type</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;msg_type&#39;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">msg_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_handlers</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_query_handlers</span><span class="p">[</span><span class="n">msg_type</span><span class="p">]</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">register_message_handler</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__query_message_handler</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_query_handlers</span><span class="p">[</span><span class="n">msg_type</span><span class="p">]</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">peer</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Message</span><span class="p">(</span><span class="n">msg_types</span><span class="o">.</span><span class="n">OK</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="p">{})</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_handle_unregister_query_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">subtype</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_peers</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">Message</span><span class="p">(</span><span class="n">msg_types</span><span class="o">.</span><span class="n">INVALID_REQUEST</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="s1">&#39;Say HELLO first!&#39;</span><span class="p">)</span>
+        <span class="n">peer</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_peers</span><span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">subtype</span><span class="p">]</span>
+        <span class="n">requested_msg_type</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;msg_type&#39;</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">requested_msg_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># unregister all types for current peer</span>
+            <span class="k">for</span> <span class="n">msg_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_handlers</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_query_handlers</span><span class="p">[</span><span class="n">msg_type</span><span class="p">]</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">peer</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># unregister only given msg_type for current peer</span>
+            <span class="k">assert</span> <span class="n">requested_msg_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_handlers</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_query_handlers</span><span class="p">[</span><span class="n">requested_msg_type</span><span class="p">]</span><span class="o">.</span><span class="n">discard</span><span class="p">(</span><span class="n">peer</span><span class="p">)</span>
+
+        <span class="c1"># remove msg_type entries with empty handlers list</span>
+        <span class="k">for</span> <span class="n">msg_type</span><span class="p">,</span> <span class="n">handlers</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_query_handlers</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">handlers</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">unregister_message_handler</span><span class="p">(</span><span class="n">msg_type</span><span class="p">)</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_handlers</span><span class="p">[</span><span class="n">msg_type</span><span class="p">]</span>
+
+        <span class="k">return</span> <span class="n">Message</span><span class="p">(</span><span class="n">msg_types</span><span class="o">.</span><span class="n">OK</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="p">{})</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">__query_message_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">:</span>
+        <span class="k">assert</span> <span class="n">msg</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_handlers</span>
+        <span class="n">handlers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_handlers</span><span class="p">[</span><span class="n">msg</span><span class="o">.</span><span class="n">type</span><span class="p">]</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">handlers</span><span class="p">)</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">,</span> <span class="s1">&#39;if len(handlers) == 0 there is possibly &#39;</span> \
+                                   <span class="s1">&#39;some error in handle_unregister_query_handler&#39;</span>
+        <span class="n">handlers</span> <span class="o">=</span> <span class="p">[(</span><span class="n">pi</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">pi</span><span class="o">.</span><span class="n">url</span><span class="p">)</span> <span class="k">for</span> <span class="n">pi</span> <span class="ow">in</span> <span class="n">handlers</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">Message</span><span class="p">(</span><span class="n">msg_types</span><span class="o">.</span><span class="n">REDIRECT</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;peers&#39;</span><span class="p">:</span> <span class="n">handlers</span><span class="p">})</span>
+
+    <span class="k">def</span> <span class="nf">_cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_peer</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rep</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">linger</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rep</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_msg_proxy</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_cleanup</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_receive_and_handle_requests</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">poller</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Poller</span><span class="p">()</span>
+        <span class="n">poller</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">POLLIN</span><span class="p">)</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">events</span> <span class="o">=</span> <span class="k">await</span> <span class="n">poller</span><span class="o">.</span><span class="n">poll</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">50</span><span class="p">)</span>  <span class="c1"># in milliseconds</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rep</span> <span class="ow">in</span> <span class="nb">dict</span><span class="p">(</span><span class="n">events</span><span class="p">):</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rep</span><span class="o">.</span><span class="n">recv_multipart</span><span class="p">()</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="n">Message</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_messages</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;broker received message </span><span class="si">{}</span><span class="s1"> from </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">subtype</span><span class="p">))</span>
+                    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                    <span class="k">assert</span> <span class="n">response</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                    <span class="n">response</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span><span class="n">msg_types</span><span class="o">.</span><span class="n">INTERNAL_ERROR</span><span class="p">,</span> <span class="s1">&#39;0&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="p">))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;Exception during message handling in broker:&#39;</span><span class="p">)</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rep</span><span class="o">.</span><span class="n">send_multipart</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">serialize</span><span class="p">())</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

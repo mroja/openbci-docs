@@ -1,0 +1,38 @@
+obci.peers.test package
+=======================
+
+Submodules
+----------
+
+obci.peers.test.dummy_amplifier module
+--------------------------------------
+
+.. automodule:: obci.peers.test.dummy_amplifier
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.peers.test.dummy_signal_receiver module
+--------------------------------------------
+
+.. automodule:: obci.peers.test.dummy_signal_receiver
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.peers.test.dummy_signal_verifier module
+--------------------------------------------
+
+.. automodule:: obci.peers.test.dummy_signal_verifier
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.peers.test
+    :members:
+    :undoc-members:
+    :show-inheritance:

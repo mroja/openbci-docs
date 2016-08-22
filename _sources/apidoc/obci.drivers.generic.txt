@@ -1,0 +1,46 @@
+obci.drivers.generic package
+============================
+
+Submodules
+----------
+
+obci.drivers.generic.py_amplifier module
+----------------------------------------
+
+.. automodule:: obci.drivers.generic.py_amplifier
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.drivers.generic.py_amplifier_file module
+---------------------------------------------
+
+.. automodule:: obci.drivers.generic.py_amplifier_file
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.drivers.generic.py_amplifier_soft module
+---------------------------------------------
+
+.. automodule:: obci.drivers.generic.py_amplifier_soft
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.drivers.generic.py_amplifier_virtual module
+------------------------------------------------
+
+.. automodule:: obci.drivers.generic.py_amplifier_virtual
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.drivers.generic
+    :members:
+    :undoc-members:
+    :show-inheritance:

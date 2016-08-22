@@ -1,0 +1,29 @@
+obci package
+============
+
+Subpackages
+-----------
+
+.. toctree::
+
+    obci.acquisition
+    obci.analysis
+    obci.benchmark
+    obci.cmd
+    obci.configs
+    obci.control
+    obci.core
+    obci.drivers
+    obci.gui
+    obci.mx_legacy
+    obci.peers
+    obci.scenarios
+    obci.utils
+
+Module contents
+---------------
+
+.. automodule:: obci
+    :members:
+    :undoc-members:
+    :show-inheritance:

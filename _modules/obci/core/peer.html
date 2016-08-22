@@ -1,0 +1,644 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.core.peer &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.core.peer</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span> <span class="nn">asyncio</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">types</span>
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">namedtuple</span>
+<span class="kn">from</span> <span class="nn">typing</span> <span class="k">import</span> <span class="n">Optional</span><span class="p">,</span> <span class="n">Callable</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Any</span>
+
+<span class="kn">import</span> <span class="nn">zmq</span>
+<span class="kn">import</span> <span class="nn">zmq.asyncio</span>
+
+<span class="kn">from</span> <span class="nn">.message_statistics</span> <span class="k">import</span> <span class="n">MsgPerfStats</span>
+<span class="kn">from</span> <span class="nn">.messages</span> <span class="k">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">types</span> <span class="k">as</span> <span class="n">msg_types</span>
+<span class="kn">from</span> <span class="nn">.asyncio_task_manager</span> <span class="k">import</span> <span class="n">ensure_not_inside_msg_loop</span>
+<span class="kn">from</span> <span class="nn">.zmq_asyncio_task_manager</span> <span class="k">import</span> <span class="n">ZmqAsyncioTaskManager</span>
+<span class="kn">from</span> <span class="nn">.message_handler_mixin</span> <span class="k">import</span> <span class="n">MessageHandlerMixin</span>
+<span class="kn">from</span> <span class="nn">..utils.zmq</span> <span class="k">import</span> <span class="n">bind_to_urls</span><span class="p">,</span> <span class="n">recv_multipart_with_timeout</span>
+
+<span class="n">QueryDataType</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="nb">dict</span><span class="p">,</span> <span class="nb">str</span><span class="p">,</span> <span class="nb">int</span><span class="p">,</span> <span class="nb">float</span><span class="p">,</span> <span class="nb">type</span><span class="p">(</span><span class="kc">None</span><span class="p">),</span> <span class="n">List</span><span class="p">[</span><span class="n">Any</span><span class="p">]]</span>
+<span class="n">QueryHandler</span> <span class="o">=</span> <span class="n">Union</span><span class="p">[</span><span class="n">Callable</span><span class="p">[[</span><span class="n">Message</span><span class="p">],</span> <span class="n">Message</span><span class="p">],</span> <span class="n">Callable</span><span class="p">[[</span><span class="n">Message</span><span class="p">],</span> <span class="n">types</span><span class="o">.</span><span class="n">CoroutineType</span><span class="p">]]</span>
+
+
+<div class="viewcode-block" id="PeerInitUrls"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.PeerInitUrls">[docs]</a><span class="k">class</span> <span class="nc">PeerInitUrls</span><span class="p">(</span><span class="n">namedtuple</span><span class="p">(</span><span class="s1">&#39;PeerInitUrls&#39;</span><span class="p">,</span> <span class="p">[</span><span class="s1">&#39;pub_urls&#39;</span><span class="p">,</span> <span class="s1">&#39;rep_urls&#39;</span><span class="p">,</span> <span class="s1">&#39;broker_rep_url&#39;</span><span class="p">])):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    List of initial URL adresses.</span>
+
+<span class="sd">    :param list pub_urls: list of PUB URL&#39;s to bind to</span>
+<span class="sd">    :param list rep_urls: list of REP URL&#39;s to bind to</span>
+<span class="sd">    :param str broker_rep_url: broker&#39;s REP URL</span>
+<span class="sd">    &quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="TooManyRedirectsException"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.TooManyRedirectsException">[docs]</a><span class="k">class</span> <span class="nc">TooManyRedirectsException</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when too many redirects occurred in Peer.query method.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="QueryAnswerUnknown"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.QueryAnswerUnknown">[docs]</a><span class="k">class</span> <span class="nc">QueryAnswerUnknown</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Raised when answer to query is unknown.&quot;&quot;&quot;</span></div>
+
+
+<div class="viewcode-block" id="MultiplePeersAvailable"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.MultiplePeersAvailable">[docs]</a><span class="k">class</span> <span class="nc">MultiplePeersAvailable</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peers</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">],</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Raised in Peer.query method when more that one peer can answer</span>
+<span class="sd">        specified query. Caller must decide which peer to ask and reissue query</span>
+<span class="sd">        by calling Peer.query method with initial_peer parameter set to one of</span>
+<span class="sd">        supplied peer.</span>
+
+<span class="sd">        :param peers: list of peers</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peers</span> <span class="o">=</span> <span class="n">peers</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__str__</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;: &#39;</span> <span class="o">+</span> <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">peer</span><span class="p">)</span> <span class="k">for</span> <span class="n">peer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="Peer"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.Peer">[docs]</a><span class="k">class</span> <span class="nc">Peer</span><span class="p">(</span><span class="n">ZmqAsyncioTaskManager</span><span class="p">,</span> <span class="n">MessageHandlerMixin</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">urls</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">PeerInitUrls</span><span class="p">],</span>
+                 <span class="n">peer_id</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">asyncio_loop</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">zmq</span><span class="o">.</span><span class="n">asyncio</span><span class="o">.</span><span class="n">ZMQEventLoop</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">zmq_context</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">zmq</span><span class="o">.</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Context</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                 <span class="n">zmq_io_threads</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1</span><span class="p">,</span>
+                 <span class="n">hwm</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">1000</span>
+                 <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Base peer class. All peers derive from this class.</span>
+
+<span class="sd">        :param urls: string or PeerInitUrls with initial bootstrap addresses</span>
+<span class="sd">        :param peer_id: globally unique identifier</span>
+<span class="sd">        :param asyncio_loop: existing ZMQ asyncio message loop or `None` if loop is requested</span>
+<span class="sd">        :param zmq_context: existing ZMQ asyncio context or `None` if new context is requested</span>
+<span class="sd">        :param zmq_io_threads: number of ZMQ I/O threads</span>
+<span class="sd">        :param hwm: ZMQ high water mark</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">urls</span><span class="p">,</span> <span class="p">(</span><span class="nb">str</span><span class="p">,</span> <span class="n">PeerInitUrls</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_id</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid1</span><span class="p">())</span> <span class="k">if</span> <span class="n">peer_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="nb">str</span><span class="p">(</span><span class="n">peer_id</span><span class="p">)</span>
+
+        <span class="n">peer_name</span> <span class="o">=</span> <span class="s1">&#39;Peer_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_thread_name</span> <span class="o">=</span> <span class="n">peer_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_logger_name</span> <span class="o">=</span> <span class="n">peer_name</span>
+
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">asyncio_loop</span><span class="p">,</span> <span class="n">zmq_context</span><span class="p">,</span> <span class="n">zmq_io_threads</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialization_finished</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_hwm</span> <span class="o">=</span> <span class="n">hwm</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pub</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># PUB socket for sending messages to broker XSUB</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sub</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># SUB socket for receiving messages from broker&#39;s XPUB</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rep</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># synchronous requests from peers</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_broker_rep_url</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_broker_xpub_url</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_broker_xsub_url</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># listening URLs after binding (e.g. with specific port</span>
+        <span class="c1"># numbers when * was given as port number or as IP address)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pub_urls</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rep_urls</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pub_listening_urls</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rep_listening_urls</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_query_handlers</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">urls</span><span class="p">,</span> <span class="nb">str</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ip_autodiscovery</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pub_urls</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;tcp://*:*&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rep_urls</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;tcp://*:*&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_broker_tcp_ip_address</span> <span class="o">=</span> <span class="n">urls</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_broker_rep_url</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># TODO: fixme</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ip_autodiscovery</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">urls</span><span class="o">.</span><span class="n">pub_urls</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">urls</span><span class="o">.</span><span class="n">rep_urls</span><span class="p">,</span> <span class="p">(</span><span class="nb">list</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pub_urls</span> <span class="o">=</span> <span class="n">urls</span><span class="o">.</span><span class="n">pub_urls</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rep_urls</span> <span class="o">=</span> <span class="n">urls</span><span class="o">.</span><span class="n">rep_urls</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_broker_rep_url</span> <span class="o">=</span> <span class="n">urls</span><span class="o">.</span><span class="n">broker_rep_url</span>
+
+        <span class="c1"># heartbeat</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_heartbeat_enabled</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_heartbeat_delay</span> <span class="o">=</span> <span class="mf">0.05</span>  <span class="c1"># 50 ms</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_max_query_redirects</span> <span class="o">=</span> <span class="mi">10</span>
+
+        <span class="c1"># logs verbosity</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_messages</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_log_peers_info</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="c1"># message statistics</span>
+        <span class="n">stats_interval</span> <span class="o">=</span> <span class="mf">4.0</span>
+
+        <span class="c1"># async send statistics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calc_send_stats</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_send_stats</span> <span class="o">=</span> <span class="n">MsgPerfStats</span><span class="p">(</span><span class="n">stats_interval</span><span class="p">,</span> <span class="s1">&#39;SEND&#39;</span><span class="p">)</span>
+
+        <span class="c1"># async receive statistics</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_calc_recv_stats</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_recv_stats</span> <span class="o">=</span> <span class="n">MsgPerfStats</span><span class="p">(</span><span class="n">stats_interval</span><span class="p">,</span> <span class="s1">&#39;RECV&#39;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_connect_to_broker</span><span class="p">())</span>
+
+    <span class="c1"># peer id is read only</span>
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">id</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">str</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;str: Unique identification string.</span>
+
+<span class="sd">        Read only property. Can be set only when creating a new peer instance.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_id</span>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Peer.create_peer"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.Peer.create_peer">[docs]</a>    <span class="k">def</span> <span class="nf">create_peer</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">argv</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">])</span> <span class="o">-&gt;</span> <span class="s1">&#39;Peer&#39;</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Parse supplied argv and create new Peer instance.&quot;&quot;&quot;</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">add_help</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">cls</span><span class="o">.</span><span class="n">add_arguments</span><span class="p">(</span><span class="n">parser</span><span class="p">)</span>
+        <span class="n">options</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_known_args</span><span class="p">(</span><span class="n">argv</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">options</span><span class="o">.</span><span class="n">broker_ip</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">urls</span> <span class="o">=</span> <span class="n">options</span><span class="o">.</span><span class="n">broker_ip</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">urls</span> <span class="o">=</span> <span class="n">PeerInitUrls</span><span class="p">(</span><span class="n">pub_urls</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">pub_urls</span><span class="p">,</span>
+                                <span class="n">rep_urls</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">rep_urls</span><span class="p">,</span>
+                                <span class="n">broker_rep_url</span><span class="o">=</span><span class="n">options</span><span class="o">.</span><span class="n">broker_rep_url</span><span class="p">)</span>
+
+        <span class="n">exclude_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;broker_ip&#39;</span><span class="p">,</span> <span class="s1">&#39;pub_urls&#39;</span><span class="p">,</span> <span class="s1">&#39;rep_urls&#39;</span><span class="p">,</span> <span class="s1">&#39;broker_rep_url&#39;</span><span class="p">]</span>
+        <span class="n">peer</span> <span class="o">=</span> <span class="n">cls</span><span class="p">(</span><span class="n">urls</span><span class="p">,</span> <span class="o">**</span><span class="p">{</span><span class="n">k</span><span class="p">:</span> <span class="n">v</span> <span class="k">for</span> <span class="n">k</span><span class="p">,</span> <span class="n">v</span> <span class="ow">in</span> <span class="nb">vars</span><span class="p">(</span><span class="n">options</span><span class="p">)</span><span class="o">.</span><span class="n">items</span><span class="p">()</span>
+                            <span class="k">if</span> <span class="n">k</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">exclude_list</span><span class="p">})</span>
+        <span class="k">return</span> <span class="n">peer</span></div>
+
+    <span class="nd">@classmethod</span>
+<div class="viewcode-block" id="Peer.add_arguments"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.Peer.add_arguments">[docs]</a>    <span class="k">def</span> <span class="nf">add_arguments</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="n">parser</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;Add command line args recognized by this class when using `create_peer` method.&quot;&quot;&quot;</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">add_mutually_exclusive_group</span><span class="p">(</span><span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--broker-ip&#39;</span><span class="p">)</span>
+        <span class="n">group</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--broker-rep-url&#39;</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--pub-urls&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--rep-urls&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span> <span class="n">required</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">parser</span></div>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span> <span class="nf">__get_filter_bytes</span><span class="p">(</span><span class="n">msg_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">msg_subtype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">bytes</span><span class="p">:</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">msg_type</span> <span class="o">+</span> <span class="p">(</span><span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">msg_subtype</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="s1">&#39;^&#39;</span> <span class="o">+</span> <span class="n">msg_subtype</span><span class="p">))</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Peer.set_filter"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.Peer.set_filter">[docs]</a>    <span class="k">def</span> <span class="nf">set_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">msg_subtype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Subscribe for messages with `msg_type` message type.</span>
+
+<span class="sd">        Peer must be initialized to use this function.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            msg_type:</span>
+<span class="sd">            msg_subtype:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sub</span><span class="o">.</span><span class="n">subscribe</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__get_filter_bytes</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="n">msg_subtype</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="Peer.remove_filter"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.Peer.remove_filter">[docs]</a>    <span class="k">def</span> <span class="nf">remove_filter</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">msg_subtype</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Unsubscribe for messages with `msg_type` message type.</span>
+
+<span class="sd">        Peer must be initialized to use this function.</span>
+
+<span class="sd">        Args:</span>
+<span class="sd">            msg_type:</span>
+<span class="sd">            msg_subtype:</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sub</span><span class="o">.</span><span class="n">unsubscribe</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">__get_filter_bytes</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="n">msg_subtype</span><span class="p">))</span></div>
+
+    <span class="k">def</span> <span class="nf">_cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Close ZMQ sockets. Set initialization state to `False`.</span>
+
+<span class="sd">        Note:</span>
+<span class="sd">            Always remember to call `super()._cleanup()` when overloading this function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_initialization_finished</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pub</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">linger</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sub</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">linger</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rep</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">linger</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pub</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sub</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rep</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">_cleanup</span><span class="p">()</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_connect_to_broker</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_pub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">PUB</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_sub</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SUB</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rep</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REP</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">socket</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_pub</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rep</span><span class="p">]:</span>
+                <span class="n">socket</span><span class="o">.</span><span class="n">set_hwm</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_hwm</span><span class="p">)</span>
+                <span class="n">socket</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">LINGER</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__connect_to_broker_impl</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;initialization failed for peer &#39;</span><span class="si">{}</span><span class="s2">&#39;: &quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">))</span>
+            <span class="k">raise</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_initialization_finished</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">heartbeat</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">initialization_finished</span><span class="p">())</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">__connect_to_broker_impl</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pub_listening_urls</span> <span class="o">=</span> <span class="n">bind_to_urls</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pub</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pub_urls</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rep_listening_urls</span> <span class="o">=</span> <span class="n">bind_to_urls</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rep_urls</span><span class="p">)</span>
+
+        <span class="c1"># self._pub.connect(self._broker_xpub_url)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_peers_info</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;Peer &#39;</span><span class="si">{}</span><span class="s2">&#39;: Initial PUB &amp; REP bind finished.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;PUB: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;REP: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pub_listening_urls</span><span class="p">),</span>
+                                <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep_listening_urls</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="c1"># TODO: implement self._ip_autodiscovery = True</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ip_autodiscovery</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;self._ip_autodiscovery = True not implemented&#39;</span><span class="p">)</span>
+
+        <span class="c1"># send hello to broker, receive extra URLs to bind PUB and REP sockets to</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_broker_message</span><span class="p">(</span>
+            <span class="n">Message</span><span class="p">(</span><span class="n">msg_types</span><span class="o">.</span><span class="n">BROKER_HELLO</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;pub_urls&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pub_listening_urls</span><span class="p">,</span>
+                <span class="s1">&#39;rep_urls&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rep_listening_urls</span>
+            <span class="p">}),</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="mf">30.0</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pub_urls</span> <span class="o">+=</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;extra_pub_urls&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rep_urls</span> <span class="o">+=</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;extra_rep_urls&#39;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pub_listening_urls</span> <span class="o">+=</span> <span class="n">bind_to_urls</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pub</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;extra_pub_urls&#39;</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_rep_listening_urls</span> <span class="o">+=</span> <span class="n">bind_to_urls</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;extra_rep_urls&#39;</span><span class="p">])</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_peers_info</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;Peer &#39;</span><span class="si">{}</span><span class="s2">&#39;: After BROKER_HELLO.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;PUB: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;REP: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pub_listening_urls</span><span class="p">),</span>
+                                <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep_listening_urls</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="c1"># after binding PUB and REP sockets send real URLs to the broker</span>
+        <span class="c1"># and receive broker&#39;s XPUB port to connect SUB to</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_broker_message</span><span class="p">(</span>
+            <span class="n">Message</span><span class="p">(</span><span class="n">msg_types</span><span class="o">.</span><span class="n">BROKER_REGISTER_PEER</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="p">{</span>
+                <span class="s1">&#39;pub_urls&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pub_listening_urls</span><span class="p">,</span>
+                <span class="s1">&#39;rep_urls&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rep_listening_urls</span>
+            <span class="p">}),</span>
+            <span class="n">timeout</span><span class="o">=</span><span class="mf">30.0</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_broker_xpub_url</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;xpub_url&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_broker_xsub_url</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;xsub_url&#39;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sub</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_broker_xpub_url</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_pub</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_broker_xsub_url</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_peers_info</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;Peer &#39;</span><span class="si">{}</span><span class="s2">&#39;. Connect to Broker finished.</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;Connected to broker at REP </span><span class="si">{}</span><span class="s2">; XPUB </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;PUB URLs: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;REP URLs: </span><span class="si">{}</span><span class="se">\n</span><span class="s2">&quot;</span>
+                   <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_broker_rep_url</span><span class="p">,</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_broker_xpub_url</span><span class="p">,</span>
+                                <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_pub_listening_urls</span><span class="p">),</span>
+                                <span class="s1">&#39;, &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep_listening_urls</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+<div class="viewcode-block" id="Peer.initialization_finished"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.Peer.initialization_finished">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">initialization_finished</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Run when initialization finished and all message sending mechanisms</span>
+<span class="sd">        are available to use.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_receive_sync_messages</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_receive_async_messages</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="Peer.heartbeat"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.Peer.heartbeat">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">heartbeat</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Periodically send HEARTBEAT messages.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">heartbeat_message</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span><span class="n">msg_types</span><span class="o">.</span><span class="n">HEARTBEAT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">heartbeat_timestamp</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_heartbeat_enabled</span><span class="p">:</span>
+                <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">heartbeat_message</span><span class="p">)</span>
+            <span class="n">sleep_duration</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_heartbeat_delay</span> <span class="o">-</span> <span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">monotonic</span><span class="p">()</span> <span class="o">-</span> <span class="n">heartbeat_timestamp</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">sleep_duration</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">sleep_duration</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">await</span> <span class="n">asyncio</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">sleep_duration</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Peer.send_broker_message"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.Peer.send_broker_message">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">send_broker_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send message to Broker and return answer.</span>
+
+<span class="sd">        :param msg: message object to send</span>
+<span class="sd">        :param timeout: timeout in seconds</span>
+<span class="sd">        :return: response message</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message_to_peer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_broker_rep_url</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Peer.send_message_to_peer"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.Peer.send_message_to_peer">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">send_message_to_peer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">url</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">,</span> <span class="n">timeout</span><span class="p">:</span> <span class="nb">float</span> <span class="o">=</span> <span class="mf">5.0</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Message</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send message to specified peer and return answer.</span>
+
+<span class="sd">        :param url: peer&#39;s REP socket URL</span>
+<span class="sd">        :param msg: message object to send</span>
+<span class="sd">        :param timeout: timeout in seconds</span>
+<span class="sd">        :return: response message</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_messages</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sending sync message to &#39;</span><span class="si">{}</span><span class="s2">&#39;: type &#39;</span><span class="si">{}</span><span class="s2">&#39;, subtype &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span>
+                               <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">subtype</span><span class="p">))</span>
+        <span class="n">req</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REQ</span><span class="p">)</span>
+        <span class="n">req</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">await</span> <span class="n">req</span><span class="o">.</span><span class="n">send_multipart</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">serialize</span><span class="p">())</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="n">recv_multipart_with_timeout</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">req</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">linger</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">Message</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Peer.send_message"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.Peer.send_message">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">send_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">:</span> <span class="n">Message</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send broadcast message.</span>
+
+<span class="sd">        :param msg: message object to send</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_messages</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;sending async message: type &#39;</span><span class="si">{}</span><span class="s2">&#39;, subtype &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span>
+                               <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">subtype</span><span class="p">))</span>
+        <span class="n">serialized_msg</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_send_stats</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_send_stats</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">serialized_msg</span><span class="p">)</span>
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_pub</span><span class="o">.</span><span class="n">send_multipart</span><span class="p">(</span><span class="n">serialized_msg</span><span class="p">)</span></div>
+
+    <span class="nd">@ensure_not_inside_msg_loop</span>
+<div class="viewcode-block" id="Peer.query"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.Peer.query">[docs]</a>    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+              <span class="n">query_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+              <span class="n">query_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+              <span class="n">initial_peer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+              <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QueryDataType</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Send query message to Broker (or any other peer in `initial_peer` is specified).</span>
+
+<span class="sd">        Returned value can be any JSON-serializable object.</span>
+
+<span class="sd">        :param query_type: query type</span>
+<span class="sd">        :param query_params: optional query parameters</span>
+<span class="sd">        :param initial_peer: if specified this peer will be asked instead of Broker</span>
+<span class="sd">        :return: query response</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query_async</span><span class="p">(</span><span class="n">query_type</span><span class="p">,</span> <span class="n">query_params</span><span class="p">,</span> <span class="n">initial_peer</span><span class="p">))</span><span class="o">.</span><span class="n">result</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Peer.query_async"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.Peer.query_async">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">query_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                          <span class="n">query_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                          <span class="n">query_params</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">dict</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+                          <span class="n">initial_peer</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+                          <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">QueryDataType</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Async version of :func:`Peer.query`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">query_params</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">query_params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">query_msg</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span><span class="n">query_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">query_params</span><span class="p">)</span>
+        <span class="n">url</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_broker_rep_url</span> <span class="k">if</span> <span class="n">initial_peer</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">initial_peer</span>
+        <span class="n">redirects</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message_to_peer</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">query_msg</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">msg_types</span><span class="o">.</span><span class="n">REDIRECT</span><span class="p">:</span>
+                <span class="n">urls</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;peers&#39;</span><span class="p">]</span>
+                <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">urls</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">urls</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="n">url</span> <span class="o">=</span> <span class="n">urls</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">urls</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="n">MultiplePeersAvailable</span><span class="p">(</span><span class="n">urls</span><span class="p">,</span> <span class="s1">&#39;Multiple peers can answer this query&#39;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">msg_types</span><span class="o">.</span><span class="n">INVALID_REQUEST</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">msg_types</span><span class="o">.</span><span class="n">INTERNAL_ERROR</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">QueryAnswerUnknown</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">response</span><span class="o">.</span><span class="n">data</span>
+            <span class="n">redirects</span> <span class="o">+=</span> <span class="mi">1</span>
+            <span class="k">if</span> <span class="n">redirects</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_query_redirects</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;max redirects (</span><span class="si">{}</span><span class="s2">) reached when executing query &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span>
+                                   <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_query_redirects</span><span class="p">,</span> <span class="n">query_type</span><span class="p">))</span>
+                <span class="k">raise</span> <span class="n">TooManyRedirectsException</span><span class="p">(</span><span class="s1">&#39;max redirects reached&#39;</span><span class="p">)</span></div>
+
+    <span class="nd">@ensure_not_inside_msg_loop</span>
+<div class="viewcode-block" id="Peer.register_query_handler"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.Peer.register_query_handler">[docs]</a>    <span class="k">def</span> <span class="nf">register_query_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                               <span class="n">msg_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                               <span class="n">handler</span><span class="p">:</span> <span class="n">QueryHandler</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Register callback handler for specified query type.</span>
+
+<span class="sd">        `handler` function must return a valid `Message` object.</span>
+
+<span class="sd">        :param msg_type: query type</span>
+<span class="sd">        :param handler: function to execute when specified query is received</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">register_query_handler_async</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="n">handler</span><span class="p">))</span><span class="o">.</span><span class="n">exception</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Peer.register_query_handler_async"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.Peer.register_query_handler_async">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">register_query_handler_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                                           <span class="n">msg_type</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+                                           <span class="n">handler</span><span class="p">:</span> <span class="n">QueryHandler</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Async version of :func:`Peer.register_query_handler_async`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_broker_message</span><span class="p">(</span>
+            <span class="n">Message</span><span class="p">(</span><span class="n">msg_types</span><span class="o">.</span><span class="n">BROKER_REGISTER_QUERY_HANDLER</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;msg_type&#39;</span><span class="p">:</span> <span class="n">msg_type</span><span class="p">}))</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="n">msg_types</span><span class="o">.</span><span class="n">OK</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_query_handlers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">msg_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">register_message_handler</span><span class="p">(</span><span class="n">msg_type</span><span class="p">,</span> <span class="n">handler</span><span class="p">)</span></div>
+
+    <span class="nd">@ensure_not_inside_msg_loop</span>
+<div class="viewcode-block" id="Peer.unregister_query_handler"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.Peer.unregister_query_handler">[docs]</a>    <span class="k">def</span> <span class="nf">unregister_query_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Unregister callback handler for specified query type or for all query</span>
+<span class="sd">        types if `msg_type` is `None`.</span>
+
+<span class="sd">        :param msg_type:  query type</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">create_task</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">unregister_query_handler_async</span><span class="p">(</span><span class="n">msg_type</span><span class="p">))</span><span class="o">.</span><span class="n">exception</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Peer.unregister_query_handler_async"><a class="viewcode-back" href="../../../apidoc/obci.core.html#obci.core.peer.Peer.unregister_query_handler_async">[docs]</a>    <span class="k">async</span> <span class="k">def</span> <span class="nf">unregister_query_handler_async</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg_type</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Async version of :func:`Peer.unregister_query_handler`.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_broker_message</span><span class="p">(</span>
+            <span class="n">Message</span><span class="p">(</span><span class="n">msg_types</span><span class="o">.</span><span class="n">BROKER_UNREGISTER_QUERY_HANDLER</span><span class="p">,</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="p">{</span><span class="s1">&#39;msg_type&#39;</span><span class="p">:</span> <span class="n">msg_type</span><span class="p">}))</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="n">msg_types</span><span class="o">.</span><span class="n">OK</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">msg_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">q_type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_query_handlers</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">unregister_message_handler</span><span class="p">(</span><span class="n">q_type</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">unregister_message_handler</span><span class="p">(</span><span class="n">msg_type</span><span class="p">)</span></div>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_receive_sync_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">sync_handler</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">msg_raw</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rep</span><span class="o">.</span><span class="n">recv_multipart</span><span class="p">()</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="n">Message</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="n">msg_raw</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_messages</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;received sync message: type &#39;</span><span class="si">{}</span><span class="s2">&#39;, subtype: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span>
+                                           <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">subtype</span><span class="p">))</span>
+                    <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">Message</span><span class="p">):</span>
+                        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Bad handler&quot;</span><span class="p">)</span>
+                    <span class="n">response</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
+                <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">ex</span><span class="p">:</span>
+                    <span class="n">response</span> <span class="o">=</span> <span class="n">Message</span><span class="p">(</span><span class="n">msg_types</span><span class="o">.</span><span class="n">INTERNAL_ERROR</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">ex</span><span class="p">))</span><span class="o">.</span><span class="n">serialize</span><span class="p">()</span>
+                    <span class="k">raise</span>
+                <span class="k">finally</span><span class="p">:</span>
+                    <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rep</span><span class="o">.</span><span class="n">send_multipart</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;Uncaught exception in sync message handler&#39;</span><span class="p">)</span>
+
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__receive_messages_helper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_rep</span><span class="p">,</span> <span class="n">sync_handler</span><span class="p">)</span>
+
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">_receive_async_messages</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">async</span> <span class="k">def</span> <span class="nf">async_handler</span><span class="p">():</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">Message</span><span class="o">.</span><span class="n">deserialize</span><span class="p">(</span><span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sub</span><span class="o">.</span><span class="n">recv_multipart</span><span class="p">())</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_calc_recv_stats</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_recv_stats</span><span class="o">.</span><span class="n">msg</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_log_messages</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;received async message: type &#39;</span><span class="si">{}</span><span class="s2">&#39;, subtype: &#39;</span><span class="si">{}</span><span class="s2">&#39;&quot;</span>
+                                       <span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">subtype</span><span class="p">))</span>
+                <span class="n">response</span> <span class="o">=</span> <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">handle_message</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">response</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s1">&#39;Uncaught exception in async message handler&#39;</span><span class="p">)</span>
+
+        <span class="k">await</span> <span class="bp">self</span><span class="o">.</span><span class="n">__receive_messages_helper</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sub</span><span class="p">,</span> <span class="n">async_handler</span><span class="p">)</span>
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">async</span> <span class="k">def</span> <span class="nf">__receive_messages_helper</span><span class="p">(</span><span class="n">socket</span><span class="p">:</span> <span class="n">zmq</span><span class="o">.</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Socket</span><span class="p">,</span>
+                                        <span class="n">handler</span><span class="p">:</span> <span class="n">Callable</span><span class="p">[[],</span> <span class="n">types</span><span class="o">.</span><span class="n">CoroutineType</span><span class="p">]</span>
+                                        <span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Two concurrent polling loops are run (for SUB and REP) to avoid one message type processing blocking another.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">poller</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">asyncio</span><span class="o">.</span><span class="n">Poller</span><span class="p">()</span>
+        <span class="n">poller</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">socket</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">POLLIN</span><span class="p">)</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="n">events</span> <span class="o">=</span> <span class="k">await</span> <span class="n">poller</span><span class="o">.</span><span class="n">poll</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>  <span class="c1"># timeout in milliseconds</span>
+            <span class="k">if</span> <span class="n">socket</span> <span class="ow">in</span> <span class="nb">dict</span><span class="p">(</span><span class="n">events</span><span class="p">):</span>
+                <span class="k">await</span> <span class="n">handler</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

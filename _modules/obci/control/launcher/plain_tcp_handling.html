@@ -1,0 +1,293 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.launcher.plain_tcp_handling &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.launcher.plain_tcp_handling</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">socketserver</span>
+<span class="kn">import</span> <span class="nn">zmq</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.common.message</span> <span class="k">import</span> <span class="n">OBCIMessageTool</span><span class="p">,</span> <span class="n">send_msg</span><span class="p">,</span> <span class="n">PollingObject</span>
+<span class="kn">from</span> <span class="nn">obci.control.launcher.launcher_messages</span> <span class="k">import</span> <span class="n">message_templates</span>
+<span class="kn">from</span> <span class="nn">obci.control.common.obci_control_settings</span> <span class="k">import</span> <span class="n">PORT_RANGE</span>
+
+
+<span class="n">DELIM</span> <span class="o">=</span> <span class="n">b</span><span class="s1">&#39;:&#39;</span>
+<span class="n">END</span> <span class="o">=</span> <span class="n">b</span><span class="s1">&#39;,&#39;</span>
+
+
+<div class="viewcode-block" id="OBCIPeerTCP"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.plain_tcp_handling.OBCIPeerTCP">[docs]</a><span class="k">class</span> <span class="nc">OBCIPeerTCP</span><span class="p">(</span><span class="n">socketserver</span><span class="o">.</span><span class="n">TCPServer</span><span class="p">):</span>
+    <span class="n">allow_reuse_address</span> <span class="o">=</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server_address</span><span class="p">,</span> <span class="n">handler_class</span><span class="p">,</span> <span class="n">bind_and_activate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">zmq_ctx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">zmq_rep_addr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">socketserver</span><span class="o">.</span><span class="n">TCPServer</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server_address</span><span class="p">,</span> <span class="n">handler_class</span><span class="p">,</span> <span class="n">bind_and_activate</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span> <span class="o">=</span> <span class="n">OBCIMessageTool</span><span class="p">(</span><span class="n">message_templates</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pl</span> <span class="o">=</span> <span class="n">PollingObject</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span> <span class="o">=</span> <span class="n">zmq_ctx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rep_addr</span> <span class="o">=</span> <span class="n">zmq_rep_addr</span></div>
+
+
+<div class="viewcode-block" id="OBCIServerTCP"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.plain_tcp_handling.OBCIServerTCP">[docs]</a><span class="k">class</span> <span class="nc">OBCIServerTCP</span><span class="p">(</span><span class="n">OBCIPeerTCP</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server_address</span><span class="p">,</span> <span class="n">bind_and_activate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">zmq_ctx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">zmq_rep_addr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># print server_address, requestHandlerClass</span>
+        <span class="n">OBCIPeerTCP</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server_address</span><span class="p">,</span> <span class="n">OBCIServerRequestHandler</span><span class="p">,</span> <span class="n">bind_and_activate</span><span class="p">,</span>
+                             <span class="n">zmq_ctx</span><span class="p">,</span> <span class="n">zmq_rep_addr</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pull_sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">PULL</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pull_port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pull_sock</span><span class="o">.</span><span class="n">bind_to_random_port</span><span class="p">(</span><span class="s1">&#39;tcp://*&#39;</span><span class="p">,</span>
+                                                            <span class="n">min_port</span><span class="o">=</span><span class="n">PORT_RANGE</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                                            <span class="n">max_port</span><span class="o">=</span><span class="n">PORT_RANGE</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">max_tries</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="OBCIExperimentTCP"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.plain_tcp_handling.OBCIExperimentTCP">[docs]</a><span class="k">class</span> <span class="nc">OBCIExperimentTCP</span><span class="p">(</span><span class="n">OBCIPeerTCP</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server_address</span><span class="p">,</span> <span class="n">bind_and_activate</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">zmq_ctx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">zmq_rep_addr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">OBCIPeerTCP</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server_address</span><span class="p">,</span> <span class="n">OBCIExperimentRequestHandler</span><span class="p">,</span>
+                             <span class="n">bind_and_activate</span><span class="p">,</span> <span class="n">zmq_ctx</span><span class="p">,</span> <span class="n">zmq_rep_addr</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="run_tcp_obci_server"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.plain_tcp_handling.run_tcp_obci_server">[docs]</a><span class="k">def</span> <span class="nf">run_tcp_obci_server</span><span class="p">(</span><span class="n">server_address</span><span class="p">,</span> <span class="n">zmq_ctx</span><span class="p">,</span> <span class="n">zmq_rep_addr</span><span class="p">):</span>
+    <span class="n">server</span> <span class="o">=</span> <span class="n">OBCIServerTCP</span><span class="p">(</span><span class="n">server_address</span><span class="p">,</span> <span class="n">OBCIServerRequestHandler</span><span class="p">,</span>
+                           <span class="n">zmq_ctx</span><span class="o">=</span><span class="n">zmq_ctx</span><span class="p">,</span> <span class="n">zmq_rep_addr</span><span class="o">=</span><span class="n">zmq_rep_addr</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_run_tcp_server</span><span class="p">(</span><span class="n">server</span><span class="p">,</span>
+                           <span class="n">zmq_ctx</span><span class="o">=</span><span class="n">zmq_ctx</span><span class="p">,</span> <span class="n">zmq_rep_addr</span><span class="o">=</span><span class="n">zmq_rep_addr</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="run_tcp_obci_experiment"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.plain_tcp_handling.run_tcp_obci_experiment">[docs]</a><span class="k">def</span> <span class="nf">run_tcp_obci_experiment</span><span class="p">(</span><span class="n">server_address</span><span class="p">,</span> <span class="n">zmq_ctx</span><span class="p">,</span> <span class="n">zmq_rep_addr</span><span class="p">):</span>
+    <span class="n">srv</span> <span class="o">=</span> <span class="n">OBCIExperimentTCP</span><span class="p">(</span><span class="n">server_address</span><span class="p">,</span> <span class="n">OBCIExperimentRequestHandler</span><span class="p">,</span>
+                            <span class="n">zmq_ctx</span><span class="o">=</span><span class="n">zmq_ctx</span><span class="p">,</span> <span class="n">zmq_rep_addr</span><span class="o">=</span><span class="n">zmq_rep_addr</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">_run_tcp_server</span><span class="p">(</span><span class="n">srv</span><span class="p">,</span> <span class="n">zmq_ctx</span><span class="o">=</span><span class="n">zmq_ctx</span><span class="p">,</span> <span class="n">zmq_rep_addr</span><span class="o">=</span><span class="n">zmq_rep_addr</span><span class="p">)</span></div>
+
+
+<span class="k">def</span> <span class="nf">_run_tcp_server</span><span class="p">(</span><span class="n">server</span><span class="p">,</span> <span class="n">zmq_ctx</span><span class="p">,</span> <span class="n">zmq_rep_addr</span><span class="p">):</span>
+    <span class="c1"># Start a thread with the server -- that thread will then start one</span>
+    <span class="c1"># more thread for each request</span>
+    <span class="n">server_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">server</span><span class="o">.</span><span class="n">serve_forever</span><span class="p">)</span>
+    <span class="c1"># Exit the server thread when the main thread terminates</span>
+    <span class="n">server_thread</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">server_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Server plain TCP loop running in thread:&quot;</span><span class="p">,</span> <span class="n">server_thread</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;serving on: &quot;</span><span class="p">,</span> <span class="n">server</span><span class="o">.</span><span class="n">server_address</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">server_thread</span><span class="p">,</span> <span class="n">server</span><span class="p">,</span> <span class="n">server</span><span class="o">.</span><span class="n">server_address</span>
+
+
+<span class="k">def</span> <span class="nf">_recv_netstring_len</span><span class="p">(</span><span class="n">rstream</span><span class="p">):</span>
+    <span class="n">bt</span> <span class="o">=</span> <span class="n">rstream</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">bt</span> <span class="o">==</span> <span class="n">b</span><span class="s1">&#39;&#39;</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;socket connection broken&quot;</span><span class="p">)</span>
+
+    <span class="n">strlen</span> <span class="o">=</span> <span class="n">b</span><span class="s1">&#39;&#39;</span>
+    <span class="k">while</span> <span class="n">bt</span> <span class="o">!=</span> <span class="n">DELIM</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">bt</span><span class="p">,</span> <span class="n">end</span><span class="o">=</span><span class="s1">&#39; &#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">bt</span> <span class="o">==</span> <span class="n">b</span><span class="s1">&#39;&#39;</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;socket connection broken&quot;</span><span class="p">)</span>
+        <span class="n">strlen</span> <span class="o">+=</span> <span class="n">bt</span>
+        <span class="n">bt</span> <span class="o">=</span> <span class="n">rstream</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">strlen</span><span class="o">.</span><span class="n">decode</span><span class="p">())</span>
+
+
+<div class="viewcode-block" id="recv_netstring"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.plain_tcp_handling.recv_netstring">[docs]</a><span class="k">def</span> <span class="nf">recv_netstring</span><span class="p">(</span><span class="n">rstream</span><span class="p">):</span>
+    <span class="n">datalen</span> <span class="o">=</span> <span class="n">_recv_netstring_len</span><span class="p">(</span><span class="n">rstream</span><span class="p">)</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">rstream</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">datalen</span><span class="p">)</span>
+    <span class="n">got</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+    <span class="n">do</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="k">while</span> <span class="n">got</span> <span class="o">&lt;</span> <span class="n">datalen</span> <span class="ow">and</span> <span class="n">do</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;got&quot;</span><span class="p">,</span> <span class="n">got</span><span class="p">,</span> <span class="s2">&quot;len&quot;</span><span class="p">,</span> <span class="n">datalen</span><span class="p">)</span>
+        <span class="n">chunk</span> <span class="o">=</span> <span class="n">rstream</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="n">datalen</span> <span class="o">-</span> <span class="n">got</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">chunk</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">RuntimeError</span><span class="p">(</span><span class="s2">&quot;socket connection broken&quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">+=</span> <span class="n">chunk</span>
+        <span class="n">got</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">chunk</span><span class="p">)</span>
+        <span class="n">do</span> <span class="o">-=</span> <span class="mi">1</span>
+
+    <span class="n">end</span> <span class="o">=</span> <span class="n">rstream</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">assert</span><span class="p">(</span><span class="n">end</span> <span class="o">==</span> <span class="n">END</span> <span class="ow">and</span> <span class="n">got</span> <span class="o">==</span> <span class="n">datalen</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="recv_unicode_netstring"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.plain_tcp_handling.recv_unicode_netstring">[docs]</a><span class="k">def</span> <span class="nf">recv_unicode_netstring</span><span class="p">(</span><span class="n">rstream</span><span class="p">):</span>
+    <span class="n">data</span> <span class="o">=</span> <span class="n">recv_netstring</span><span class="p">(</span><span class="n">rstream</span><span class="p">)</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">msg</span></div>
+
+
+<div class="viewcode-block" id="make_unicode_netstring"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.plain_tcp_handling.make_unicode_netstring">[docs]</a><span class="k">def</span> <span class="nf">make_unicode_netstring</span><span class="p">(</span><span class="n">unicode_str</span><span class="p">):</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;unicode_len (characters): &#39;</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">unicode_str</span><span class="p">))</span>
+    <span class="n">msg</span> <span class="o">=</span> <span class="n">unicode_str</span><span class="o">.</span><span class="n">encode</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">make_netstring</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="make_netstring"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.plain_tcp_handling.make_netstring">[docs]</a><span class="k">def</span> <span class="nf">make_netstring</span><span class="p">(</span><span class="nb">bytes</span><span class="p">):</span>
+    <span class="n">datalen</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="nb">bytes</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;encoded DATA LEN (bytes):&quot;</span><span class="p">,</span> <span class="n">datalen</span><span class="p">)</span>
+    <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">datalen</span><span class="p">)</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span> <span class="o">+</span> <span class="n">DELIM</span> <span class="o">+</span> <span class="nb">bytes</span> <span class="o">+</span> <span class="n">END</span></div>
+
+
+<div class="viewcode-block" id="OBCIPeerRequestHandler"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.plain_tcp_handling.OBCIPeerRequestHandler">[docs]</a><span class="k">class</span> <span class="nc">OBCIPeerRequestHandler</span><span class="p">(</span><span class="n">socketserver</span><span class="o">.</span><span class="n">StreamRequestHandler</span><span class="p">):</span>
+
+<div class="viewcode-block" id="OBCIPeerRequestHandler.make_srv_sock"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.plain_tcp_handling.OBCIPeerRequestHandler.make_srv_sock">[docs]</a>    <span class="k">def</span> <span class="nf">make_srv_sock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REQ</span><span class="p">)</span>
+        <span class="n">sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">rep_addr</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">sock</span></div>
+
+<div class="viewcode-block" id="OBCIPeerRequestHandler.handle"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.plain_tcp_handling.OBCIPeerRequestHandler.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">recv_unicode_netstring</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rfile</span><span class="p">)</span>
+        <span class="n">srv_sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_srv_sock</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">send_msg</span><span class="p">(</span><span class="n">srv_sock</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+            <span class="n">pl</span> <span class="o">=</span> <span class="n">PollingObject</span><span class="p">()</span>
+            <span class="n">response</span><span class="p">,</span> <span class="n">det</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">srv_sock</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">srv_sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bad_response</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wfile</span><span class="p">,</span> <span class="n">det</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">make_unicode_netstring</span><span class="p">(</span><span class="n">response</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="OBCIPeerRequestHandler.bad_response"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.plain_tcp_handling.OBCIPeerRequestHandler.bad_response">[docs]</a>    <span class="k">def</span> <span class="nf">bad_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">rstream</span><span class="p">,</span> <span class="n">details</span><span class="p">):</span>
+        <span class="n">err</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;rq_error&quot;</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="n">details</span><span class="p">)</span>
+        <span class="n">rstream</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">make_unicode_netstring</span><span class="p">(</span><span class="n">err</span><span class="p">))</span></div></div>
+
+
+<div class="viewcode-block" id="OBCIServerRequestHandler"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.plain_tcp_handling.OBCIServerRequestHandler">[docs]</a><span class="k">class</span> <span class="nc">OBCIServerRequestHandler</span><span class="p">(</span><span class="n">OBCIPeerRequestHandler</span><span class="p">):</span>
+
+<div class="viewcode-block" id="OBCIServerRequestHandler.handle"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.plain_tcp_handling.OBCIServerRequestHandler.handle">[docs]</a>    <span class="k">def</span> <span class="nf">handle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;SERVER REQUEST&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__class__</span><span class="p">,</span> <span class="s2">&quot;ME: &quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">getsockname</span><span class="p">())</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;FROM :&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">request</span><span class="o">.</span><span class="n">getpeername</span><span class="p">())</span>
+        <span class="n">message</span> <span class="o">=</span> <span class="n">recv_unicode_netstring</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rfile</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="n">pl</span> <span class="o">=</span> <span class="n">PollingObject</span><span class="p">()</span>
+        <span class="n">parsed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">unpack_msg</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">parsed</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;find_eeg_experiments&#39;</span> <span class="ow">or</span> <span class="n">parsed</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;find_eeg_amplifiers&#39;</span><span class="p">:</span>
+            <span class="n">pull_addr</span> <span class="o">=</span> <span class="s1">&#39;tcp://&#39;</span> <span class="o">+</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">pull_port</span><span class="p">)</span>
+            <span class="n">parsed</span><span class="o">.</span><span class="n">client_push_address</span> <span class="o">=</span> <span class="n">pull_addr</span>
+
+        <span class="n">srv_sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_srv_sock</span><span class="p">()</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">send_msg</span><span class="p">(</span><span class="n">srv_sock</span><span class="p">,</span> <span class="n">parsed</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">())</span>
+            <span class="n">response</span><span class="p">,</span> <span class="n">det</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">srv_sock</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">srv_sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;passed msg and got result:  &quot;</span><span class="p">,</span> <span class="n">response</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">bad_response</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wfile</span><span class="p">,</span> <span class="n">det</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">parsed</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;find_eeg_experiments&#39;</span> <span class="ow">or</span> <span class="n">parsed</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;find_eeg_amplifiers&#39;</span><span class="p">:</span>
+            <span class="n">response</span><span class="p">,</span> <span class="n">det</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server</span><span class="o">.</span><span class="n">pull_sock</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">20000</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">response</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">bad_response</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">wfile</span><span class="p">,</span> <span class="n">det</span><span class="p">)</span>
+                <span class="k">return</span>
+
+        <span class="n">data</span> <span class="o">=</span> <span class="n">make_unicode_netstring</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">wfile</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="OBCIExperimentRequestHandler"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.plain_tcp_handling.OBCIExperimentRequestHandler">[docs]</a><span class="k">class</span> <span class="nc">OBCIExperimentRequestHandler</span><span class="p">(</span><span class="n">OBCIPeerRequestHandler</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

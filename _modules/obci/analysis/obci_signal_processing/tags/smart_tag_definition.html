@@ -1,0 +1,237 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.analysis.obci_signal_processing.tags.smart_tag_definition &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.analysis.obci_signal_processing.tags.smart_tag_definition</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1">#</span>
+<span class="c1"># OpenBCI - framework for Brain-Computer Interfaces based on EEG signal</span>
+<span class="c1"># Project was initiated by Magdalena Michalska and Krzysztof Kulewski</span>
+<span class="c1"># as part of their MSc theses at the University of Warsaw.</span>
+<span class="c1"># Copyright (C) 2008-2009 Krzysztof Kulewski and Magdalena Michalska</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1"># Author:</span>
+<span class="c1">#     Mateusz Kruszyński &lt;mateusz.kruszynski@gmail.com&gt;</span>
+
+<span class="sd">&quot;&quot;&quot;Module defines classes representing smart tag definition.</span>
+<span class="sd">Smart tag definition is a data structure defining what kind of bunches of</span>
+<span class="sd">samples smart tag is to provide.</span>
+<span class="sd">By now we have a general, abstract class SmartTagDefinition.</span>
+
+<span class="sd">Concrete classes are:</span>
+<span class="sd">SmartTagEndTagDefinition</span>
+
+
+
+
+
+<span class="sd">SmartTagDurationDefinition</span>
+
+<span class="sd">see concrete classes definitions to learn how to use them.&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="SmartTagDefinition"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tags.html#obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagDefinition">[docs]</a><span class="k">class</span> <span class="nc">SmartTagDefinition</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;An abstract class storing general info. See subclasses defs.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">p_params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Se subclasses defs.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_tag_name</span> <span class="o">=</span> <span class="n">p_params</span><span class="p">[</span><span class="s1">&#39;start_tag_name&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_offset</span> <span class="o">=</span> <span class="n">p_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;start_offset&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end_offset</span> <span class="o">=</span> <span class="n">p_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;end_offset&#39;</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_param_func</span> <span class="o">=</span> <span class="n">p_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s1">&#39;start_param_func&#39;</span><span class="p">,</span>
+            <span class="k">lambda</span> <span class="n">tag</span><span class="p">:</span> <span class="n">tag</span><span class="p">[</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">]</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end_param_func</span> <span class="o">=</span> <span class="n">p_params</span><span class="o">.</span><span class="n">get</span><span class="p">(</span>
+            <span class="s1">&#39;end_param_func&#39;</span><span class="p">,</span>
+            <span class="k">lambda</span> <span class="n">tag</span><span class="p">:</span> <span class="n">tag</span><span class="p">[</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">]</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="SmartTagEndTagDefinition"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tags.html#obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagEndTagDefinition">[docs]</a><span class="k">class</span> <span class="nc">SmartTagEndTagDefinition</span><span class="p">(</span><span class="n">SmartTagDefinition</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;The class is to be used for following requirement:</span>
+<span class="sd">    &#39;We want to extract bunches of samples starting from some particular</span>
+<span class="sd">    tag type and ending with some particular tag type.&#39;</span>
+<span class="sd">    It is a constructor parameter for SmartTagsManager.</span>
+<span class="sd">    Constructor`s parameters and (at the same time) public slots:</span>
+<span class="sd">    - start_tag_name - string</span>
+<span class="sd">    - start_offset - float (default 0)</span>
+<span class="sd">    - end_offset - float (default 0)</span>
+<span class="sd">    - end_tags_names - list of strings.</span>
+
+<span class="sd">    x = SmartTagEndTagDefinition(start_tag_name=&#39;ugm_config&#39;,</span>
+<span class="sd">                             start_offset=-10.0,</span>
+<span class="sd">                             end_offset=20.0,</span>
+<span class="sd">                             end_tags_names=[&#39;ugm_config&#39;, &#39;ugm_break&#39;])</span>
+
+<span class="sd">    Consider samples file f, and tag scattered on the timeline like that:</span>
+<span class="sd">    ---100ms------------------300ms-----------400ms---------500ms----------700ms</span>
+<span class="sd">    ugm_config             ugm_config       ugm_break  ugm_config</span>
+
+<span class="sd">    Using x definition means:</span>
+<span class="sd">    Generate following samples bunches:</span>
+<span class="sd">    - 90ms;320ms</span>
+<span class="sd">    - 290ms;420ms</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">p_params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;See class description.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SmartTagEndTagDefinition</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">p_params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">end_tags_names</span> <span class="o">=</span> <span class="n">p_params</span><span class="p">[</span><span class="s1">&#39;end_tags_names&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="SmartTagEndTagDefinition.is_type"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tags.html#obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagEndTagDefinition.is_type">[docs]</a>    <span class="k">def</span> <span class="nf">is_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_type</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Type check - return true if p_type is end_tag.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">p_type</span> <span class="o">==</span> <span class="s2">&quot;end_tag&quot;</span></div></div>
+
+
+<div class="viewcode-block" id="SmartTagDurationDefinition"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tags.html#obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagDurationDefinition">[docs]</a><span class="k">class</span> <span class="nc">SmartTagDurationDefinition</span><span class="p">(</span><span class="n">SmartTagDefinition</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;The class is to be used for following requirement:</span>
+<span class="sd">    &#39;We want to extract bunches of samples starting from some particular</span>
+<span class="sd">    tag type and lasting x miliseconds.</span>
+<span class="sd">    It is a constructor parameter for SmartTagsManager.</span>
+<span class="sd">    Constructor`s parameters and (at the same time) public slots:</span>
+<span class="sd">    - start_tag_name - string</span>
+<span class="sd">    - start_offset - float (default 0)</span>
+<span class="sd">    - end_offset - float (default 0)</span>
+<span class="sd">    - duration - float</span>
+
+<span class="sd">    x = SmartTagDuration(start_tag_name=&#39;ugm_config&#39;,</span>
+<span class="sd">                             start_offset=-10.0,</span>
+<span class="sd">                             end_offset=20.0,</span>
+<span class="sd">                             duration=100.0)</span>
+
+<span class="sd">    Consider samples file f, and tag scattered on the timeline like that:</span>
+<span class="sd">    ---100ms------------------300ms-----------400ms---------500ms-------------</span>
+<span class="sd">    ugm_config             ugm_config       ugm_break  ugm_config</span>
+
+<span class="sd">    Using x definition means:</span>
+<span class="sd">    Generate following samples bunches:</span>
+<span class="sd">    - 90ms;220ms</span>
+<span class="sd">    - 290ms;420ms</span>
+<span class="sd">    - 490ms;620ms</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">p_params</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;See class description.&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SmartTagDurationDefinition</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="o">**</span><span class="n">p_params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">duration</span> <span class="o">=</span> <span class="n">p_params</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">]</span>
+
+<div class="viewcode-block" id="SmartTagDurationDefinition.is_type"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tags.html#obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagDurationDefinition.is_type">[docs]</a>    <span class="k">def</span> <span class="nf">is_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_type</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Type check - return true if p_type is end_tag.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">p_type</span> <span class="o">==</span> <span class="s2">&quot;duration&quot;</span></div>
+    <span class="k">pass</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

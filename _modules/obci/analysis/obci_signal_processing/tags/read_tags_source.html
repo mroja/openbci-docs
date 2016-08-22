@@ -1,0 +1,174 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.analysis.obci_signal_processing.tags.read_tags_source &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.analysis.obci_signal_processing.tags.read_tags_source</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1">#</span>
+<span class="c1"># Author:</span>
+<span class="c1">#     Mateusz Kruszyński &lt;mateusz.kruszynski@gmail.com&gt;</span>
+<span class="c1">#</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">tags_file_reader</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">tags_logging</span> <span class="k">as</span> <span class="n">logger</span>
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="s2">&quot;smart_tags_source&quot;</span><span class="p">,</span> <span class="s2">&quot;info&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="TagsSource"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tags.html#obci.analysis.obci_signal_processing.tags.read_tags_source.TagsSource">[docs]</a><span class="k">class</span> <span class="nc">TagsSource</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+<div class="viewcode-block" id="TagsSource.get_tags"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tags.html#obci.analysis.obci_signal_processing.tags.read_tags_source.TagsSource.get_tags">[docs]</a>    <span class="k">def</span> <span class="nf">get_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;The method must be subclassed&quot;</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_filter_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_tags</span><span class="p">,</span> <span class="n">p_tag_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_from</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_len</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_func</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">l_tags</span> <span class="o">=</span> <span class="n">p_tags</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">p_tag_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">l_tags</span> <span class="o">=</span> <span class="p">[</span><span class="n">i_tag</span> <span class="k">for</span> <span class="n">i_tag</span> <span class="ow">in</span> <span class="n">l_tags</span> <span class="k">if</span> <span class="n">p_tag_type</span> <span class="o">==</span> <span class="n">i_tag</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">p_from</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">l_start</span> <span class="o">=</span> <span class="n">p_from</span>
+            <span class="n">l_end</span> <span class="o">=</span> <span class="n">p_from</span> <span class="o">+</span> <span class="n">p_len</span>
+            <span class="n">l_tags</span> <span class="o">=</span> <span class="p">[</span><span class="n">i_tag</span> <span class="k">for</span> <span class="n">i_tag</span> <span class="ow">in</span> <span class="n">l_tags</span> <span class="k">if</span>
+                      <span class="p">(</span><span class="n">l_start</span> <span class="o">&lt;=</span> <span class="n">i_tag</span><span class="p">[</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">i_tag</span><span class="p">[</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">]</span> <span class="o">&lt;=</span> <span class="n">l_end</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">p_func</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="n">l_tags</span> <span class="o">=</span> <span class="p">[</span><span class="n">i_tag</span> <span class="k">for</span> <span class="n">i_tag</span> <span class="ow">in</span> <span class="n">l_tags</span> <span class="k">if</span> <span class="n">p_func</span><span class="p">(</span><span class="n">i_tag</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="n">l_tags</span>
+
+    <span class="k">def</span> <span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">MemoryTagsSource</span><span class="p">(</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()))</span></div>
+
+
+<div class="viewcode-block" id="MemoryTagsSource"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tags.html#obci.analysis.obci_signal_processing.tags.read_tags_source.MemoryTagsSource">[docs]</a><span class="k">class</span> <span class="nc">MemoryTagsSource</span><span class="p">(</span><span class="n">TagsSource</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_tags</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="p">(</span><span class="n">p_tags</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_tags</span><span class="p">(</span><span class="n">p_tags</span><span class="p">)</span>
+
+<div class="viewcode-block" id="MemoryTagsSource.set_tags"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tags.html#obci.analysis.obci_signal_processing.tags.read_tags_source.MemoryTagsSource.set_tags">[docs]</a>    <span class="k">def</span> <span class="nf">set_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_tags</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="n">p_tags</span></div>
+
+<div class="viewcode-block" id="MemoryTagsSource.get_tags"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tags.html#obci.analysis.obci_signal_processing.tags.read_tags_source.MemoryTagsSource.get_tags">[docs]</a>    <span class="k">def</span> <span class="nf">get_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_tag_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_from</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_len</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_func</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_tags</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">,</span>
+            <span class="n">p_tag_type</span><span class="p">,</span> <span class="n">p_from</span><span class="p">,</span> <span class="n">p_len</span><span class="p">,</span> <span class="n">p_func</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="FileTagsSource"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tags.html#obci.analysis.obci_signal_processing.tags.read_tags_source.FileTagsSource">[docs]</a><span class="k">class</span> <span class="nc">FileTagsSource</span><span class="p">(</span><span class="n">TagsSource</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_file_path</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_memory_source</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tags_proxy</span> <span class="o">=</span> <span class="n">tags_file_reader</span><span class="o">.</span><span class="n">TagsFileReader</span><span class="p">(</span><span class="n">p_file_path</span><span class="p">)</span>
+
+<div class="viewcode-block" id="FileTagsSource.get_tags"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tags.html#obci.analysis.obci_signal_processing.tags.read_tags_source.FileTagsSource.get_tags">[docs]</a>    <span class="k">def</span> <span class="nf">get_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_tag_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_from</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_len</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_func</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory_source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filter_tags</span><span class="p">(</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_tags_proxy</span><span class="o">.</span><span class="n">get_tags</span><span class="p">(),</span>
+                <span class="n">p_tag_type</span><span class="p">,</span> <span class="n">p_from</span><span class="p">,</span> <span class="n">p_len</span><span class="p">,</span> <span class="n">p_func</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory_source</span><span class="o">.</span><span class="n">get_tags</span><span class="p">(</span><span class="n">p_tag_type</span><span class="p">,</span> <span class="n">p_from</span><span class="p">,</span> <span class="n">p_len</span><span class="p">,</span> <span class="n">p_func</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="FileTagsSource.set_tags"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tags.html#obci.analysis.obci_signal_processing.tags.read_tags_source.FileTagsSource.set_tags">[docs]</a>    <span class="k">def</span> <span class="nf">set_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_tags</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_memory_source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory_source</span> <span class="o">=</span> <span class="n">MemoryTagsSource</span><span class="p">(</span><span class="n">p_tags</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_memory_source</span><span class="o">.</span><span class="n">set_tags</span><span class="p">(</span><span class="n">p_tags</span><span class="p">)</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

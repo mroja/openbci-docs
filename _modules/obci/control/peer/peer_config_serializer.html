@@ -1,0 +1,317 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.peer.peer_config_serializer &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.peer.peer_config_serializer</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">configparser</span>
+
+<span class="kn">import</span> <span class="nn">obci.control.common.config_helpers</span> <span class="k">as</span> <span class="nn">helpers</span>
+
+
+<div class="viewcode-block" id="PeerConfigSerializer"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_serializer.PeerConfigSerializer">[docs]</a><span class="k">class</span> <span class="nc">PeerConfigSerializer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="n">config_parts</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">helpers</span><span class="o">.</span><span class="n">CONFIG_SOURCES</span><span class="p">,</span>
+        <span class="n">helpers</span><span class="o">.</span><span class="n">LAUNCH_DEPENDENCIES</span><span class="p">,</span>
+        <span class="n">helpers</span><span class="o">.</span><span class="n">EXT_PARAMS</span><span class="p">,</span>
+        <span class="n">helpers</span><span class="o">.</span><span class="n">LOCAL_PARAMS</span>
+    <span class="p">]</span>
+
+<div class="viewcode-block" id="PeerConfigSerializer.serialize"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_serializer.PeerConfigSerializer.serialize">[docs]</a>    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_config</span><span class="p">,</span> <span class="n">p_file_obj</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prepare</span><span class="p">(</span><span class="n">p_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_serialize</span><span class="p">(</span><span class="n">p_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save</span><span class="p">(</span><span class="n">p_file_obj</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PeerConfigSerializer.serialize_diff"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_serializer.PeerConfigSerializer.serialize_diff">[docs]</a>    <span class="k">def</span> <span class="nf">serialize_diff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_base_config</span><span class="p">,</span> <span class="n">p_config</span><span class="p">,</span> <span class="n">p_file_obj</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prepare</span><span class="p">(</span><span class="n">p_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_serialize_diff</span><span class="p">(</span><span class="n">p_base_config</span><span class="p">,</span> <span class="n">p_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save</span><span class="p">(</span><span class="n">p_file_obj</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_config</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_file_obj</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_do_serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_config</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_config_sources</span><span class="p">(</span><span class="n">p_config</span><span class="o">.</span><span class="n">config_sources</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_launch_deps</span><span class="p">(</span><span class="n">p_config</span><span class="o">.</span><span class="n">launch_deps</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_local_params</span><span class="p">(</span><span class="n">p_config</span><span class="o">.</span><span class="n">param_values</span><span class="p">,</span>
+                                     <span class="n">p_config</span><span class="o">.</span><span class="n">ext_param_defs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_ext_params</span><span class="p">(</span><span class="n">p_config</span><span class="o">.</span><span class="n">param_values</span><span class="p">,</span>
+                                   <span class="n">p_config</span><span class="o">.</span><span class="n">ext_param_defs</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PeerConfigSerializer.difference"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_serializer.PeerConfigSerializer.difference">[docs]</a>    <span class="k">def</span> <span class="nf">difference</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_base_config</span><span class="p">,</span> <span class="n">p_config</span><span class="p">):</span>
+        <span class="n">sources</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">src</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">p_config</span><span class="o">.</span><span class="n">config_sources</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">src</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">p_base_config</span><span class="o">.</span><span class="n">config_sources</span><span class="p">:</span>
+                <span class="n">sources</span><span class="p">[</span><span class="n">src</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+        <span class="n">deps</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">dep</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">p_config</span><span class="o">.</span><span class="n">launch_deps</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">dep</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">p_base_config</span><span class="o">.</span><span class="n">launch_deps</span><span class="p">:</span>
+                <span class="n">deps</span><span class="p">[</span><span class="n">dep</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">par</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">p_config</span><span class="o">.</span><span class="n">param_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">p_base_config</span><span class="o">.</span><span class="n">param_values</span><span class="p">:</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+            <span class="k">elif</span> <span class="n">val</span> <span class="o">!=</span> <span class="n">p_base_config</span><span class="o">.</span><span class="n">param_values</span><span class="p">[</span><span class="n">par</span><span class="p">]:</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+        <span class="k">return</span> <span class="n">sources</span><span class="p">,</span> <span class="n">deps</span><span class="p">,</span> <span class="n">params</span></div>
+
+    <span class="k">def</span> <span class="nf">_do_serialize_diff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_base_config</span><span class="p">,</span> <span class="n">p_config</span><span class="p">):</span>
+        <span class="n">sources</span><span class="p">,</span> <span class="n">deps</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">p_base_config</span><span class="p">,</span> <span class="n">p_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_config_sources</span><span class="p">(</span><span class="n">sources</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_launch_deps</span><span class="p">(</span><span class="n">deps</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_local_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">p_config</span><span class="o">.</span><span class="n">ext_param_defs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_ext_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">p_config</span><span class="o">.</span><span class="n">ext_param_defs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_serialize_config_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_sources</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_serialize_launch_deps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_deps</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_serialize_ext_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_values</span><span class="p">,</span> <span class="n">p_ext_param_defs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_serialize_local_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_values</span><span class="p">,</span> <span class="n">p_ext_param_defs</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="PeerConfigSerializerINI"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_serializer.PeerConfigSerializerINI">[docs]</a><span class="k">class</span> <span class="nc">PeerConfigSerializerINI</span><span class="p">(</span><span class="n">PeerConfigSerializer</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_config</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">RawConfigParser</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_parts</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">add_section</span><span class="p">(</span><span class="n">sec</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_file_obj</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">sections</span><span class="p">():</span>
+            <span class="n">p_file_obj</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">[&#39;</span> <span class="o">+</span> <span class="n">sec</span> <span class="o">+</span> <span class="s1">&#39;]</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">opt</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">options</span><span class="p">(</span><span class="n">sec</span><span class="p">):</span>
+                <span class="n">p_file_obj</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">opt</span> <span class="o">+</span> <span class="s1">&#39; = &#39;</span><span class="p">)</span>
+                <span class="n">p_file_obj</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sec</span><span class="p">,</span> <span class="n">opt</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_serialize_config_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_sources</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">p_sources</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">helpers</span><span class="o">.</span><span class="n">CONFIG_SOURCES</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_serialize_launch_deps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_deps</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">p_deps</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">helpers</span><span class="o">.</span><span class="n">LAUNCH_DEPENDENCIES</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_serialize_ext_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_values</span><span class="p">,</span> <span class="n">p_ext_param_defs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">p_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">p_ext_param_defs</span><span class="p">:</span>
+                <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">par</span><span class="p">)</span> <span class="o">=</span> <span class="n">p_ext_param_defs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="n">src</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">par</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">helpers</span><span class="o">.</span><span class="n">EXT_PARAMS</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_serialize_local_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_values</span><span class="p">,</span> <span class="n">p_ext_param_defs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">p_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">p_ext_param_defs</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">helpers</span><span class="o">.</span><span class="n">LOCAL_PARAMS</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PeerConfigSerializerJSON"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_serializer.PeerConfigSerializerJSON">[docs]</a><span class="k">class</span> <span class="nc">PeerConfigSerializerJSON</span><span class="p">(</span><span class="n">PeerConfigSerializer</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dic</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_config</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dic</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_file_obj</span><span class="p">):</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dic</span><span class="p">,</span> <span class="n">p_file_obj</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_do_serialize_diff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_base_config</span><span class="p">,</span> <span class="n">p_config</span><span class="p">):</span>
+        <span class="n">sources</span><span class="p">,</span> <span class="n">deps</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">p_base_config</span><span class="p">,</span> <span class="n">p_config</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;serializing diff of &quot;</span><span class="p">,</span> <span class="n">p_config</span><span class="o">.</span><span class="n">peer_id</span><span class="p">,</span> <span class="s2">&quot;conf_src:&quot;</span><span class="p">,</span> <span class="n">sources</span><span class="p">,</span> <span class="s2">&quot;deps:&quot;</span><span class="p">,</span> <span class="n">deps</span><span class="p">,</span> <span class="s2">&quot;params:&quot;</span><span class="p">,</span> <span class="n">params</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_config_sources</span><span class="p">(</span><span class="n">p_config</span><span class="o">.</span><span class="n">config_sources</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_launch_deps</span><span class="p">(</span><span class="n">p_config</span><span class="o">.</span><span class="n">launch_deps</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_local_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">p_config</span><span class="o">.</span><span class="n">ext_param_defs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_ext_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">p_config</span><span class="o">.</span><span class="n">ext_param_defs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_serialize_config_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_sources</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dic</span><span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">CONFIG_SOURCES</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">p_sources</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dic</span><span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">CONFIG_SOURCES</span><span class="p">][</span><span class="n">src</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_serialize_launch_deps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_deps</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dic</span><span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">LAUNCH_DEPENDENCIES</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">dep</span> <span class="ow">in</span> <span class="n">p_deps</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dic</span><span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">LAUNCH_DEPENDENCIES</span><span class="p">][</span><span class="n">dep</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+    <span class="k">def</span> <span class="nf">_serialize_local_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_values</span><span class="p">,</span> <span class="n">p_ext_param_defs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dic</span><span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">LOCAL_PARAMS</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">p_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">p_ext_param_defs</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dic</span><span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">LOCAL_PARAMS</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">_serialize_ext_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_values</span><span class="p">,</span> <span class="n">p_ext_param_defs</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dic</span><span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">EXT_PARAMS</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">p_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">p_ext_param_defs</span><span class="p">:</span>
+                <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">par</span><span class="p">)</span> <span class="o">=</span> <span class="n">p_ext_param_defs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">dic</span><span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">EXT_PARAMS</span><span class="p">][</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">src</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">par</span></div>
+
+
+<div class="viewcode-block" id="PeerConfigSerializerCmd"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_serializer.PeerConfigSerializerCmd">[docs]</a><span class="k">class</span> <span class="nc">PeerConfigSerializerCmd</span><span class="p">(</span><span class="n">PeerConfigSerializer</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_config</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_file_obj</span><span class="p">):</span>
+        <span class="c1"># p_file_obj.write(str(self.args))</span>
+        <span class="c1"># print self.args</span>
+        <span class="k">for</span> <span class="n">a</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">:</span>
+            <span class="n">p_file_obj</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">a</span><span class="p">)</span>
+        <span class="c1"># p_file_obj = self.args</span>
+
+    <span class="k">def</span> <span class="nf">_do_serialize_diff</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_base_config</span><span class="p">,</span> <span class="n">p_config</span><span class="p">):</span>
+        <span class="n">sources</span><span class="p">,</span> <span class="n">deps</span><span class="p">,</span> <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">p_base_config</span><span class="p">,</span> <span class="n">p_config</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_config_sources</span><span class="p">(</span><span class="n">p_config</span><span class="o">.</span><span class="n">config_sources</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_launch_deps</span><span class="p">(</span><span class="n">p_config</span><span class="o">.</span><span class="n">launch_deps</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_local_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">p_config</span><span class="o">.</span><span class="n">ext_param_defs</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_ext_params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">p_config</span><span class="o">.</span><span class="n">ext_param_defs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_serialize_config_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_sources</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">sname</span><span class="p">,</span> <span class="n">peer_id</span> <span class="ow">in</span> <span class="n">p_sources</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">CS</span><span class="p">,</span> <span class="n">sname</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_serialize_launch_deps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_deps</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">sname</span><span class="p">,</span> <span class="n">peer_id</span> <span class="ow">in</span> <span class="n">p_deps</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">LD</span><span class="p">,</span> <span class="n">sname</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_serialize_local_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_values</span><span class="p">,</span> <span class="n">p_ext_param_defs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">p_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">p_ext_param_defs</span> <span class="ow">or</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">LP</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_serialize_ext_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_values</span><span class="p">,</span> <span class="n">p_ext_param_defs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">p_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="n">p_ext_param_defs</span> <span class="ow">and</span> <span class="n">value</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">par</span><span class="p">)</span> <span class="o">=</span> <span class="n">p_ext_param_defs</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">EP</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">src</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">par</span><span class="p">]</span></div>
+
+<span class="c1"># TODO?</span>
+
+
+<div class="viewcode-block" id="PeerConfigSerializerProtobuf"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_serializer.PeerConfigSerializerProtobuf">[docs]</a><span class="k">class</span> <span class="nc">PeerConfigSerializerProtobuf</span><span class="p">(</span><span class="n">PeerConfigSerializer</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

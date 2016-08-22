@@ -1,0 +1,30 @@
+obci.core.messages package
+==========================
+
+Submodules
+----------
+
+obci.core.messages.protobuf_serializer module
+---------------------------------------------
+
+.. automodule:: obci.core.messages.protobuf_serializer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.core.messages.types module
+-------------------------------
+
+.. automodule:: obci.core.messages.types
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.core.messages
+    :members:
+    :undoc-members:
+    :show-inheritance:

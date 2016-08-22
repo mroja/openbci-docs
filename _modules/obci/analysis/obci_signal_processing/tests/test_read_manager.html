@@ -1,0 +1,201 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.analysis.obci_signal_processing.tests.test_read_manager &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.analysis.obci_signal_processing.tests.test_read_manager</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="c1"># Author:</span>
+<span class="c1">#     Mateusz Kruszyński &lt;mateusz.kruszynski@gmail.com&gt;</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">&gt;&gt;&gt; from obci.analysis.obci_signal_processing import read_manager</span>
+
+<span class="sd">&gt;&gt;&gt; import os, os.path, sys</span>
+
+<span class="sd">&gt;&gt;&gt; pth = os.path.abspath(read_manager.__file__)</span>
+
+<span class="sd">&gt;&gt;&gt; f = os.path.join(pth[:-len(os.path.basename(pth))], &#39;tests&#39;, &#39;data&#39;, &#39;data&#39;)</span>
+
+<span class="sd">&gt;&gt;&gt; mgr = read_manager.ReadManager(f+&#39;.obci.info&#39;, f+&#39;.obci.dat&#39;, f+&#39;.obci.tags&#39;)</span>
+
+<span class="sd">&gt;&gt;&gt; mgr.get_samples(0, 1)[0,0]</span>
+<span class="sd">-27075.0</span>
+
+
+<span class="sd">&gt;&gt;&gt; mgr.get_samples(0, 1)[1,0]</span>
+<span class="sd">39641.0</span>
+
+
+<span class="sd">&gt;&gt;&gt; ch = mgr.get_samples()</span>
+
+
+<span class="sd">&gt;&gt;&gt; ch[0][0]</span>
+<span class="sd">-27075.0</span>
+
+<span class="sd">&gt;&gt;&gt; ch[1][0]</span>
+<span class="sd">39641.0</span>
+
+<span class="sd">&gt;&gt;&gt; [len(x) for x in ch]</span>
+<span class="sd">[112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407,\</span>
+<span class="sd"> 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407,\</span>
+<span class="sd"> 112407, 112407, 112407, 112407, 112407, 112407, 112407]</span>
+
+
+<span class="sd">&gt;&gt;&gt; mgr.get_param(u&#39;number_of_samples&#39;)</span>
+<span class="sd">&#39;2810175&#39;</span>
+
+<span class="sd">&gt;&gt;&gt; mgr.get_param(u&#39;sampling_frequency&#39;)</span>
+<span class="sd">&#39;128&#39;</span>
+
+<span class="sd">&gt;&gt;&gt; mgr.get_param(u&#39;number_of_channels&#39;)</span>
+<span class="sd">&#39;25&#39;</span>
+
+<span class="sd">&gt;&gt;&gt; mgr.get_param(&#39;channels_names&#39;)</span>
+<span class="sd">[&#39;Fp1&#39;, &#39;Fpz&#39;, &#39;Fp2&#39;, &#39;F7&#39;, &#39;F3&#39;, &#39;Fz&#39;, &#39;F4&#39;, &#39;F8&#39;, &#39;M1&#39;, &#39;C7&#39;, &#39;C3&#39;,\</span>
+<span class="sd"> &#39;Cz&#39;, &#39;C4&#39;, &#39;T8&#39;, &#39;M2&#39;, &#39;P7&#39;, &#39;P3&#39;, &#39;Pz&#39;, &#39;P4&#39;, &#39;P8&#39;, &#39;O1&#39;, &#39;Oz&#39;, &#39;O2&#39;,\</span>
+<span class="sd"> &#39;NIC&#39;, &#39;OKO_GORA_DOL&#39;]</span>
+
+
+<span class="sd">&gt;&gt;&gt; mgr.get_param(&#39;im_not_there&#39;)</span>
+<span class="sd">Traceback (most recent call last):</span>
+<span class="sd">...</span>
+<span class="sd">obci.analysis.obci_signal_processing.signal.signal_exceptions.NoParameter:\</span>
+<span class="sd"> No parameter &#39;im_not_there&#39; was found in info source!</span>
+
+<span class="sd">&gt;&gt;&gt; import numpy as np</span>
+
+<span class="sd">&gt;&gt;&gt; np.sum([np.abs(t[&#39;start_timestamp&#39;]-et)&lt;0.0001 for t,et in zip(mgr.iter_tags(), [0.36085605621337891,\</span>
+<span class="sd"> 1.3654811382293701, 3.2938590049743652, 4.8368752002716064, 6.6318840980529785,\</span>
+<span class="sd">8.2858760356903076, 9.8918850421905518, 11.599879026412964, 13.15486216545105, 14.747888088226318, 15.760866165161133,\</span>
+<span class="sd">17.531879186630249, 19.168869018554688, 21.020870208740234, 22.716873168945312, 24.6128830909729, 26.412859201431274,\</span>
+<span class="sd">28.320885181427002, 29.348877191543579, 30.735865116119385, 31.838881015777588, 33.505880117416382, 34.594882011413574,\</span>
+<span class="sd">36.5418860912323, 37.700882196426392, 38.795868158340454, 40.185863971710205, 41.975889205932617, 43.608882188796997,\</span>
+<span class="sd">44.695883989334106, 45.91289210319519, 47.635885000228882, 49.343885183334351, 50.655886173248291, 52.486284017562866,\</span>
+<span class="sd">53.563876152038574, 55.53387713432312, 57.343875169754028, 59.317936182022095, 61.018882989883423, 62.311890125274658,\</span>
+<span class="sd">63.758885145187378, 65.596870183944702, 67.496883153915405, 68.828874111175537, 70.646870136260986, 71.883864164352417,\</span>
+<span class="sd">73.352570056915283, 75.352887153625488, 77.352883100509644, 78.996880054473877])])</span>
+<span class="sd">51</span>
+
+<span class="sd">&gt;&gt;&gt; i = mgr.iter_tags()</span>
+
+<span class="sd">&gt;&gt;&gt; next(i)=={&#39;channels&#39;: &#39;&#39;, &#39;start_timestamp&#39;: 0.36085605621337891, &#39;desc&#39;: {u&#39;value&#39;: u&#39;1&#39;}, &#39;name&#39;: u&#39;trigger&#39;,\</span>
+<span class="sd">&#39;end_timestamp&#39;: 1.3654811382293701}</span>
+<span class="sd">True</span>
+
+<span class="sd">&gt;&gt;&gt; next(i)=={&#39;channels&#39;: &#39;&#39;, &#39;start_timestamp&#39;: 1.3654811382293701, &#39;desc&#39;: {u&#39;value&#39;: u&#39;0&#39;}, &#39;name&#39;: u&#39;trigger&#39;,\</span>
+<span class="sd">&#39;end_timestamp&#39;: 3.2938590049743652}</span>
+<span class="sd">True</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="run"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tests.html#obci.analysis.obci_signal_processing.tests.test_read_manager.run">[docs]</a><span class="k">def</span> <span class="nf">run</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="kn">import</span> <span class="nn">sys</span>
+    <span class="n">res</span> <span class="o">=</span> <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">__name__</span><span class="p">])</span>
+    <span class="k">if</span> <span class="n">res</span><span class="o">.</span><span class="n">failed</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;All tests succeeded!&quot;</span><span class="p">)</span></div>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">run</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

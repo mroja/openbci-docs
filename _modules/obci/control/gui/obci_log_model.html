@@ -1,0 +1,187 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.gui.obci_log_model &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.gui.obci_log_model</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">_thread</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="k">import</span> <span class="n">QtCore</span>
+
+
+<div class="viewcode-block" id="LogModel"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_model.LogModel">[docs]</a><span class="k">class</span> <span class="nc">LogModel</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="p">):</span>
+    <span class="n">update_log</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">dict</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">LogModel</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_peers</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_emmit</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_running</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mutex</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QMutex</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_peers_log</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="LogModel.connect_running"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_model.LogModel.connect_running">[docs]</a>    <span class="k">def</span> <span class="nf">connect_running</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_thread</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LogModel.start_running"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_model.LogModel.start_running">[docs]</a>    <span class="k">def</span> <span class="nf">start_running</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_thread</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_start_thread</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp</span><span class="p">):</span>
+        <span class="c1"># self._exp = exp</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_running</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">_thread</span><span class="o">.</span><span class="n">start_new_thread</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">run</span><span class="p">,</span>
+            <span class="p">()</span>
+        <span class="p">)</span>
+
+<div class="viewcode-block" id="LogModel.stop_running"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_model.LogModel.stop_running">[docs]</a>    <span class="k">def</span> <span class="nf">stop_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_run</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="LogModel.is_running"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_model.LogModel.is_running">[docs]</a>    <span class="k">def</span> <span class="nf">is_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_running</span></div>
+
+<div class="viewcode-block" id="LogModel.get_peers"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_model.LogModel.get_peers">[docs]</a>    <span class="k">def</span> <span class="nf">get_peers</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_peers</span></div>
+
+<div class="viewcode-block" id="LogModel.get_peer_ind"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_model.LogModel.get_peer_ind">[docs]</a>    <span class="k">def</span> <span class="nf">get_peer_ind</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_peers</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">peer_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LogModel.add_peer"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_model.LogModel.add_peer">[docs]</a>    <span class="k">def</span> <span class="nf">add_peer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_peers</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">peer_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LogModel.remove_peer"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_model.LogModel.remove_peer">[docs]</a>    <span class="k">def</span> <span class="nf">remove_peer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ind</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_peers</span><span class="o">.</span><span class="n">pop</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LogModel.set_emmiting"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_model.LogModel.set_emmiting">[docs]</a>    <span class="k">def</span> <span class="nf">set_emmiting</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">flag</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_emmit</span> <span class="o">=</span> <span class="n">flag</span></div>
+
+<div class="viewcode-block" id="LogModel.emit_logs"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_model.LogModel.emit_logs">[docs]</a>    <span class="k">def</span> <span class="nf">emit_logs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mutex</span><span class="o">.</span><span class="n">lock</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">log</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_peers_log</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_log</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mutex</span><span class="o">.</span><span class="n">unlock</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="LogModel.run"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_model.LogModel.run">[docs]</a>    <span class="k">def</span> <span class="nf">run</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;model start running &quot;</span><span class="p">)</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_run</span><span class="p">:</span>
+            <span class="n">peer_id</span><span class="p">,</span> <span class="n">log</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">next_log</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">peer_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># print (&quot;obci_log_model - ERROR IN RECEIVING LOG ON SOCKET OR TIMEOUT!&quot;)</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_mutex</span><span class="o">.</span><span class="n">lock</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">peer_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_peers_log</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_peers_log</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;peer_id&#39;</span><span class="p">:</span> <span class="n">peer_id</span><span class="p">,</span>
+                                                <span class="s1">&#39;logs&#39;</span><span class="p">:</span> <span class="p">[]}</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_peers_log</span><span class="p">[</span><span class="n">peer_id</span><span class="p">][</span><span class="s1">&#39;logs&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">log</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_emmit</span><span class="p">:</span>
+                    <span class="n">e</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;peer_id&#39;</span><span class="p">:</span> <span class="n">peer_id</span><span class="p">,</span> <span class="s1">&#39;logs&#39;</span><span class="p">:</span> <span class="p">[</span><span class="n">log</span><span class="p">]}</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">update_log</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_mutex</span><span class="o">.</span><span class="n">unlock</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;obci log model - model stoped running &quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">post_run</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_running</span> <span class="o">=</span> <span class="kc">False</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

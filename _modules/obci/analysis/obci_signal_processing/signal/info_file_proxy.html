@@ -1,0 +1,222 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.analysis.obci_signal_processing.signal.info_file_proxy &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.analysis.obci_signal_processing.signal.info_file_proxy</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># Author:</span>
+<span class="c1">#     Mateusz Kruszyński &lt;mateusz.kruszynski@gmail.com&gt;</span>
+<span class="c1">#</span>
+<span class="sd">&quot;&quot;&quot;Module implements specific info file manifest for svarog.</span>
+
+<span class="sd">What is different from info_file_proxy:</span>
+
+<span class="sd">* root name (here we haver rs:rawSignal and xmlns)</span>
+<span class="sd">* tags namespace (here every tag has rs: previx)</span>
+<span class="sd">* tags ordering (svarog requires specific tags ordering)</span>
+<span class="sd">* additional tags (svarog requires only and only tags described in</span>
+<span class="sd">  SvarogFileWriteProxy.ORDER)</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">generic_info_file_proxy</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">signal_logging</span> <span class="k">as</span> <span class="n">logger</span>
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="s2">&quot;info_file_proxy&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="InfoDocument"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.signal.html#obci.analysis.obci_signal_processing.signal.info_file_proxy.InfoDocument">[docs]</a><span class="k">class</span> <span class="nc">InfoDocument</span><span class="p">(</span><span class="n">generic_info_file_proxy</span><span class="o">.</span><span class="n">OpenBciDocument</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Subclass xml_document, so that we can add rs: prefix before every</span>
+<span class="sd">    tag name.&quot;&quot;&quot;</span>
+    <span class="n">prefix</span> <span class="o">=</span> <span class="s1">&#39;rs:&#39;</span>
+
+<div class="viewcode-block" id="InfoDocument.createElement"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.signal.html#obci.analysis.obci_signal_processing.signal.info_file_proxy.InfoDocument.createElement">[docs]</a>    <span class="k">def</span> <span class="nf">createElement</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tagName</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Redefine the method so that every added tag has &#39;rs:&#39; prefix.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">InfoDocument</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span>
+            <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">InfoDocument</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">tagName</span><span class="p">]))</span></div></div>
+
+
+<div class="viewcode-block" id="InfoFileWriteProxy"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.signal.html#obci.analysis.obci_signal_processing.signal.info_file_proxy.InfoFileWriteProxy">[docs]</a><span class="k">class</span> <span class="nc">InfoFileWriteProxy</span><span class="p">(</span><span class="n">generic_info_file_proxy</span><span class="o">.</span><span class="n">GenericInfoFileWriteProxy</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Subclass write proxy - ensure that every element has rs: prefix,</span>
+<span class="sd">    ensure tags ordering, ensure tags required by svarog.&quot;&quot;&quot;</span>
+    <span class="n">ORDER</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="s1">&#39;rs:exportFileName&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;rs:sourceFileName&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;rs:sourceFileFormat&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;rs:samplingFrequency&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;rs:channelCount&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;rs:sampleCount&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;rs:calibration&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;rs:sampleType&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;rs:byteOrder&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;rs:pageSize&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;rs:blocksPerPage&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;rs:channelLabels&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;rs:calibrationGain&#39;</span><span class="p">,</span>
+        <span class="s1">&#39;rs:calibrationOffset&#39;</span><span class="p">,</span>
+        <span class="c1"># &#39;rs:amplifierNull&#39;,</span>
+        <span class="s1">&#39;rs:firstSampleTimestamp&#39;</span><span class="p">,</span>
+    <span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_create_xml_factory</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Redefine the method - return Svarog document.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">InfoDocument</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_set_remaining_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set all default (hardcoded) tags and other tags as now we</span>
+<span class="sd">        we have all needed data.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_attributes</span><span class="p">({</span>
+            <span class="s1">&#39;file_format&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;&#39;</span><span class="p">],</span>
+            <span class="s1">&#39;export_file_name&#39;</span><span class="p">:</span> <span class="s1">&#39;name&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;calibration&#39;</span><span class="p">:</span> <span class="mf">1.0</span><span class="p">,</span>
+            <span class="s1">&#39;sample_type&#39;</span><span class="p">:</span> <span class="s1">&#39;DOUBLE&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;byte_order&#39;</span><span class="p">:</span> <span class="s1">&#39;LITTLE_ENDIAN&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;page_size&#39;</span><span class="p">:</span> <span class="mf">20.0</span><span class="p">,</span>
+            <span class="s1">&#39;blocks_per_page&#39;</span><span class="p">:</span> <span class="mi">5</span><span class="p">,</span>
+            <span class="c1"># &#39;export_date&#39;:&#39;2010-04-26T11:02:51&#39;</span>
+        <span class="p">})</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_reorder_elements</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_reorder_elements</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Redefine self._xml_factory so that it has tags required by</span>
+<span class="sd">        svarog in required order.&quot;&quot;&quot;</span>
+
+        <span class="n">new_factory</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_xml_factory</span><span class="p">()</span>
+        <span class="n">l_xml_root</span> <span class="o">=</span> <span class="n">new_factory</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="s1">&#39;rawSignal&#39;</span><span class="p">)</span>
+        <span class="n">l_xml_root</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="s1">&#39;xmlns:rs&#39;</span><span class="p">,</span>
+                                <span class="s2">&quot;http://signalml.org/rawsignal&quot;</span><span class="p">)</span>
+        <span class="n">new_factory</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">l_xml_root</span><span class="p">)</span>
+
+        <span class="n">elems</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">order_key</span> <span class="ow">in</span> <span class="n">InfoFileWriteProxy</span><span class="o">.</span><span class="n">ORDER</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">elem</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span><span class="o">.</span><span class="n">getElementsByTagName</span><span class="p">(</span><span class="n">order_key</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">elems</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span>
+                <span class="n">l_xml_root</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Couldn`t find &#39;&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">order_key</span><span class="p">)</span> <span class="o">+</span>
+                               <span class="s2">&quot;&#39; attribute. Created info file will not be totally correct!!!!&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span> <span class="o">=</span> <span class="n">new_factory</span></div>
+
+
+<div class="viewcode-block" id="InfoFileReadProxy"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.signal.html#obci.analysis.obci_signal_processing.signal.info_file_proxy.InfoFileReadProxy">[docs]</a><span class="k">class</span> <span class="nc">InfoFileReadProxy</span><span class="p">(</span><span class="n">generic_info_file_proxy</span><span class="o">.</span><span class="n">GenericInfoFileReadProxy</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Sublassed read proxy - every `get_` method need to be subclassed</span>
+<span class="sd">    to add rs: prefix before tag name.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_get_simple_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_param_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return text value from tag in format:</span>
+<span class="sd">        &lt;param id=p_param_name&gt;text_value&lt;/param&gt;.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">InfoFileReadProxy</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_get_simple_param</span><span class="p">(</span>
+            <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">InfoDocument</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">p_param_name</span><span class="p">]))</span>
+
+    <span class="k">def</span> <span class="nf">_get_list_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_param_name</span><span class="p">,</span> <span class="n">p_subparam_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a list of text values form tag in format:</span>
+<span class="sd">        &lt;p_param_name&gt;</span>
+<span class="sd">            &lt;param&gt;text value1&lt;/param&gt;</span>
+<span class="sd">            &lt;param&gt;text value2&lt;/param&gt;</span>
+<span class="sd">            ...</span>
+<span class="sd">        &lt;/p_param_name&gt;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">InfoFileReadProxy</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_get_list_param</span><span class="p">(</span>
+            <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">InfoDocument</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">p_param_name</span><span class="p">]),</span>
+            <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">InfoDocument</span><span class="o">.</span><span class="n">prefix</span><span class="p">,</span> <span class="n">p_subparam_name</span><span class="p">]))</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

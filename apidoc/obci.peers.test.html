@@ -1,0 +1,203 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.peers.test package &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../index.html" />
+    <link rel="up" title="obci.peers package" href="obci.peers.html" />
+    <link rel="next" title="obci.scenarios package" href="obci.scenarios.html" />
+    <link rel="prev" title="obci.peers package" href="obci.peers.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="obci-peers-test-package">
+<h1>obci.peers.test package<a class="headerlink" href="#obci-peers-test-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-obci.peers.test.dummy_amplifier">
+<span id="obci-peers-test-dummy-amplifier-module"></span><h2>obci.peers.test.dummy_amplifier module<a class="headerlink" href="#module-obci.peers.test.dummy_amplifier" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.peers.test.dummy_amplifier.DummyAmplifierPeer">
+<em class="property">class </em><code class="descclassname">obci.peers.test.dummy_amplifier.</code><code class="descname">DummyAmplifierPeer</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/peers/test/dummy_amplifier.html#DummyAmplifierPeer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.peers.test.dummy_amplifier.DummyAmplifierPeer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="obci.core.html#obci.core.peer.Peer" title="obci.core.peer.Peer"><code class="xref py py-class docutils literal"><span class="pre">obci.core.peer.Peer</span></code></a></p>
+<p>Amplifier peer generates signal using AsyncSignalGenerator.</p>
+<dl class="method">
+<dt id="obci.peers.test.dummy_amplifier.DummyAmplifierPeer.generate_test_signal">
+<code class="descname">generate_test_signal</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/peers/test/dummy_amplifier.html#DummyAmplifierPeer.generate_test_signal"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.peers.test.dummy_amplifier.DummyAmplifierPeer.generate_test_signal" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.peers.test.dummy_amplifier.DummyAmplifierPeer.initialization_finished">
+<code class="descname">initialization_finished</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/peers/test/dummy_amplifier.html#DummyAmplifierPeer.initialization_finished"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.peers.test.dummy_amplifier.DummyAmplifierPeer.initialization_finished" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.peers.test.dummy_signal_receiver">
+<span id="obci-peers-test-dummy-signal-receiver-module"></span><h2>obci.peers.test.dummy_signal_receiver module<a class="headerlink" href="#module-obci.peers.test.dummy_signal_receiver" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.peers.test.dummy_signal_receiver.DummySignalReceiverPeer">
+<em class="property">class </em><code class="descclassname">obci.peers.test.dummy_signal_receiver.</code><code class="descname">DummySignalReceiverPeer</code><span class="sig-paren">(</span><em>*args</em>, <em>*</em>, <em>generator_peer_name='Generator'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/peers/test/dummy_signal_receiver.html#DummySignalReceiverPeer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.peers.test.dummy_signal_receiver.DummySignalReceiverPeer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="obci.core.html#obci.core.peer.Peer" title="obci.core.peer.Peer"><code class="xref py py-class docutils literal"><span class="pre">obci.core.peer.Peer</span></code></a></p>
+<p>Signal receiver peer receives signal generated by <cite>DummyAmplifierPeer</cite>,
+verifies its correctness and send another signal consisting of received
+signal mean across channels and saw.</p>
+<dl class="method">
+<dt id="obci.peers.test.dummy_signal_receiver.DummySignalReceiverPeer.handle_signal_message">
+<code class="descname">handle_signal_message</code><span class="sig-paren">(</span><em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/peers/test/dummy_signal_receiver.html#DummySignalReceiverPeer.handle_signal_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.peers.test.dummy_signal_receiver.DummySignalReceiverPeer.handle_signal_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.peers.test.dummy_signal_receiver.DummySignalReceiverPeer.initialization_finished">
+<code class="descname">initialization_finished</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/peers/test/dummy_signal_receiver.html#DummySignalReceiverPeer.initialization_finished"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.peers.test.dummy_signal_receiver.DummySignalReceiverPeer.initialization_finished" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.peers.test.dummy_signal_verifier">
+<span id="obci-peers-test-dummy-signal-verifier-module"></span><h2>obci.peers.test.dummy_signal_verifier module<a class="headerlink" href="#module-obci.peers.test.dummy_signal_verifier" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.peers.test.dummy_signal_verifier.DummySignalVerifierPeer">
+<em class="property">class </em><code class="descclassname">obci.peers.test.dummy_signal_verifier.</code><code class="descname">DummySignalVerifierPeer</code><span class="sig-paren">(</span><em>*args</em>, <em>*</em>, <em>receiver_peer_name='Receiver'</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/peers/test/dummy_signal_verifier.html#DummySignalVerifierPeer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.peers.test.dummy_signal_verifier.DummySignalVerifierPeer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="obci.core.html#obci.core.peer.Peer" title="obci.core.peer.Peer"><code class="xref py py-class docutils literal"><span class="pre">obci.core.peer.Peer</span></code></a></p>
+<p>Receives signal generated by <cite>DummySignalReceiverPeer</cite> and verifies saw
+signal.</p>
+<dl class="method">
+<dt id="obci.peers.test.dummy_signal_verifier.DummySignalVerifierPeer.handle_signal_message">
+<code class="descname">handle_signal_message</code><span class="sig-paren">(</span><em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/peers/test/dummy_signal_verifier.html#DummySignalVerifierPeer.handle_signal_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.peers.test.dummy_signal_verifier.DummySignalVerifierPeer.handle_signal_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.peers.test.dummy_signal_verifier.DummySignalVerifierPeer.initialization_finished">
+<code class="descname">initialization_finished</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/peers/test/dummy_signal_verifier.html#DummySignalVerifierPeer.initialization_finished"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.peers.test.dummy_signal_verifier.DummySignalVerifierPeer.initialization_finished" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.peers.test">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-obci.peers.test" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">obci</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="obci.html">obci package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="obci.acquisition.html">obci.acquisition package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.analysis.html">obci.analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.benchmark.html">obci.benchmark package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.cmd.html">obci.cmd package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.configs.html">obci.configs package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.control.html">obci.control package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.core.html">obci.core package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.drivers.html">obci.drivers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.gui.html">obci.gui package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.mx_legacy.html">obci.mx_legacy package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="obci.peers.html">obci.peers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.scenarios.html">obci.scenarios package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.utils.html">obci.utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">obci</a><ul>
+  <li><a href="obci.html">obci package</a><ul>
+  <li><a href="obci.peers.html">obci.peers package</a><ul>
+      <li>Previous: <a href="obci.peers.html" title="previous chapter">obci.peers package</a></li>
+      <li>Next: <a href="obci.scenarios.html" title="next chapter">obci.scenarios package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/apidoc/obci.peers.test.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

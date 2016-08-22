@@ -1,0 +1,569 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.peer.peer_config &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.peer.peer_config</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">warnings</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.common.config_helpers</span> <span class="k">import</span> <span class="p">(</span><span class="n">param_name_type_check</span><span class="p">,</span>
+                                                <span class="n">module_id_type_check</span><span class="p">,</span>
+                                                <span class="n">argument_not_empty_check</span><span class="p">,</span>
+                                                <span class="n">reference_split</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PeerConfig"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig">[docs]</a><span class="k">class</span> <span class="nc">PeerConfig</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    This class represents core configuration of an OpenBCI peer. It is</span>
+<span class="sd">    meant to be used both as an output of a config parser and as</span>
+<span class="sd">    a configuration holder for the running peer (wrapped in a controller</span>
+<span class="sd">    with networking capabilities).</span>
+
+<span class="sd">    Peer configuration consists of local parameters, external parameters,</span>
+<span class="sd">    config sources definitions and launch dependencies.</span>
+
+<span class="sd">    Local parameters:</span>
+<span class="sd">            param_name : value</span>
+<span class="sd">    are owned by the peer itself, whereas external parameters have to be</span>
+<span class="sd">    obtained from other peers.</span>
+
+<span class="sd">    External parameter definition:</span>
+<span class="sd">            local_parameter_name : config_source_name.parameter_name</span>
+
+<span class="sd">    Config source names are symbolic names for dependencies.</span>
+<span class="sd">    In run time real peer ID&#39;s are assingned to those names; parameter_name</span>
+<span class="sd">    is the remote parameter that is requested from source.</span>
+
+<span class="sd">    Launch dependencies are similar to config sources: the definitions</span>
+<span class="sd">    are identical and symbolic name pool is common with config source names</span>
+<span class="sd">    i.e. all names are global in the configuration file.</span>
+<span class="sd">    Launch dependencies are used when we want to delay peer start</span>
+<span class="sd">    until all dependncies report that they are ready to work.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">warn_overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="c1"># system ID of the peer</span>
+        <span class="c1"># TODO - is this necessary in config core?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span> <span class="o">=</span> <span class="n">peer_id</span>
+
+        <span class="c1"># keys are source names, values are real peer IDs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config_sources</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># keys are symbolic names, values are peer IDs</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_launch_deps</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># the other way: keys are peer IDs, values are lists of source names</span>
+        <span class="c1"># to which the ID is assigned</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_src_ids</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># the other way: keys are peer IDs, values are lists of launch</span>
+        <span class="c1"># dependencies to which the ID is assigned</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dep_ids</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># external parameter definitions: keys are local param names, values</span>
+        <span class="c1"># are source names and remote parameter names</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ext_param_defs</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="c1"># already acquired external parameters</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_ext_params</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># all parameter values, for not-yet-obtained external params</span>
+        <span class="c1"># None is stored</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_param_values</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_warn_overwrite</span> <span class="o">=</span> <span class="n">warn_overwrite</span>
+
+    <span class="k">def</span> <span class="nf">__repr__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="s2">&quot;PEER CONFIG [</span><span class="si">{0}</span><span class="s2">]&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span><span class="p">)</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">st</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Peer ID: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span><span class="p">)])</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">st</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Config_sources: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_config_sources</span><span class="p">)])</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">st</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Launch dependencies: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_launch_deps</span><span class="p">)])</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">st</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">External param definitions: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ext_param_defs</span><span class="p">)])</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">st</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Parameter values: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_param_values</span><span class="p">)])</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">st</span><span class="p">,</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">Acquired external params: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_ext_params</span><span class="p">)])</span>
+        <span class="k">return</span> <span class="n">st</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">config_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Configuration sources&#39; symbolic names and their assigned real peer IDs.</span>
+<span class="sd">        (A dictionary)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_sources</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">launch_deps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Launch dependencies&#39; symbolic names and their assigned real peer IDs.</span>
+<span class="sd">        (A dictionary)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_launch_deps</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">source_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Peer ID&#39;s of the config sources and lists of their symbolic names.</span>
+<span class="sd">        (A dictionary)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src_ids</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">dep_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Peer ID&#39;s of the launch dependencies and lists of their symbolic names.</span>
+<span class="sd">        (A dictionary)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src_ids</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">param_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        A dictionary of all parameter values.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_param_values</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ext_param_defs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        External parameter definitions. A definition consists of a local</span>
+<span class="sd">        parameter name and a reference: pair of symbolic source name and</span>
+<span class="sd">        remote parameter name.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ext_param_defs</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">ready_ext_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        External parameters with values succesfully obtained from sources.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_ext_params</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">local_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Local parameters and values (dict)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_param_values</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ext_param_defs</span><span class="p">:</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_param_values</span><span class="p">[</span><span class="n">name</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">params</span>
+
+<div class="viewcode-block" id="PeerConfig.assign_id_to_name"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.assign_id_to_name">[docs]</a>    <span class="k">def</span> <span class="nf">assign_id_to_name</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sym_name</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">sym_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_sources</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_config_source</span><span class="p">(</span><span class="n">sym_name</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">sym_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_launch_deps</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_launch_dependency</span><span class="p">(</span><span class="n">sym_name</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PeerConfig.set_config_source"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.set_config_source">[docs]</a>    <span class="k">def</span> <span class="nf">set_config_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">source_name</span><span class="p">,</span> <span class="n">peer_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_set_dep</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Store a configuration symbolic source name and its real peer_id.</span>
+<span class="sd">        Default ID is empty and can be updated later.</span>
+<span class="sd">        Warns on overwrite.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">param_name_type_check</span><span class="p">(</span><span class="n">source_name</span><span class="p">)</span>
+        <span class="n">module_id_type_check</span><span class="p">(</span><span class="n">peer_id</span><span class="p">)</span>
+        <span class="n">argument_not_empty_check</span><span class="p">(</span><span class="n">source_name</span><span class="p">)</span>
+
+        <span class="n">srcs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_sources</span>
+        <span class="k">if</span> <span class="n">source_name</span> <span class="ow">in</span> <span class="n">srcs</span><span class="p">:</span>
+            <span class="n">old_id</span> <span class="o">=</span> <span class="n">srcs</span><span class="p">[</span><span class="n">source_name</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_overwrite_warn</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;Config source overwrite! </span><span class="se">\</span>
+<span class="s2">Name: </span><span class="si">{0}</span><span class="s2">, old id: </span><span class="si">{1}</span><span class="s2">, new id: </span><span class="si">{2}</span><span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">source_name</span><span class="p">,</span> <span class="n">old_id</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_src_ids</span><span class="p">[</span><span class="n">old_id</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">source_name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_config_sources</span><span class="p">[</span><span class="n">source_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">peer_id</span>
+        <span class="k">if</span> <span class="n">peer_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src_ids</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_src_ids</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_src_ids</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">source_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">source_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_launch_deps</span> <span class="ow">and</span> <span class="n">_set_dep</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_launch_dependency</span><span class="p">(</span><span class="n">source_name</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">_set_src</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PeerConfig.set_launch_dependency"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.set_launch_dependency">[docs]</a>    <span class="k">def</span> <span class="nf">set_launch_dependency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dep_name</span><span class="p">,</span> <span class="n">peer_id</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">_set_src</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">param_name_type_check</span><span class="p">(</span><span class="n">dep_name</span><span class="p">)</span>
+        <span class="n">module_id_type_check</span><span class="p">(</span><span class="n">peer_id</span><span class="p">)</span>
+        <span class="n">argument_not_empty_check</span><span class="p">(</span><span class="n">dep_name</span><span class="p">)</span>
+
+        <span class="n">deps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_launch_deps</span>
+        <span class="k">if</span> <span class="n">dep_name</span> <span class="ow">in</span> <span class="n">deps</span><span class="p">:</span>
+            <span class="n">old_id</span> <span class="o">=</span> <span class="n">deps</span><span class="p">[</span><span class="n">dep_name</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_overwrite_warn</span><span class="p">(</span><span class="s2">&quot;&quot;&quot;Dependency overwrite! </span><span class="se">\</span>
+<span class="s2">Name: </span><span class="si">{0}</span><span class="s2">, old id: </span><span class="si">{1}</span><span class="s2">, new id: </span><span class="si">{2}</span><span class="s2">&quot;&quot;&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">dep_name</span><span class="p">,</span> <span class="n">old_id</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dep_ids</span><span class="p">[</span><span class="n">old_id</span><span class="p">]</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">dep_name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_launch_deps</span><span class="p">[</span><span class="n">dep_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">peer_id</span>
+        <span class="k">if</span> <span class="n">peer_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dep_ids</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dep_ids</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dep_ids</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">dep_name</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dep_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_sources</span> <span class="ow">and</span> <span class="n">_set_src</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">set_config_source</span><span class="p">(</span><span class="n">dep_name</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">_set_dep</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PeerConfig.get_param"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.get_param">[docs]</a>    <span class="k">def</span> <span class="nf">get_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return value of a parameter param_name. Parameter may be local</span>
+<span class="sd">        or external.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_param_values</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="PeerConfig.has_param"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.has_param">[docs]</a>    <span class="k">def</span> <span class="nf">has_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">param_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_param_values</span></div>
+
+<div class="viewcode-block" id="PeerConfig.add_external_param_def"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.add_external_param_def">[docs]</a>    <span class="k">def</span> <span class="nf">add_external_param_def</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">reference</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Store an external parameter definition. param_name is the</span>
+<span class="sd">        local name of the parameter, reference is a string</span>
+<span class="sd">        &#39;source_name.remote_param_name&#39;.</span>
+<span class="sd">        Warns about overwriting definitions, especially when a</span>
+<span class="sd">        previously local parameter becomes external.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="c1"># TODO - API change, split reference to 2 method params.</span>
+        <span class="n">param_name_type_check</span><span class="p">(</span><span class="n">param_name</span><span class="p">)</span>
+        <span class="n">argument_not_empty_check</span><span class="p">(</span><span class="n">param_name</span><span class="p">)</span>
+
+        <span class="n">df</span> <span class="o">=</span> <span class="p">[</span><span class="n">source_name</span><span class="p">,</span> <span class="n">source_param</span><span class="p">]</span> <span class="o">=</span> <span class="n">reference_split</span><span class="p">(</span><span class="n">reference</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">source_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_sources</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Source name </span><span class="si">{0}</span><span class="s2"> from reference (&#39;</span><span class="si">{1}</span><span class="s2">&#39;) </span><span class="se">\</span>
+<span class="s2">not declared in configuration!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">source_name</span><span class="p">,</span> <span class="n">reference</span><span class="p">))</span>
+
+        <span class="n">defs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ext_param_defs</span>
+        <span class="k">if</span> <span class="n">param_name</span> <span class="ow">in</span> <span class="n">defs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_overwrite_warn</span><span class="p">(</span><span class="n">msg_overwrite_ext_def</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">param_name</span><span class="p">,</span> <span class="n">defs</span><span class="p">[</span><span class="n">param_name</span><span class="p">],</span> <span class="n">df</span><span class="p">))</span>
+
+        <span class="k">elif</span> <span class="n">param_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_param_values</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_overwrite_warn</span><span class="p">(</span><span class="n">msg_overwrite_local_to_ext</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">param_name</span><span class="p">,</span> <span class="n">source_name</span><span class="p">,</span> <span class="n">source_param</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ext_param_defs</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">source_name</span><span class="p">,</span> <span class="n">source_param</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_param_values</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="PeerConfig.update_external_param_def"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.update_external_param_def">[docs]</a>    <span class="k">def</span> <span class="nf">update_external_param_def</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">reference</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update external parameter definition. Works as add_external_param_def()</span>
+<span class="sd">        but the definition should already be stored in PeerConfig. Otherwise</span>
+<span class="sd">        raises ValueError.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_check</span><span class="p">(</span><span class="n">param_name</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_external_param_def</span><span class="p">(</span><span class="n">param_name</span><span class="p">,</span> <span class="n">reference</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_set_external_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+
+        <span class="c1"># Store a value for external parameter</span>
+
+        <span class="k">if</span> <span class="n">param_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ext_param_defs</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Parameter </span><span class="si">{0}</span><span class="s2"> not defined as </span><span class="se">\</span>
+<span class="s2">                            external parameter&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">param_name</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_param_values</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_ext_params</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">param_name</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PeerConfig.set_param_from_source"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.set_param_from_source">[docs]</a>    <span class="k">def</span> <span class="nf">set_param_from_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src_id</span><span class="p">,</span> <span class="n">src_param</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Store a value of a remote parameter.</span>
+<span class="sd">        src_id - peer ID of the source</span>
+<span class="sd">        src_param - remote parameter name</span>
+<span class="sd">        value - parameter value</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">src_names</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_src_ids</span><span class="p">[</span><span class="n">src_id</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">src_name</span> <span class="ow">in</span> <span class="n">src_names</span><span class="p">:</span>
+            <span class="n">src_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">params_for_source</span><span class="p">(</span><span class="n">src_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">src_param</span> <span class="ow">in</span> <span class="n">src_params</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_set_external_param</span><span class="p">(</span><span class="n">src_params</span><span class="p">[</span><span class="n">src_param</span><span class="p">],</span> <span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PeerConfig.add_local_param"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.add_local_param">[docs]</a>    <span class="k">def</span> <span class="nf">add_local_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Store a value of a local parameter.</span>
+<span class="sd">        Warn when a parameter is overwritten, especially when a previously</span>
+<span class="sd">        external parameter becomes local.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">param_name_type_check</span><span class="p">(</span><span class="n">param_name</span><span class="p">)</span>
+        <span class="n">argument_not_empty_check</span><span class="p">(</span><span class="n">param_name</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">param_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ext_param_defs</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_overwrite_warn</span><span class="p">(</span><span class="n">msg_overwrite_ext_to_local</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">param_name</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ext_param_defs</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">param_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_ext_params</span><span class="p">:</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_ext_params</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">param_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_param_values</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_overwrite_warn</span><span class="p">(</span><span class="n">msg_overwrite_local</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">param_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_param_values</span><span class="p">[</span><span class="n">param_name</span><span class="p">],</span> <span class="n">value</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_param_values</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">value</span></div>
+
+<div class="viewcode-block" id="PeerConfig.update_local_param"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.update_local_param">[docs]</a>    <span class="k">def</span> <span class="nf">update_local_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Update local parameter. Works like add_local_param()</span>
+<span class="sd">        but the parameter should already exist in PeerConfig.</span>
+<span class="sd">        Otherwise raise ValueError.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_check</span><span class="p">(</span><span class="n">param_name</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">add_local_param</span><span class="p">(</span><span class="n">param_name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PeerConfig.set_param"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.set_param">[docs]</a>    <span class="k">def</span> <span class="nf">set_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">update_local_param</span><span class="p">(</span><span class="n">param_name</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span></div>
+
+<span class="c1"># Helper methods</span>
+
+<div class="viewcode-block" id="PeerConfig.config_ready"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.config_ready">[docs]</a>    <span class="k">def</span> <span class="nf">config_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return True if the configuration is usable, i.e. all used</span>
+<span class="sd">        config sources have peer ID&#39;s assigned and all external parameter</span>
+<span class="sd">        values are already obtained.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">details</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">rd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_sources_ready</span><span class="p">(</span><span class="n">details</span><span class="p">)</span>
+        <span class="n">rd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">external_params_ready</span><span class="p">(</span><span class="n">details</span><span class="p">)</span> <span class="ow">and</span> <span class="n">rd</span>
+        <span class="n">rd</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">launch_deps_ready</span><span class="p">(</span><span class="n">details</span><span class="p">)</span> <span class="ow">and</span> <span class="n">rd</span>
+        <span class="k">return</span> <span class="n">rd</span><span class="p">,</span> <span class="n">details</span></div>
+
+<div class="viewcode-block" id="PeerConfig.config_sources_ready"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.config_sources_ready">[docs]</a>    <span class="k">def</span> <span class="nf">config_sources_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return  True if all used config sources have peer ID&#39;s assigned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="n">unused</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">unused_config_sources</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">details</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">details</span><span class="p">[</span><span class="s2">&quot;config_sources&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">src</span><span class="p">,</span> <span class="n">peer_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_sources</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">peer_id</span> <span class="ow">and</span> <span class="n">src</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">unused</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">details</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">details</span><span class="p">[</span><span class="s2">&quot;config_sources&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">src</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">))</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="PeerConfig.launch_deps_ready"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.launch_deps_ready">[docs]</a>    <span class="k">def</span> <span class="nf">launch_deps_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return  True if all launch deps have peer ID&#39;s assigned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">details</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">details</span><span class="p">[</span><span class="s2">&quot;launch_deps&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">dep</span><span class="p">,</span> <span class="n">peer_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_launch_deps</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">peer_id</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">details</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">details</span><span class="p">[</span><span class="s2">&quot;launch_deps&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">dep</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">))</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="PeerConfig.external_params_ready"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.external_params_ready">[docs]</a>    <span class="k">def</span> <span class="nf">external_params_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return True if the values of all external parameters have been</span>
+<span class="sd">        successfully obtained.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">details</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">details</span><span class="p">[</span><span class="s2">&quot;ext_params&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ext_param_defs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_ext_params</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">details</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">details</span><span class="p">[</span><span class="s2">&quot;ext_params&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ext_param_defs</span><span class="p">[</span><span class="n">name</span><span class="p">]))</span>
+                <span class="n">result</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="PeerConfig.params_for_source"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.params_for_source">[docs]</a>    <span class="k">def</span> <span class="nf">params_for_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_src</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a list of parameters coming from this source (symbolic name).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">loc_name</span><span class="p">,</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">src_par</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ext_param_defs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">src</span> <span class="o">==</span> <span class="n">p_src</span><span class="p">:</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">src_par</span><span class="p">]</span> <span class="o">=</span> <span class="n">loc_name</span>
+        <span class="k">return</span> <span class="n">params</span></div>
+
+<div class="viewcode-block" id="PeerConfig.unset_params_for_source"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.unset_params_for_source">[docs]</a>    <span class="k">def</span> <span class="nf">unset_params_for_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_src</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a list of parameters coming from this source (symbolic name)</span>
+<span class="sd">        which are not yet set.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">loc_name</span><span class="p">,</span> <span class="p">(</span><span class="n">src</span><span class="p">,</span> <span class="n">src_par</span><span class="p">)</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ext_param_defs</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">src</span> <span class="o">==</span> <span class="n">p_src</span> <span class="ow">and</span> <span class="n">loc_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_set_ext_params</span><span class="p">:</span>
+                <span class="n">params</span><span class="p">[</span><span class="n">src_par</span><span class="p">]</span> <span class="o">=</span> <span class="n">loc_name</span>
+        <span class="k">return</span> <span class="n">params</span></div>
+
+<div class="viewcode-block" id="PeerConfig.used_config_sources"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.used_config_sources">[docs]</a>    <span class="k">def</span> <span class="nf">used_config_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a list of symbolic source names which are referenced in</span>
+<span class="sd">        external parameter definitions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">used</span> <span class="o">=</span> <span class="p">[</span><span class="n">reference</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="k">for</span> <span class="n">reference</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ext_param_defs</span><span class="o">.</span><span class="n">values</span><span class="p">()]</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">set</span><span class="p">(</span><span class="n">used</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="PeerConfig.unused_config_sources"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.unused_config_sources">[docs]</a>    <span class="k">def</span> <span class="nf">unused_config_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a list of symbolic source names which are NOT referenced in</span>
+<span class="sd">        external parameter definitions.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">used</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">used_config_sources</span><span class="p">()</span>
+        <span class="n">unused</span> <span class="o">=</span> <span class="p">[</span><span class="n">src</span> <span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_sources</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">src</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">used</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">unused</span></div>
+
+<div class="viewcode-block" id="PeerConfig.unassigned_config_sources"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.unassigned_config_sources">[docs]</a>    <span class="k">def</span> <span class="nf">unassigned_config_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a list of configuration source names which do not have real</span>
+<span class="sd">        peer ID assigned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ss</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_config_sources</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">src</span> <span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">ss</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">ss</span><span class="p">[</span><span class="n">src</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="PeerConfig.unassigned_launch_deps"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.PeerConfig.unassigned_launch_deps">[docs]</a>    <span class="k">def</span> <span class="nf">unassigned_launch_deps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Return a list of launch dependency names which do not have real</span>
+<span class="sd">        peer ID assigned.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">deps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_launch_deps</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">dep</span> <span class="k">for</span> <span class="n">dep</span> <span class="ow">in</span> <span class="n">deps</span><span class="o">.</span><span class="n">keys</span><span class="p">()</span> <span class="k">if</span> <span class="n">deps</span><span class="p">[</span><span class="n">dep</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;&#39;</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">_update_check</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">param_name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">param_name</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_param_values</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Parameter </span><span class="si">{0}</span><span class="s2"> does not exist in configuration of </span><span class="si">{1}</span><span class="s2">,</span><span class="se">\</span>
+<span class="s2">                                 cannot update!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">param_name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_overwrite_warn</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_message</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_warn_overwrite</span><span class="p">:</span>
+            <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="n">ConfigOverwriteWarning</span><span class="p">(</span><span class="n">p_message</span><span class="p">),</span> <span class="n">stacklevel</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span></div>
+
+
+<span class="n">msg_overwrite_ext_to_local</span> <span class="o">=</span> <span class="s2">&quot;Changing external parameter &#39;</span><span class="si">{0}</span><span class="s2">&#39; to Local! </span><span class="se">\</span>
+<span class="s2">New value: </span><span class="si">{1}</span><span class="s2">.&quot;</span>
+
+<span class="n">msg_overwrite_local_to_ext</span> <span class="o">=</span> <span class="s2">&quot;Changing local parameter </span><span class="si">{0}</span><span class="s2"> to external! </span><span class="se">\</span>
+<span class="s2">Source: </span><span class="si">{1}</span><span class="s2">, src_param: </span><span class="si">{2}</span><span class="s2">.&quot;</span>
+
+<span class="n">msg_overwrite_local</span> <span class="o">=</span> <span class="s2">&quot;Overwriting local param &#39;</span><span class="si">{0}</span><span class="s2">&#39;! Old value: </span><span class="si">{1}</span><span class="s2">, </span><span class="se">\</span>
+<span class="s2">new value: </span><span class="si">{2}</span><span class="s2">&quot;</span>
+
+<span class="n">msg_overwrite_ext_def</span> <span class="o">=</span> <span class="s2">&quot;External parameter definition overwrite! </span><span class="se">\</span>
+<span class="s2">Name: </span><span class="si">{0}</span><span class="s2">, old ref: </span><span class="si">{1}</span><span class="s2">, new ref: </span><span class="si">{2}</span><span class="s2">.&quot;</span>
+
+
+<span class="c1"># warnings, exceptions</span>
+
+<div class="viewcode-block" id="ConfigWarning"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.ConfigWarning">[docs]</a><span class="k">class</span> <span class="nc">ConfigWarning</span><span class="p">(</span><span class="ne">Warning</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ConfigOverwriteWarning"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config.ConfigOverwriteWarning">[docs]</a><span class="k">class</span> <span class="nc">ConfigOverwriteWarning</span><span class="p">(</span><span class="n">ConfigWarning</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

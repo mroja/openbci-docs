@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control package &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../index.html" />
+    <link rel="up" title="obci package" href="obci.html" />
+    <link rel="next" title="obci.control.common package" href="obci.control.common.html" />
+    <link rel="prev" title="obci.configs.tests.protobuf package" href="obci.configs.tests.protobuf.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="obci-control-package">
+<h1>obci.control package<a class="headerlink" href="#obci-control-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="obci.control.common.html">obci.control.common package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.common.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.common.html#module-obci.control.common.cfg_messages_pb2">obci.control.common.cfg_messages_pb2 module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.common.html#module-obci.control.common.config_helpers">obci.control.common.config_helpers module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.common.html#module-obci.control.common.config_message">obci.control.common.config_message module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.common.html#module-obci.control.common.graph">obci.control.common.graph module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.common.html#module-obci.control.common.message">obci.control.common.message module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.common.html#module-obci.control.common.net_tools">obci.control.common.net_tools module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.common.html#module-obci.control.common.obci_control_settings">obci.control.common.obci_control_settings module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.common.html#module-obci.control.common">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="obci.control.gui.html">obci.control.gui package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.gui.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.gui.html#module-obci.control.gui.connect_dialog">obci.control.gui.connect_dialog module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.gui.html#module-obci.control.gui.experiment_engine_info">obci.control.gui.experiment_engine_info module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.gui.html#module-obci.control.gui.obci_gui">obci.control.gui.obci_gui module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.gui.html#module-obci.control.gui.obci_launcher_constants">obci.control.gui.obci_launcher_constants module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.gui.html#module-obci.control.gui.obci_launcher_engine">obci.control.gui.obci_launcher_engine module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.gui.html#module-obci.control.gui.obci_log_engine">obci.control.gui.obci_log_engine module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.gui.html#module-obci.control.gui.obci_log_model">obci.control.gui.obci_log_model module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.gui.html#module-obci.control.gui.obci_log_model_dummy">obci.control.gui.obci_log_model_dummy module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.gui.html#module-obci.control.gui.obci_log_model_real">obci.control.gui.obci_log_model_real module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.gui.html#module-obci.control.gui.obci_log_peer">obci.control.gui.obci_log_peer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.gui.html#module-obci.control.gui.obci_window">obci.control.gui.obci_window module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.gui.html#module-obci.control.gui.resources_rc">obci.control.gui.resources_rc module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.gui.html#module-obci.control.gui.select_amplifier_dialog">obci.control.gui.select_amplifier_dialog module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.gui.html#module-obci.control.gui">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="obci.control.launcher.html">obci.control.launcher package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.eeg_experiment_finder">obci.control.launcher.eeg_experiment_finder module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.launch_file_parser">obci.control.launcher.launch_file_parser module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.launch_file_serializer">obci.control.launcher.launch_file_serializer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.launcher_logging">obci.control.launcher.launcher_logging module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.launcher_messages">obci.control.launcher.launcher_messages module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.launcher_tools">obci.control.launcher.launcher_tools module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.local_process">obci.control.launcher.local_process module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.obci_client">obci.control.launcher.obci_client module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.obci_control_peer">obci.control.launcher.obci_control_peer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.obci_experiment">obci.control.launcher.obci_experiment module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.obci_process_supervisor">obci.control.launcher.obci_process_supervisor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.obci_script">obci.control.launcher.obci_script module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.obci_script_utils">obci.control.launcher.obci_script_utils module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.obci_server">obci.control.launcher.obci_server module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.plain_tcp_handling">obci.control.launcher.plain_tcp_handling module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.process">obci.control.launcher.process module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.process_io_handler">obci.control.launcher.process_io_handler module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.remote_process">obci.control.launcher.remote_process module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.server_scanner">obci.control.launcher.server_scanner module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.start_eeg_signal">obci.control.launcher.start_eeg_signal module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.subprocess_monitor">obci.control.launcher.subprocess_monitor module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.system_config">obci.control.launcher.system_config module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.twisted_tcp_handling">obci.control.launcher.twisted_tcp_handling module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher.view">obci.control.launcher.view module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.launcher.html#module-obci.control.launcher">Module contents</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="obci.control.peer.html">obci.control.peer package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.peer.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.peer.html#module-obci.control.peer.config_defaults">obci.control.peer.config_defaults module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.peer.html#module-obci.control.peer.config_server">obci.control.peer.config_server module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.peer.html#module-obci.control.peer.configured_client">obci.control.peer.configured_client module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.peer.html#module-obci.control.peer.configured_multiplexer_server">obci.control.peer.configured_multiplexer_server module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.peer.html#module-obci.control.peer.peer_cmd">obci.control.peer.peer_cmd module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.peer.html#module-obci.control.peer.peer_config">obci.control.peer.peer_config module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.peer.html#module-obci.control.peer.peer_config_parser">obci.control.peer.peer_config_parser module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.peer.html#module-obci.control.peer.peer_config_serializer">obci.control.peer.peer_config_serializer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.peer.html#module-obci.control.peer.peer_control">obci.control.peer.peer_control module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.control.peer.html#module-obci.control.peer">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="module-obci.control">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-obci.control" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">obci</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="obci.html">obci package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="obci.acquisition.html">obci.acquisition package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.analysis.html">obci.analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.benchmark.html">obci.benchmark package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.cmd.html">obci.cmd package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.configs.html">obci.configs package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">obci.control package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.core.html">obci.core package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.drivers.html">obci.drivers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.gui.html">obci.gui package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.mx_legacy.html">obci.mx_legacy package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.peers.html">obci.peers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.scenarios.html">obci.scenarios package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.utils.html">obci.utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">obci</a><ul>
+  <li><a href="obci.html">obci package</a><ul>
+      <li>Previous: <a href="obci.configs.tests.protobuf.html" title="previous chapter">obci.configs.tests.protobuf package</a></li>
+      <li>Next: <a href="obci.control.common.html" title="next chapter">obci.control.common package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/apidoc/obci.control.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

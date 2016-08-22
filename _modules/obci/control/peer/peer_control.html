@@ -1,0 +1,497 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.peer.peer_control &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.peer.peer_control</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">numbers</span>
+<span class="kn">import</span> <span class="nn">codecs</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">peer_config</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">peer_config_parser</span>
+<span class="kn">from</span> <span class="nn">obci.control.peer.peer_cmd</span> <span class="k">import</span> <span class="n">PeerCmd</span>
+<span class="kn">from</span> <span class="nn">.config_defaults</span> <span class="k">import</span> <span class="n">CONFIG_DEFAULTS</span>
+
+<span class="kn">import</span> <span class="nn">obci.control.common.config_message</span> <span class="k">as</span> <span class="nn">cmsg</span>
+
+<span class="kn">from</span> <span class="nn">obci.configs</span> <span class="k">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">obci.utils.openbci_logging</span> <span class="k">import</span> <span class="n">log_crash</span>
+
+<span class="kn">from</span> <span class="nn">obci.mx_legacy.multiplexer_constants</span> <span class="k">import</span> <span class="n">peers</span><span class="p">,</span> <span class="n">types</span>
+<span class="kn">from</span> <span class="nn">obci.mx_legacy.clients</span> <span class="k">import</span> <span class="n">connect_client</span>
+
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">reduce</span>
+
+<span class="n">CONFIG_FILE_EXT</span> <span class="o">=</span> <span class="s1">&#39;ini&#39;</span>
+<span class="n">WAIT_READY_SIGNAL</span> <span class="o">=</span> <span class="s2">&quot;wait_ready_signal&quot;</span>
+<span class="n">CONFIG_FILE</span> <span class="o">=</span> <span class="s2">&quot;config_file&quot;</span>
+<span class="n">PEER_ID</span> <span class="o">=</span> <span class="s2">&quot;peer_id&quot;</span>
+<span class="n">BASE_CONF</span> <span class="o">=</span> <span class="s2">&quot;base_config_file&quot;</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;peer_control_default_logger&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="PeerControl"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_control.PeerControl">[docs]</a><span class="k">class</span> <span class="nc">PeerControl</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">connection</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">param_validate_method</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">param_change_method</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">core</span> <span class="o">=</span> <span class="n">peer_config</span><span class="o">.</span><span class="n">PeerConfig</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peer</span> <span class="o">=</span> <span class="n">peer</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peer_validate_params</span> <span class="o">=</span> <span class="n">param_validate_method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peer_params_changed</span> <span class="o">=</span> <span class="n">param_change_method</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_config_path</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">connection</span> <span class="o">=</span> <span class="n">connection</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">query_conn</span> <span class="o">=</span> <span class="n">connect_client</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="n">peers</span><span class="o">.</span><span class="n">CONFIGURER</span><span class="p">,</span>
+                                         <span class="n">addresses</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">MULTIPLEXER_ADDRESSES</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cmd_overrides</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_list</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">LOGGER</span>
+
+        <span class="c1"># parse command line</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">process_command_line</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_provided_configs</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer_validate_params</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">initialize_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">connection</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">initialize_config_locally</span><span class="p">()</span>
+
+<div class="viewcode-block" id="PeerControl.initialize_config"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_control.PeerControl.initialize_config">[docs]</a>    <span class="k">def</span> <span class="nf">initialize_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">):</span>
+        <span class="c1"># self._load_provided_configs()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_request_ext_params</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span>
+
+        <span class="c1"># self.peer_validate_params(self.core.param_values)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_ready</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="PeerControl.initialize_config_locally"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_control.PeerControl.initialize_config_locally">[docs]</a>    <span class="k">def</span> <span class="nf">initialize_config_locally</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># self._load_provided_configs()</span>
+        <span class="c1"># self.peer_validate_params(self.core.param_values)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_ready</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_load_provided_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="c1"># parse default config file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_config_base</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_defaults</span><span class="p">(</span><span class="n">CONFIG_DEFAULTS</span><span class="p">)</span>
+        <span class="c1"># parse external config file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_config_external</span><span class="p">()</span>
+
+        <span class="c1"># parse other config files (names from command line)</span>
+        <span class="k">for</span> <span class="n">filename</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">file_list</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_load_config_from_file</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">CONFIG_FILE_EXT</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="c1"># parse overrides (from command line)</span>
+        <span class="n">dictparser</span> <span class="o">=</span> <span class="n">peer_config_parser</span><span class="o">.</span><span class="n">parser</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">)</span>
+        <span class="n">dictparser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cmd_overrides</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_load_defaults</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">globals_</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">globals_</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">add_local_param</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PeerControl.process_command_line"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_control.PeerControl.process_command_line">[docs]</a>    <span class="k">def</span> <span class="nf">process_command_line</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">cmd_ovr</span><span class="p">,</span> <span class="n">other_params</span> <span class="o">=</span> <span class="n">PeerCmd</span><span class="p">()</span><span class="o">.</span><span class="n">parse_cmd</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">peer_id</span> <span class="o">=</span> <span class="n">other_params</span><span class="p">[</span><span class="n">PEER_ID</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_config_path</span> <span class="o">=</span> <span class="n">other_params</span><span class="p">[</span><span class="n">BASE_CONF</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">other_params</span><span class="p">[</span><span class="n">CONFIG_FILE</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">file_list</span> <span class="o">=</span> <span class="n">other_params</span><span class="p">[</span><span class="n">CONFIG_FILE</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">cmd_overrides</span> <span class="o">=</span> <span class="n">cmd_ovr</span></div>
+
+    <span class="k">def</span> <span class="nf">_load_config_external</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parse the external configuration file, provided by peer&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NoPeerError</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer</span><span class="o">.</span><span class="n">external_config_file</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">config_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer</span><span class="o">.</span><span class="n">external_config_file</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">config_path</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">config_path</span><span class="p">,</span> <span class="n">CONFIG_FILE_EXT</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_load_config_from_file</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="n">CONFIG_FILE_EXT</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_load_config_base</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Parse the base configuration file, named the same as peer&#39;s</span>
+<span class="sd">        implementation file&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NoPeerError</span>
+
+        <span class="c1"># print &quot;Peer {0} base config path: {1}&quot;.format(self.peer_id, base_config_path)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_config_from_file</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">base_config_path</span><span class="p">,</span> <span class="n">CONFIG_FILE_EXT</span><span class="p">)</span>
+        <span class="c1"># print &quot;Peer {0} base config: {1}&quot;.format(self.peer_id, self.core)</span>
+
+    <span class="k">def</span> <span class="nf">_load_config_from_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_path</span><span class="p">,</span> <span class="n">p_type</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">with</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">p_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">parser</span> <span class="o">=</span> <span class="n">peer_config_parser</span><span class="o">.</span><span class="n">parser</span><span class="p">(</span><span class="n">p_type</span><span class="p">)</span>
+            <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PeerControl.handle_config_message"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_control.PeerControl.handle_config_message">[docs]</a>    <span class="k">def</span> <span class="nf">handle_config_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mxmsg</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">mxmsg</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="n">cmsg</span><span class="o">.</span><span class="n">MX_CFG_MESSAGES</span><span class="p">:</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">cmsg</span><span class="o">.</span><span class="n">unpack_msg</span><span class="p">(</span><span class="n">mxmsg</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">mxmsg</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+
+            <span class="n">msg</span><span class="p">,</span> <span class="n">mtype</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_call_handler</span><span class="p">(</span><span class="n">mxmsg</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">msg</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">peer</span><span class="o">.</span><span class="n">no_response</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">cmsg</span><span class="o">.</span><span class="n">pack_msg</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">peer</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">msg</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">mtype</span><span class="p">,</span> <span class="n">to</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">mxmsg</span><span class="o">.</span><span class="n">from_</span><span class="p">),</span> <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_call_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mtype</span><span class="p">,</span> <span class="n">message</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">mtype</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">PARAMS_CHANGED</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_params_changed</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">mtype</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">PEER_READY_SIGNAL</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_handle_peer_ready_signal</span><span class="p">(</span><span class="n">message</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">mtype</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">SHUTDOWN_REQUEST</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">peer</span><span class="o">.</span><span class="n">shut_down</span><span class="p">()</span>
+            <span class="c1"># return None, None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">_handle_params_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_msg</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;PARAMS CHANGED - </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">p_msg</span><span class="o">.</span><span class="n">sender</span><span class="p">)</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="n">cmsg</span><span class="o">.</span><span class="n">params2dict</span><span class="p">(</span><span class="n">p_msg</span><span class="p">)</span>
+        <span class="n">param_owner</span> <span class="o">=</span> <span class="n">p_msg</span><span class="o">.</span><span class="n">sender</span>
+
+        <span class="n">old_values</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">updated</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">param_owner</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">config_sources</span><span class="p">:</span>
+            <span class="n">src_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">params_for_source</span><span class="p">(</span><span class="n">param_owner</span><span class="p">)</span>
+
+            <span class="k">for</span> <span class="n">par_name</span> <span class="ow">in</span> <span class="p">[</span><span class="n">par</span> <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="n">params</span> <span class="k">if</span> <span class="n">par</span> <span class="ow">in</span> <span class="n">src_params</span><span class="p">]:</span>
+                <span class="n">old</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="n">par_name</span><span class="p">)</span>
+                <span class="n">new</span> <span class="o">=</span> <span class="n">params</span><span class="p">[</span><span class="n">par_name</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">old</span> <span class="o">!=</span> <span class="n">params</span><span class="p">[</span><span class="n">par_name</span><span class="p">]:</span>
+                    <span class="n">old_values</span><span class="p">[</span><span class="n">par_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">old</span>
+                    <span class="n">updated</span><span class="p">[</span><span class="n">par_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">new</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">set_param_from_source</span><span class="p">(</span><span class="n">p_msg</span><span class="o">.</span><span class="n">sender</span><span class="p">,</span> <span class="n">par_name</span><span class="p">,</span> <span class="n">new</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer_params_changed</span><span class="p">(</span><span class="n">updated</span><span class="p">):</span>
+                <span class="c1"># restore...</span>
+                <span class="k">for</span> <span class="n">par</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">old_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">set_param_from_source</span><span class="p">(</span><span class="n">p_msg</span><span class="o">.</span><span class="n">sender</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">param_owner</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span><span class="p">:</span>
+            <span class="n">local_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">local_params</span>
+            <span class="k">for</span> <span class="n">par</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">local_params</span><span class="p">:</span>
+                    <span class="c1"># protest?</span>
+                    <span class="k">continue</span>
+                <span class="k">if</span> <span class="n">val</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="n">par</span><span class="p">):</span>
+                    <span class="n">old_values</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="n">par</span><span class="p">)</span>
+                    <span class="n">updated</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="n">val</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">update_local_param</span><span class="p">(</span><span class="n">par</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer_params_changed</span><span class="p">(</span><span class="n">updated</span><span class="p">):</span>
+                <span class="k">for</span> <span class="n">par</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">old_values</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">update_local_param</span><span class="p">(</span><span class="n">par</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="PeerControl.config_ready"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_control.PeerControl.config_ready">[docs]</a>    <span class="k">def</span> <span class="nf">config_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">rd</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">config_ready</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">rd</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">,</span> <span class="n">details</span></div>
+
+    <span class="k">def</span> <span class="nf">_handle_peer_ready_signal</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_msg</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer</span><span class="o">.</span><span class="n">ready_to_work</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_ready</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">peer</span><span class="o">.</span><span class="n">ready_to_work</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">send_peer_ready</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">peer</span><span class="o">.</span><span class="n">conn</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">cmsg</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">CONFIG_ERROR</span><span class="p">),</span> <span class="n">types</span><span class="o">.</span><span class="n">CONFIG_ERROR</span>
+
+    <span class="nd">@log_crash</span>
+<div class="viewcode-block" id="PeerControl.get_param"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_control.PeerControl.get_param">[docs]</a>    <span class="k">def</span> <span class="nf">get_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="n">p_name</span><span class="p">)</span></div>
+
+    <span class="nd">@log_crash</span>
+<div class="viewcode-block" id="PeerControl.has_param"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_control.PeerControl.has_param">[docs]</a>    <span class="k">def</span> <span class="nf">has_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">has_param</span><span class="p">(</span><span class="n">p_name</span><span class="p">)</span></div>
+
+    <span class="nd">@log_crash</span>
+<div class="viewcode-block" id="PeerControl.set_param"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_control.PeerControl.set_param">[docs]</a>    <span class="k">def</span> <span class="nf">set_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_name</span><span class="p">,</span> <span class="n">p_value</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">update_local_param</span><span class="p">(</span><span class="n">p_name</span><span class="p">,</span> <span class="n">p_value</span><span class="p">)</span>
+        <span class="c1"># TODO let know other peers...</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">query_conn</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">cmsg</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">UPDATE_PARAMS</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span><span class="p">)</span>
+            <span class="n">params</span> <span class="o">=</span> <span class="p">{</span><span class="n">p_name</span><span class="p">:</span> <span class="n">p_value</span><span class="p">}</span>
+            <span class="n">cmsg</span><span class="o">.</span><span class="n">dict2params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__query</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">query_conn</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span>
+                         <span class="n">types</span><span class="o">.</span><span class="n">UPDATE_PARAMS</span><span class="p">)</span>
+            <span class="c1"># self.connection.send_message(message=msg, type=types.UPDATE_PARAMS)</span>
+            <span class="n">val_short</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">p_value</span><span class="p">)[:</span><span class="mi">300</span><span class="p">]</span> <span class="o">+</span> <span class="s1">&#39;[...]&#39;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39; param update:: </span><span class="si">%s</span><span class="s1"> </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">p_name</span><span class="p">,</span> <span class="n">val_short</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s1">&#39;param updated locally </span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1">, </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                                <span class="n">p_name</span><span class="p">,</span> <span class="n">val_short</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">result</span></div>
+
+<div class="viewcode-block" id="PeerControl.param_values"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_control.PeerControl.param_values">[docs]</a>    <span class="k">def</span> <span class="nf">param_values</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">param_values</span></div>
+
+<div class="viewcode-block" id="PeerControl.true_val"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_control.PeerControl.true_val">[docs]</a>    <span class="k">def</span> <span class="nf">true_val</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Number</span><span class="p">):</span>
+            <span class="k">return</span> <span class="n">value</span> <span class="o">&gt;</span> <span class="mi">0</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">(</span><span class="n">value</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">,</span> <span class="s1">&#39;true&#39;</span><span class="p">,</span> <span class="s1">&#39;yes&#39;</span><span class="p">,</span> <span class="s1">&#39;t&#39;</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="PeerControl.register_config"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_control.PeerControl.register_config">[docs]</a>    <span class="k">def</span> <span class="nf">register_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NoPeerError</span><span class="p">()</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">cmsg</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">REGISTER_PEER_CONFIG</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span><span class="p">)</span>
+
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">local_params</span>
+        <span class="n">cmsg</span><span class="o">.</span><span class="n">dict2params</span><span class="p">(</span><span class="n">params</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="n">ext_params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">ext_param_defs</span>
+        <span class="c1"># register also external param definitions: param_name &lt;---&gt; (peer_id_of_config_source, param_name)</span>
+        <span class="k">for</span> <span class="n">par</span> <span class="ow">in</span> <span class="n">ext_params</span><span class="p">:</span>
+            <span class="n">ext_def</span> <span class="o">=</span> <span class="n">ext_params</span><span class="p">[</span><span class="n">par</span><span class="p">]</span>
+            <span class="n">symname</span> <span class="o">=</span> <span class="n">ext_def</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">ext_params</span><span class="p">[</span><span class="n">par</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">config_sources</span><span class="p">[</span><span class="n">symname</span><span class="p">],</span> <span class="n">ext_def</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+        <span class="n">cmsg</span><span class="o">.</span><span class="n">dict2params</span><span class="p">(</span><span class="n">ext_params</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">field_name</span><span class="o">=</span><span class="s2">&quot;ext_params&quot;</span><span class="p">)</span>
+
+        <span class="c1"># connection.send_message(message=msg, type=types.REGISTER_PEER_CONFIG)</span>
+        <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__query</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">cmsg</span><span class="o">.</span><span class="n">pack_msg</span><span class="p">(</span><span class="n">msg</span><span class="p">),</span>
+                             <span class="n">types</span><span class="o">.</span><span class="n">REGISTER_PEER_CONFIG</span><span class="p">)</span>
+        <span class="c1"># print &#39;AAAAAAAAAAAAAAAAAA&#39;, reply, &quot;(rq:&quot;, types.REGISTER_PEER_CONFIG,\</span>
+        <span class="c1">#                            &quot;exp:&quot;, types.PEER_REGISTERED, &#39;)&#39;</span>
+        <span class="k">if</span> <span class="n">reply</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;config registration unsuccesful!!!! </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                              <span class="nb">str</span><span class="p">(</span><span class="n">reply</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="ow">not</span> <span class="n">reply</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">PEER_REGISTERED</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s1">&#39;config registration unsuccesful!!!! </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span>
+                              <span class="nb">str</span><span class="p">(</span><span class="n">reply</span><span class="p">))</span></div>
+
+    <span class="k">def</span> <span class="nf">_request_ext_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">,</span> <span class="n">retries</span><span class="o">=</span><span class="mi">400</span><span class="p">):</span>
+        <span class="c1"># TODO set timeout and retry count</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;requesting external parameters&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NoPeerError</span>
+
+        <span class="k">def</span> <span class="nf">_unset_param_count</span><span class="p">():</span>
+            <span class="k">return</span> <span class="n">reduce</span><span class="p">(</span><span class="k">lambda</span> <span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">:</span> <span class="n">x</span> <span class="o">+</span> <span class="n">y</span><span class="p">,</span>
+                          <span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">unset_params_for_source</span><span class="p">(</span><span class="n">src</span><span class="p">))</span>
+                           <span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">used_config_sources</span><span class="p">()],</span> <span class="mi">0</span><span class="p">)</span>
+
+        <span class="n">ready</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">config_ready</span><span class="p">()</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">ready</span> <span class="ow">and</span> <span class="n">retries</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">used_config_sources</span><span class="p">():</span>
+                <span class="n">params</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">unset_params_for_source</span><span class="p">(</span><span class="n">src</span><span class="p">)</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+
+                <span class="n">msg</span> <span class="o">=</span> <span class="n">cmsg</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">GET_CONFIG_PARAMS</span><span class="p">,</span>
+                                    <span class="n">sender</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span><span class="p">,</span>
+                                    <span class="n">param_names</span><span class="o">=</span><span class="n">params</span><span class="p">,</span>
+                                    <span class="n">receiver</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">config_sources</span><span class="p">[</span><span class="n">src</span><span class="p">])</span>
+
+                <span class="c1"># print &quot;requesting: {0}&quot;.format(msg)</span>
+                <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__query</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">cmsg</span><span class="o">.</span><span class="n">pack_msg</span><span class="p">(</span><span class="n">msg</span><span class="p">),</span>
+                                     <span class="n">types</span><span class="o">.</span><span class="n">GET_CONFIG_PARAMS</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">reply</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># raise something?</span>
+                    <span class="k">continue</span>
+
+                <span class="k">if</span> <span class="n">reply</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">CONFIG_ERROR</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;peer </span><span class="si">{0}</span><span class="s2"> has not yet started&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">receiver</span><span class="p">))</span>
+
+                <span class="k">elif</span> <span class="n">reply</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">CONFIG_PARAMS</span><span class="p">:</span>
+                    <span class="n">reply_msg</span> <span class="o">=</span> <span class="n">cmsg</span><span class="o">.</span><span class="n">unpack_msg</span><span class="p">(</span><span class="n">reply</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">reply</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+                    <span class="n">params</span> <span class="o">=</span> <span class="n">cmsg</span><span class="o">.</span><span class="n">params2dict</span><span class="p">(</span><span class="n">reply_msg</span><span class="p">)</span>
+
+                    <span class="k">for</span> <span class="n">par</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">set_param_from_source</span><span class="p">(</span><span class="n">reply_msg</span><span class="o">.</span><span class="n">sender</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;WTF? </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">reply</span><span class="o">.</span><span class="n">message</span><span class="p">))</span>
+
+            <span class="c1"># print &#39;.&#39;,#&quot;{0} external params still unset&quot;.format(_unset_param_count())</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.4</span><span class="p">)</span>
+            <span class="n">ready</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">config_ready</span><span class="p">()</span>
+            <span class="n">retries</span> <span class="o">-=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">ready</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;External parameters initialised </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                             <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">config_ready</span><span class="p">()))</span>
+
+        <span class="k">return</span> <span class="n">ready</span><span class="p">,</span> <span class="n">details</span>
+
+<div class="viewcode-block" id="PeerControl.send_peer_ready"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_control.PeerControl.send_peer_ready">[docs]</a>    <span class="k">def</span> <span class="nf">send_peer_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NoPeerError</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;sending ready signal.&#39;</span><span class="p">)</span>
+        <span class="n">mtype</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">PEER_READY</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">cmsg</span><span class="o">.</span><span class="n">fill_and_pack</span><span class="p">(</span><span class="n">mtype</span><span class="p">,</span> <span class="n">peer_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">__query</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">mtype</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_synchronize_ready</span><span class="p">(</span><span class="n">connection</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_synchronize_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connection</span><span class="p">):</span>
+        <span class="c1"># TODO set timeout and retry count</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">NoPeerError</span>
+
+        <span class="n">others</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">core</span><span class="o">.</span><span class="n">launch_deps</span><span class="o">.</span><span class="n">values</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;waiting for other peers </span><span class="si">%s</span><span class="s1">: &#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">others</span><span class="p">))</span>
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">cmsg</span><span class="o">.</span><span class="n">fill_and_pack</span><span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">PEERS_READY_QUERY</span><span class="p">,</span> <span class="n">sender</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span><span class="p">,</span>
+                                 <span class="n">deps</span><span class="o">=</span><span class="n">others</span><span class="p">)</span>
+
+        <span class="n">ready</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">while</span> <span class="ow">not</span> <span class="n">ready</span><span class="p">:</span>
+            <span class="n">reply</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__query</span><span class="p">(</span><span class="n">connection</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">PEERS_READY_QUERY</span><span class="p">)</span>
+            <span class="c1"># print &#39;got!&#39;, reply, cmsg.unpack_msg(reply.type, reply.message)</span>
+            <span class="k">if</span> <span class="n">reply</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># TODO sth bad happened, raise exception?</span>
+
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="n">reply</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">READY_STATUS</span><span class="p">:</span>
+                <span class="n">rmsg</span> <span class="o">=</span> <span class="n">cmsg</span><span class="o">.</span><span class="n">unpack_msg</span><span class="p">(</span><span class="n">reply</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">reply</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+
+                <span class="n">ready</span> <span class="o">=</span> <span class="n">rmsg</span><span class="o">.</span><span class="n">peers_ready</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">ready</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Dependencies are ready, I can start working&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conn</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">msgtype</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">reply</span> <span class="o">=</span> <span class="n">conn</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">msg</span><span class="p">,</span>
+                               <span class="nb">type</span><span class="o">=</span><span class="n">msgtype</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">exception</span><span class="p">(</span><span class="s2">&quot;Query failed&quot;</span><span class="p">)</span>
+            <span class="n">reply</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="n">reply</span></div>
+
+<span class="c1"># todo message verification</span>
+
+
+<div class="viewcode-block" id="PeerConfigControlError"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_control.PeerConfigControlError">[docs]</a><span class="k">class</span> <span class="nc">PeerConfigControlError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">value</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="n">value</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">value</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="ConfigNotReadyError"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_control.ConfigNotReadyError">[docs]</a><span class="k">class</span> <span class="nc">ConfigNotReadyError</span><span class="p">(</span><span class="n">PeerConfigControlError</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="NoPeerError"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_control.NoPeerError">[docs]</a><span class="k">class</span> <span class="nc">NoPeerError</span><span class="p">(</span><span class="n">PeerConfigControlError</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="PeerConfigControlWarning"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_control.PeerConfigControlWarning">[docs]</a><span class="k">class</span> <span class="nc">PeerConfigControlWarning</span><span class="p">(</span><span class="ne">Warning</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="UnsupportedMessageType"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_control.UnsupportedMessageType">[docs]</a><span class="k">class</span> <span class="nc">UnsupportedMessageType</span><span class="p">(</span><span class="n">PeerConfigControlWarning</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

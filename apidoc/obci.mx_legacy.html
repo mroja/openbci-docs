@@ -1,0 +1,1107 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.mx_legacy package &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../index.html" />
+    <link rel="up" title="obci package" href="obci.html" />
+    <link rel="next" title="obci.peers package" href="obci.peers.html" />
+    <link rel="prev" title="obci.gui.frontend package" href="obci.gui.frontend.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="obci-mx-legacy-package">
+<h1>obci.mx_legacy package<a class="headerlink" href="#obci-mx-legacy-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-obci.mx_legacy.clients">
+<span id="obci-mx-legacy-clients-module"></span><h2>obci.mx_legacy.clients module<a class="headerlink" href="#module-obci.mx_legacy.clients" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="obci.mx_legacy.clients.connect_client">
+<code class="descclassname">obci.mx_legacy.clients.</code><code class="descname">connect_client</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/mx_legacy/clients.html#connect_client"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.mx_legacy.clients.connect_client" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="class">
+<dt id="obci.mx_legacy.clients.BaseMultiplexerServer">
+<em class="property">class </em><code class="descclassname">obci.mx_legacy.clients.</code><code class="descname">BaseMultiplexerServer</code><span class="sig-paren">(</span><em>addresses=[('0.0.0.0', 31889)], type=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/mx_legacy/clients.html#BaseMultiplexerServer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.mx_legacy.clients.BaseMultiplexerServer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">obci.mx_legacy.clients.MultiplexerPeer</span></code></p>
+<p>Abstract multiplexer server functionality.</p>
+<p>Constructor.
+See docstring for MultiplexerPeer.__init__ for meaning of
+parameters.</p>
+<dl class="method">
+<dt id="obci.mx_legacy.clients.BaseMultiplexerServer.close">
+<code class="descname">close</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/mx_legacy/clients.html#BaseMultiplexerServer.close"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.mx_legacy.clients.BaseMultiplexerServer.close" title="Permalink to this definition">¶</a></dt>
+<dd><p>In case we ever what to finish.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.mx_legacy.clients.BaseMultiplexerServer.handle_message">
+<code class="descname">handle_message</code><span class="sig-paren">(</span><em>mxmsg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/mx_legacy/clients.html#BaseMultiplexerServer.handle_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.mx_legacy.clients.BaseMultiplexerServer.handle_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method should be overriden in child classes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.mx_legacy.clients.BaseMultiplexerServer.loop">
+<code class="descname">loop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/mx_legacy/clients.html#BaseMultiplexerServer.loop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.mx_legacy.clients.BaseMultiplexerServer.loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serve forever.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.mx_legacy.clients.BaseMultiplexerServer.no_response">
+<code class="descname">no_response</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/mx_legacy/clients.html#BaseMultiplexerServer.no_response"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.mx_legacy.clients.BaseMultiplexerServer.no_response" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.mx_legacy.clients.BaseMultiplexerServer.parse_message">
+<code class="descname">parse_message</code><span class="sig-paren">(</span><em>type</em>, <em>mxmsg=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/mx_legacy/clients.html#BaseMultiplexerServer.parse_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.mx_legacy.clients.BaseMultiplexerServer.parse_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>parse mxmsg.message with new Protobuf message of type <a href="#id1"><span class="problematic" id="id2">`</span></a>type&#8217;</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.mx_legacy.clients.BaseMultiplexerServer.send_message">
+<code class="descname">send_message</code><span class="sig-paren">(</span><em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/mx_legacy/clients.html#BaseMultiplexerServer.send_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.mx_legacy.clients.BaseMultiplexerServer.send_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.mx_legacy.clients.BaseMultiplexerServer.serve_forever">
+<code class="descname">serve_forever</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#obci.mx_legacy.clients.BaseMultiplexerServer.serve_forever" title="Permalink to this definition">¶</a></dt>
+<dd><p>Serve forever.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.clients.BaseMultiplexerServer.start_time">
+<code class="descname">start_time</code><a class="headerlink" href="#obci.mx_legacy.clients.BaseMultiplexerServer.start_time" title="Permalink to this definition">¶</a></dt>
+<dd><p>Time when the instance was instantiated</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.mx_legacy.multiplexer_constants">
+<span id="obci-mx-legacy-multiplexer-constants-module"></span><h2>obci.mx_legacy.multiplexer_constants module<a class="headerlink" href="#module-obci.mx_legacy.multiplexer_constants" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.mx_legacy.multiplexer_constants.peers">
+<em class="property">class </em><code class="descclassname">obci.mx_legacy.multiplexer_constants.</code><code class="descname">peers</code><a class="reference internal" href="../_modules/obci/mx_legacy/multiplexer_constants.html#peers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">obci.mx_legacy.multiplexer_constants._constants_base</span></code></p>
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.ACQUISITION_CONTROL">
+<code class="descname">ACQUISITION_CONTROL</code><em class="property"> = 125</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.ACQUISITION_CONTROL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.ALL_TYPES">
+<code class="descname">ALL_TYPES</code><em class="property"> = 2</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.ALL_TYPES" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.AMPLIFIER">
+<code class="descname">AMPLIFIER</code><em class="property"> = 112</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.AMPLIFIER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.AMPLIFIER_SERVER">
+<code class="descname">AMPLIFIER_SERVER</code><em class="property"> = 144</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.AMPLIFIER_SERVER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.ANALYSIS">
+<code class="descname">ANALYSIS</code><em class="property"> = 117</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.ANALYSIS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.AUTOSCALE_GENERATOR">
+<code class="descname">AUTOSCALE_GENERATOR</code><em class="property"> = 132</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.AUTOSCALE_GENERATOR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.BLINK_CATCHER">
+<code class="descname">BLINK_CATCHER</code><em class="property"> = 135</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.BLINK_CATCHER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.CALIBRATOR">
+<code class="descname">CALIBRATOR</code><em class="property"> = 130</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.CALIBRATOR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.CLIENT">
+<code class="descname">CLIENT</code><em class="property"> = 165</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.CLIENT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.CONFIGURER">
+<code class="descname">CONFIGURER</code><em class="property"> = 136</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.CONFIGURER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.CONFIG_SERVER">
+<code class="descname">CONFIG_SERVER</code><em class="property"> = 143</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.CONFIG_SERVER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.DIODE">
+<code class="descname">DIODE</code><em class="property"> = 120</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.DIODE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.DIODE_CATCHER">
+<code class="descname">DIODE_CATCHER</code><em class="property"> = 121</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.DIODE_CATCHER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.DRIVER_DISCOVERY">
+<code class="descname">DRIVER_DISCOVERY</code><em class="property"> = 150</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.DRIVER_DISCOVERY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.ETR_AMPLIFIER">
+<code class="descname">ETR_AMPLIFIER</code><em class="property"> = 138</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.ETR_AMPLIFIER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.ETR_ANALYSIS">
+<code class="descname">ETR_ANALYSIS</code><em class="property"> = 137</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.ETR_ANALYSIS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.ETR_CALIBRATION">
+<code class="descname">ETR_CALIBRATION</code><em class="property"> = 164</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.ETR_CALIBRATION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.ETR_P300_ANALYSIS">
+<code class="descname">ETR_P300_ANALYSIS</code><em class="property"> = 162</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.ETR_P300_ANALYSIS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.ETR_SAVER">
+<code class="descname">ETR_SAVER</code><em class="property"> = 140</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.ETR_SAVER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.EVENTS_COLLECTOR">
+<code class="descname">EVENTS_COLLECTOR</code><em class="property"> = 110</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.EVENTS_COLLECTOR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.EXTERNAL_SWITCH_AMPLIFIER">
+<code class="descname">EXTERNAL_SWITCH_AMPLIFIER</code><em class="property"> = 161</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.EXTERNAL_SWITCH_AMPLIFIER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.FILTER">
+<code class="descname">FILTER</code><em class="property"> = 116</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.FILTER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.HAPTICS_STIMULATOR">
+<code class="descname">HAPTICS_STIMULATOR</code><em class="property"> = 175</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.HAPTICS_STIMULATOR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.HASHTABLE">
+<code class="descname">HASHTABLE</code><em class="property"> = 115</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.HASHTABLE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.INFO_SAVER">
+<code class="descname">INFO_SAVER</code><em class="property"> = 134</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.INFO_SAVER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.LOGIC_DECISION">
+<code class="descname">LOGIC_DECISION</code><em class="property"> = 118</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.LOGIC_DECISION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.LOGIC_FEEDBACK">
+<code class="descname">LOGIC_FEEDBACK</code><em class="property"> = 151</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.LOGIC_FEEDBACK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.LOGIC_P300_CALIBRATION">
+<code class="descname">LOGIC_P300_CALIBRATION</code><em class="property"> = 146</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.LOGIC_P300_CALIBRATION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.LOGIC_P300_CSP">
+<code class="descname">LOGIC_P300_CSP</code><em class="property"> = 153</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.LOGIC_P300_CSP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.LOGIC_SSVEP_CALIBRATION">
+<code class="descname">LOGIC_SSVEP_CALIBRATION</code><em class="property"> = 147</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.LOGIC_SSVEP_CALIBRATION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.LOGIC_SSVEP_CSP">
+<code class="descname">LOGIC_SSVEP_CSP</code><em class="property"> = 149</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.LOGIC_SSVEP_CSP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.LOGIC_WII_BOARD">
+<code class="descname">LOGIC_WII_BOARD</code><em class="property"> = 160</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.LOGIC_WII_BOARD" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.LOG_COLLECTOR">
+<code class="descname">LOG_COLLECTOR</code><em class="property"> = 109</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.LOG_COLLECTOR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.LOG_RECEIVER_EXAMPLE">
+<code class="descname">LOG_RECEIVER_EXAMPLE</code><em class="property"> = 111</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.LOG_RECEIVER_EXAMPLE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.LOG_STREAMER">
+<code class="descname">LOG_STREAMER</code><em class="property"> = 108</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.LOG_STREAMER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.MAX_MULTIPLEXER_SPECIAL_PEER_TYPE">
+<code class="descname">MAX_MULTIPLEXER_SPECIAL_PEER_TYPE</code><em class="property"> = 99</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.MAX_MULTIPLEXER_SPECIAL_PEER_TYPE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.MONITOR">
+<code class="descname">MONITOR</code><em class="property"> = 114</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.MONITOR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.MULTIPLEXER">
+<code class="descname">MULTIPLEXER</code><em class="property"> = 1</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.MULTIPLEXER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.OBCI_LAUNCHER">
+<code class="descname">OBCI_LAUNCHER</code><em class="property"> = 141</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.OBCI_LAUNCHER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.OBCI_LOG_COLLECTOR">
+<code class="descname">OBCI_LOG_COLLECTOR</code><em class="property"> = 166</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.OBCI_LOG_COLLECTOR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.P300_ANALYSIS">
+<code class="descname">P300_ANALYSIS</code><em class="property"> = 152</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.P300_ANALYSIS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.PEER_CONFIG_CONTROL">
+<code class="descname">PEER_CONFIG_CONTROL</code><em class="property"> = 142</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.PEER_CONFIG_CONTROL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.PINGER">
+<code class="descname">PINGER</code><em class="property"> = 127</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.PINGER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.PYTHON_TEST_CLIENT">
+<code class="descname">PYTHON_TEST_CLIENT</code><em class="property"> = 107</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.PYTHON_TEST_CLIENT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.PYTHON_TEST_SERVER">
+<code class="descname">PYTHON_TEST_SERVER</code><em class="property"> = 106</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.PYTHON_TEST_SERVER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.RESULTS_ANALYSIS">
+<code class="descname">RESULTS_ANALYSIS</code><em class="property"> = 163</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.RESULTS_ANALYSIS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.ROBOT_FEEDBACK">
+<code class="descname">ROBOT_FEEDBACK</code><em class="property"> = 156</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.ROBOT_FEEDBACK" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.ROBOT_FEEDBACK_CONTROL">
+<code class="descname">ROBOT_FEEDBACK_CONTROL</code><em class="property"> = 157</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.ROBOT_FEEDBACK_CONTROL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.SIGNAL_CATCHER">
+<code class="descname">SIGNAL_CATCHER</code><em class="property"> = 113</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.SIGNAL_CATCHER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.SIGNAL_SAVER">
+<code class="descname">SIGNAL_SAVER</code><em class="property"> = 124</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.SIGNAL_SAVER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.SIGNAL_STREAMER">
+<code class="descname">SIGNAL_STREAMER</code><em class="property"> = 123</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.SIGNAL_STREAMER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.SSVEP_ANALYSIS">
+<code class="descname">SSVEP_ANALYSIS</code><em class="property"> = 148</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.SSVEP_ANALYSIS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.STREAM_RECEIVER">
+<code class="descname">STREAM_RECEIVER</code><em class="property"> = 119</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.STREAM_RECEIVER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.SUPER_DIODE">
+<code class="descname">SUPER_DIODE</code><em class="property"> = 122</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.SUPER_DIODE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.SWITCH_AMPLIFIER">
+<code class="descname">SWITCH_AMPLIFIER</code><em class="property"> = 154</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.SWITCH_AMPLIFIER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.SWITCH_ANALYSIS">
+<code class="descname">SWITCH_ANALYSIS</code><em class="property"> = 155</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.SWITCH_ANALYSIS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.TAGS_RECEIVER">
+<code class="descname">TAGS_RECEIVER</code><em class="property"> = 129</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.TAGS_RECEIVER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.TAGS_SENDER">
+<code class="descname">TAGS_SENDER</code><em class="property"> = 128</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.TAGS_SENDER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.TAG_CATCHER">
+<code class="descname">TAG_CATCHER</code><em class="property"> = 131</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.TAG_CATCHER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.TAG_SAVER">
+<code class="descname">TAG_SAVER</code><em class="property"> = 133</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.TAG_SAVER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.TOBII_INFO_SAVER">
+<code class="descname">TOBII_INFO_SAVER</code><em class="property"> = 171</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.TOBII_INFO_SAVER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.TOBII_SIGNAL_CATCHER">
+<code class="descname">TOBII_SIGNAL_CATCHER</code><em class="property"> = 174</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.TOBII_SIGNAL_CATCHER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.TOBII_SIGNAL_SAVER">
+<code class="descname">TOBII_SIGNAL_SAVER</code><em class="property"> = 170</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.TOBII_SIGNAL_SAVER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.TOBII_TAG_SAVER">
+<code class="descname">TOBII_TAG_SAVER</code><em class="property"> = 172</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.TOBII_TAG_SAVER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.UGM">
+<code class="descname">UGM</code><em class="property"> = 126</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.UGM" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.UGM_ENGINE">
+<code class="descname">UGM_ENGINE</code><em class="property"> = 139</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.UGM_ENGINE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.UGM_ENGINE_PEER">
+<code class="descname">UGM_ENGINE_PEER</code><em class="property"> = 145</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.UGM_ENGINE_PEER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.WII_BOARD_AMPLIFIER">
+<code class="descname">WII_BOARD_AMPLIFIER</code><em class="property"> = 158</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.WII_BOARD_AMPLIFIER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.WII_BOARD_ANALYSIS">
+<code class="descname">WII_BOARD_ANALYSIS</code><em class="property"> = 159</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.WII_BOARD_ANALYSIS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.WII_BOARD_INFO_SAVER">
+<code class="descname">WII_BOARD_INFO_SAVER</code><em class="property"> = 168</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.WII_BOARD_INFO_SAVER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.WII_BOARD_SIGNAL_CATCHER">
+<code class="descname">WII_BOARD_SIGNAL_CATCHER</code><em class="property"> = 173</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.WII_BOARD_SIGNAL_CATCHER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.WII_BOARD_SIGNAL_SAVER">
+<code class="descname">WII_BOARD_SIGNAL_SAVER</code><em class="property"> = 167</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.WII_BOARD_SIGNAL_SAVER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.WII_BOARD_TAG_SAVER">
+<code class="descname">WII_BOARD_TAG_SAVER</code><em class="property"> = 169</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.WII_BOARD_TAG_SAVER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.peers.idtoname">
+<code class="descname">idtoname</code><em class="property"> = {128: 'TAGS_SENDER', 1: 'MULTIPLEXER', 2: 'ALL_TYPES', 131: 'TAG_CATCHER', 132: 'AUTOSCALE_GENERATOR', 133: 'TAG_SAVER', 134: 'INFO_SAVER', 129: 'TAGS_RECEIVER', 136: 'CONFIGURER', 137: 'ETR_ANALYSIS', 138: 'ETR_AMPLIFIER', 139: 'UGM_ENGINE', 140: 'ETR_SAVER', 130: 'CALIBRATOR', 142: 'PEER_CONFIG_CONTROL', 143: 'CONFIG_SERVER', 144: 'AMPLIFIER_SERVER', 145: 'UGM_ENGINE_PEER', 146: 'LOGIC_P300_CALIBRATION', 147: 'LOGIC_SSVEP_CALIBRATION', 148: 'SSVEP_ANALYSIS', 149: 'LOGIC_SSVEP_CSP', 150: 'DRIVER_DISCOVERY', 151: 'LOGIC_FEEDBACK', 152: 'P300_ANALYSIS', 153: 'LOGIC_P300_CSP', 154: 'SWITCH_AMPLIFIER', 155: 'SWITCH_ANALYSIS', 156: 'ROBOT_FEEDBACK', 157: 'ROBOT_FEEDBACK_CONTROL', 158: 'WII_BOARD_AMPLIFIER', 159: 'WII_BOARD_ANALYSIS', 160: 'LOGIC_WII_BOARD', 161: 'EXTERNAL_SWITCH_AMPLIFIER', 162: 'ETR_P300_ANALYSIS', 163: 'RESULTS_ANALYSIS', 164: 'ETR_CALIBRATION', 165: 'CLIENT', 166: 'OBCI_LOG_COLLECTOR', 167: 'WII_BOARD_SIGNAL_SAVER', 168: 'WII_BOARD_INFO_SAVER', 169: 'WII_BOARD_TAG_SAVER', 170: 'TOBII_SIGNAL_SAVER', 135: 'BLINK_CATCHER', 172: 'TOBII_TAG_SAVER', 173: 'WII_BOARD_SIGNAL_CATCHER', 174: 'TOBII_SIGNAL_CATCHER', 175: 'HAPTICS_STIMULATOR', 141: 'OBCI_LAUNCHER', 171: 'TOBII_INFO_SAVER', 99: 'MAX_MULTIPLEXER_SPECIAL_PEER_TYPE', 106: 'PYTHON_TEST_SERVER', 107: 'PYTHON_TEST_CLIENT', 108: 'LOG_STREAMER', 109: 'LOG_COLLECTOR', 110: 'EVENTS_COLLECTOR', 111: 'LOG_RECEIVER_EXAMPLE', 112: 'AMPLIFIER', 113: 'SIGNAL_CATCHER', 114: 'MONITOR', 115: 'HASHTABLE', 116: 'FILTER', 117: 'ANALYSIS', 118: 'LOGIC_DECISION', 119: 'STREAM_RECEIVER', 120: 'DIODE', 121: 'DIODE_CATCHER', 122: 'SUPER_DIODE', 123: 'SIGNAL_STREAMER', 124: 'SIGNAL_SAVER', 125: 'ACQUISITION_CONTROL', 126: 'UGM', 127: 'PINGER'}</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.peers.idtoname" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.mx_legacy.multiplexer_constants.types">
+<em class="property">class </em><code class="descclassname">obci.mx_legacy.multiplexer_constants.</code><code class="descname">types</code><a class="reference internal" href="../_modules/obci/mx_legacy/multiplexer_constants.html#types"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">obci.mx_legacy.multiplexer_constants._constants_base</span></code></p>
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.ACQUISITION_CONTROL_MESSAGE">
+<code class="descname">ACQUISITION_CONTROL_MESSAGE</code><em class="property"> = 155</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.ACQUISITION_CONTROL_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.AMPLIFIER_SIGNAL_MESSAGE">
+<code class="descname">AMPLIFIER_SIGNAL_MESSAGE</code><em class="property"> = 129</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.AMPLIFIER_SIGNAL_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BACKEND_ERROR">
+<code class="descname">BACKEND_ERROR</code><em class="property"> = 114</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BACKEND_ERROR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BACKEND_FOR_PACKET_SEARCH">
+<code class="descname">BACKEND_FOR_PACKET_SEARCH</code><em class="property"> = 3</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BACKEND_FOR_PACKET_SEARCH" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_0">
+<code class="descname">BENCHMARK_INPUT_MESSAGE_0</code><em class="property"> = 180</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_1">
+<code class="descname">BENCHMARK_INPUT_MESSAGE_1</code><em class="property"> = 181</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_2">
+<code class="descname">BENCHMARK_INPUT_MESSAGE_2</code><em class="property"> = 182</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_3">
+<code class="descname">BENCHMARK_INPUT_MESSAGE_3</code><em class="property"> = 183</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_3" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_4">
+<code class="descname">BENCHMARK_INPUT_MESSAGE_4</code><em class="property"> = 184</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_4" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_5">
+<code class="descname">BENCHMARK_INPUT_MESSAGE_5</code><em class="property"> = 185</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_5" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_6">
+<code class="descname">BENCHMARK_INPUT_MESSAGE_6</code><em class="property"> = 186</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_6" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_7">
+<code class="descname">BENCHMARK_INPUT_MESSAGE_7</code><em class="property"> = 187</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_7" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_8">
+<code class="descname">BENCHMARK_INPUT_MESSAGE_8</code><em class="property"> = 188</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_8" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_9">
+<code class="descname">BENCHMARK_INPUT_MESSAGE_9</code><em class="property"> = 189</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_INPUT_MESSAGE_9" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_0">
+<code class="descname">BENCHMARK_OUTPUT_MESSAGE_0</code><em class="property"> = 190</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_0" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_1">
+<code class="descname">BENCHMARK_OUTPUT_MESSAGE_1</code><em class="property"> = 191</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_1" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_2">
+<code class="descname">BENCHMARK_OUTPUT_MESSAGE_2</code><em class="property"> = 192</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_2" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_3">
+<code class="descname">BENCHMARK_OUTPUT_MESSAGE_3</code><em class="property"> = 193</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_3" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_4">
+<code class="descname">BENCHMARK_OUTPUT_MESSAGE_4</code><em class="property"> = 194</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_4" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_5">
+<code class="descname">BENCHMARK_OUTPUT_MESSAGE_5</code><em class="property"> = 195</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_5" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_6">
+<code class="descname">BENCHMARK_OUTPUT_MESSAGE_6</code><em class="property"> = 196</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_6" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_7">
+<code class="descname">BENCHMARK_OUTPUT_MESSAGE_7</code><em class="property"> = 197</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_7" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_8">
+<code class="descname">BENCHMARK_OUTPUT_MESSAGE_8</code><em class="property"> = 198</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_8" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_9">
+<code class="descname">BENCHMARK_OUTPUT_MESSAGE_9</code><em class="property"> = 199</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BENCHMARK_OUTPUT_MESSAGE_9" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BLINK_MESSAGE">
+<code class="descname">BLINK_MESSAGE</code><em class="property"> = 154</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BLINK_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.BLINK_VECTOR_MESSAGE">
+<code class="descname">BLINK_VECTOR_MESSAGE</code><em class="property"> = 159</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.BLINK_VECTOR_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.CALIBRATION">
+<code class="descname">CALIBRATION</code><em class="property"> = 147</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.CALIBRATION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.CONFIG_ERROR">
+<code class="descname">CONFIG_ERROR</code><em class="property"> = 224</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.CONFIG_ERROR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.CONFIG_MESSAGE">
+<code class="descname">CONFIG_MESSAGE</code><em class="property"> = 213</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.CONFIG_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.CONFIG_PARAMS">
+<code class="descname">CONFIG_PARAMS</code><em class="property"> = 215</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.CONFIG_PARAMS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.CONNECTION_WELCOME">
+<code class="descname">CONNECTION_WELCOME</code><em class="property"> = 2</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.CONNECTION_WELCOME" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.DECISION_MESSAGE">
+<code class="descname">DECISION_MESSAGE</code><em class="property"> = 136</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.DECISION_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.DELIVERY_ERROR">
+<code class="descname">DELIVERY_ERROR</code><em class="property"> = 5</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.DELIVERY_ERROR" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.DICT_GET_REQUEST_MESSAGE">
+<code class="descname">DICT_GET_REQUEST_MESSAGE</code><em class="property"> = 133</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.DICT_GET_REQUEST_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.DICT_GET_RESPONSE_MESSAGE">
+<code class="descname">DICT_GET_RESPONSE_MESSAGE</code><em class="property"> = 134</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.DICT_GET_RESPONSE_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.DICT_SET_MESSAGE">
+<code class="descname">DICT_SET_MESSAGE</code><em class="property"> = 135</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.DICT_SET_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.DIODE_CONTROL_MESSAGE">
+<code class="descname">DIODE_CONTROL_MESSAGE</code><em class="property"> = 151</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.DIODE_CONTROL_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.DIODE_MESSAGE">
+<code class="descname">DIODE_MESSAGE</code><em class="property"> = 137</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.DIODE_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.DIODE_REQUEST">
+<code class="descname">DIODE_REQUEST</code><em class="property"> = 138</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.DIODE_REQUEST" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.DIODE_RESPONSE">
+<code class="descname">DIODE_RESPONSE</code><em class="property"> = 139</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.DIODE_RESPONSE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.ETR_ANALYSIS_RESULTS">
+<code class="descname">ETR_ANALYSIS_RESULTS</code><em class="property"> = 232</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.ETR_ANALYSIS_RESULTS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.ETR_CALIBRATION_RESULTS">
+<code class="descname">ETR_CALIBRATION_RESULTS</code><em class="property"> = 233</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.ETR_CALIBRATION_RESULTS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.ETR_SIGNAL_MESSAGE">
+<code class="descname">ETR_SIGNAL_MESSAGE</code><em class="property"> = 209</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.ETR_SIGNAL_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.FILTERED_SIGNAL_MESSAGE">
+<code class="descname">FILTERED_SIGNAL_MESSAGE</code><em class="property"> = 130</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.FILTERED_SIGNAL_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.GET_CONFIG_PARAMS">
+<code class="descname">GET_CONFIG_PARAMS</code><em class="property"> = 214</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.GET_CONFIG_PARAMS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.HAPTIC_CONTROL_MESSAGE">
+<code class="descname">HAPTIC_CONTROL_MESSAGE</code><em class="property"> = 160</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.HAPTIC_CONTROL_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.HEARTBIT">
+<code class="descname">HEARTBIT</code><em class="property"> = 4</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.HEARTBIT" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.INFO_SAVER_FINISHED">
+<code class="descname">INFO_SAVER_FINISHED</code><em class="property"> = 157</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.INFO_SAVER_FINISHED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.LAUNCHER_COMMAND">
+<code class="descname">LAUNCHER_COMMAND</code><em class="property"> = 227</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.LAUNCHER_COMMAND" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.LOGS_STREAM">
+<code class="descname">LOGS_STREAM</code><em class="property"> = 115</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.LOGS_STREAM" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.LOGS_STREAM_RESPONSE">
+<code class="descname">LOGS_STREAM_RESPONSE</code><em class="property"> = 116</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.LOGS_STREAM_RESPONSE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.MAX_MULTIPLEXER_META_PACKET">
+<code class="descname">MAX_MULTIPLEXER_META_PACKET</code><em class="property"> = 99</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.MAX_MULTIPLEXER_META_PACKET" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.OBCI_LOG_DUMP_REQUEST">
+<code class="descname">OBCI_LOG_DUMP_REQUEST</code><em class="property"> = 235</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.OBCI_LOG_DUMP_REQUEST" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.OBCI_LOG_DUMP_RESPONSE">
+<code class="descname">OBCI_LOG_DUMP_RESPONSE</code><em class="property"> = 236</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.OBCI_LOG_DUMP_RESPONSE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.OBCI_LOG_MESSAGE">
+<code class="descname">OBCI_LOG_MESSAGE</code><em class="property"> = 234</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.OBCI_LOG_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.P300_ANALYSIS_RESULTS">
+<code class="descname">P300_ANALYSIS_RESULTS</code><em class="property"> = 231</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.P300_ANALYSIS_RESULTS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.P300_DECISION_MESSAGE">
+<code class="descname">P300_DECISION_MESSAGE</code><em class="property"> = 140</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.P300_DECISION_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.PARAMS_CHANGED">
+<code class="descname">PARAMS_CHANGED</code><em class="property"> = 219</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.PARAMS_CHANGED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.PEERS_READY_QUERY">
+<code class="descname">PEERS_READY_QUERY</code><em class="property"> = 221</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.PEERS_READY_QUERY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.PEER_READY">
+<code class="descname">PEER_READY</code><em class="property"> = 220</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.PEER_READY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.PEER_READY_SIGNAL">
+<code class="descname">PEER_READY_SIGNAL</code><em class="property"> = 225</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.PEER_READY_SIGNAL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.PEER_REGISTERED">
+<code class="descname">PEER_REGISTERED</code><em class="property"> = 217</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.PEER_REGISTERED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.PICKLE_RESPONSE">
+<code class="descname">PICKLE_RESPONSE</code><em class="property"> = 112</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.PICKLE_RESPONSE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.PING">
+<code class="descname">PING</code><em class="property"> = 1</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.PING" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.PYTHON_TEST_REQUEST">
+<code class="descname">PYTHON_TEST_REQUEST</code><em class="property"> = 110</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.PYTHON_TEST_REQUEST" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.PYTHON_TEST_RESPONSE">
+<code class="descname">PYTHON_TEST_RESPONSE</code><em class="property"> = 111</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.PYTHON_TEST_RESPONSE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.READY_STATUS">
+<code class="descname">READY_STATUS</code><em class="property"> = 222</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.READY_STATUS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.REGISTER_PEER_CONFIG">
+<code class="descname">REGISTER_PEER_CONFIG</code><em class="property"> = 216</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.REGISTER_PEER_CONFIG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.REPLAY_EVENTS_REQUEST">
+<code class="descname">REPLAY_EVENTS_REQUEST</code><em class="property"> = 126</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.REPLAY_EVENTS_REQUEST" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.REQUEST_RECEIVED">
+<code class="descname">REQUEST_RECEIVED</code><em class="property"> = 113</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.REQUEST_RECEIVED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.ROBOT_FEEDBACK_CONTROL">
+<code class="descname">ROBOT_FEEDBACK_CONTROL</code><em class="property"> = 229</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.ROBOT_FEEDBACK_CONTROL" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.SAMPLING_FREQUENCY">
+<code class="descname">SAMPLING_FREQUENCY</code><em class="property"> = 146</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.SAMPLING_FREQUENCY" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.SEARCH_COLLECTED_LOGS_REQUEST">
+<code class="descname">SEARCH_COLLECTED_LOGS_REQUEST</code><em class="property"> = 117</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.SEARCH_COLLECTED_LOGS_REQUEST" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.SEARCH_COLLECTED_LOGS_RESPONSE">
+<code class="descname">SEARCH_COLLECTED_LOGS_RESPONSE</code><em class="property"> = 118</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.SEARCH_COLLECTED_LOGS_RESPONSE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.SHUTDOWN_REQUEST">
+<code class="descname">SHUTDOWN_REQUEST</code><em class="property"> = 226</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.SHUTDOWN_REQUEST" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.SIGNAL_CATCHER_REQUEST_MESSAGE">
+<code class="descname">SIGNAL_CATCHER_REQUEST_MESSAGE</code><em class="property"> = 131</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.SIGNAL_CATCHER_REQUEST_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.SIGNAL_CATCHER_RESPONSE_MESSAGE">
+<code class="descname">SIGNAL_CATCHER_RESPONSE_MESSAGE</code><em class="property"> = 132</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.SIGNAL_CATCHER_RESPONSE_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.SIGNAL_SAVER_FINISHED">
+<code class="descname">SIGNAL_SAVER_FINISHED</code><em class="property"> = 156</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.SIGNAL_SAVER_FINISHED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.SIGNAL_STREAMER_START">
+<code class="descname">SIGNAL_STREAMER_START</code><em class="property"> = 144</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.SIGNAL_STREAMER_START" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.SIGNAL_STREAMER_STOP">
+<code class="descname">SIGNAL_STREAMER_STOP</code><em class="property"> = 145</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.SIGNAL_STREAMER_STOP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.SSVEP_DECISION_MESSAGE">
+<code class="descname">SSVEP_DECISION_MESSAGE</code><em class="property"> = 141</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.SSVEP_DECISION_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.STREAMED_SIGNAL_MESSAGE">
+<code class="descname">STREAMED_SIGNAL_MESSAGE</code><em class="property"> = 143</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.STREAMED_SIGNAL_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.SWITCH_MESSAGE">
+<code class="descname">SWITCH_MESSAGE</code><em class="property"> = 228</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.SWITCH_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.SWITCH_MODE">
+<code class="descname">SWITCH_MODE</code><em class="property"> = 142</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.SWITCH_MODE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.SYSTEM_CONFIGURATION">
+<code class="descname">SYSTEM_CONFIGURATION</code><em class="property"> = 210</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.SYSTEM_CONFIGURATION" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.TAG">
+<code class="descname">TAG</code><em class="property"> = 150</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.TAG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.TAG_CATCHER_REQUEST_MESSAGE">
+<code class="descname">TAG_CATCHER_REQUEST_MESSAGE</code><em class="property"> = 152</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.TAG_CATCHER_REQUEST_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.TAG_CATCHER_RESPONSE_MESSAGE">
+<code class="descname">TAG_CATCHER_RESPONSE_MESSAGE</code><em class="property"> = 153</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.TAG_CATCHER_RESPONSE_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.TAG_SAVER_FINISHED">
+<code class="descname">TAG_SAVER_FINISHED</code><em class="property"> = 158</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.TAG_SAVER_FINISHED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.TOBII_INFO_SAVER_FINISHED">
+<code class="descname">TOBII_INFO_SAVER_FINISHED</code><em class="property"> = 241</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.TOBII_INFO_SAVER_FINISHED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.TOBII_SIGNAL_MESSAGE">
+<code class="descname">TOBII_SIGNAL_MESSAGE</code><em class="property"> = 243</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.TOBII_SIGNAL_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.TOBII_SIGNAL_SAVER_FINISHED">
+<code class="descname">TOBII_SIGNAL_SAVER_FINISHED</code><em class="property"> = 240</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.TOBII_SIGNAL_SAVER_FINISHED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.TOBII_TAG_SAVER_FINISHED">
+<code class="descname">TOBII_TAG_SAVER_FINISHED</code><em class="property"> = 242</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.TOBII_TAG_SAVER_FINISHED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.UGM_CONTROL_MESSAGE">
+<code class="descname">UGM_CONTROL_MESSAGE</code><em class="property"> = 212</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.UGM_CONTROL_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.UGM_ENGINE_MESSAGE">
+<code class="descname">UGM_ENGINE_MESSAGE</code><em class="property"> = 211</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.UGM_ENGINE_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.UGM_UPDATE_MESSAGE">
+<code class="descname">UGM_UPDATE_MESSAGE</code><em class="property"> = 149</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.UGM_UPDATE_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.UNREGISTER_PEER_CONFIG">
+<code class="descname">UNREGISTER_PEER_CONFIG</code><em class="property"> = 223</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.UNREGISTER_PEER_CONFIG" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.UPDATE_PARAMS">
+<code class="descname">UPDATE_PARAMS</code><em class="property"> = 218</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.UPDATE_PARAMS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.WII_BOARD_ANALYSIS_RESULTS">
+<code class="descname">WII_BOARD_ANALYSIS_RESULTS</code><em class="property"> = 254</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.WII_BOARD_ANALYSIS_RESULTS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.WII_BOARD_INFO_SAVER_FINISHED">
+<code class="descname">WII_BOARD_INFO_SAVER_FINISHED</code><em class="property"> = 251</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.WII_BOARD_INFO_SAVER_FINISHED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.WII_BOARD_SIGNAL_MESSAGE">
+<code class="descname">WII_BOARD_SIGNAL_MESSAGE</code><em class="property"> = 253</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.WII_BOARD_SIGNAL_MESSAGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.WII_BOARD_SIGNAL_SAVER_FINISHED">
+<code class="descname">WII_BOARD_SIGNAL_SAVER_FINISHED</code><em class="property"> = 250</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.WII_BOARD_SIGNAL_SAVER_FINISHED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.WII_BOARD_TAG_SAVER_FINISHED">
+<code class="descname">WII_BOARD_TAG_SAVER_FINISHED</code><em class="property"> = 252</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.WII_BOARD_TAG_SAVER_FINISHED" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.mx_legacy.multiplexer_constants.types.idtoname">
+<code class="descname">idtoname</code><em class="property"> = {1: 'PING', 2: 'CONNECTION_WELCOME', 3: 'BACKEND_FOR_PACKET_SEARCH', 4: 'HEARTBIT', 5: 'DELIVERY_ERROR', 99: 'MAX_MULTIPLEXER_META_PACKET', 110: 'PYTHON_TEST_REQUEST', 111: 'PYTHON_TEST_RESPONSE', 112: 'PICKLE_RESPONSE', 113: 'REQUEST_RECEIVED', 114: 'BACKEND_ERROR', 115: 'LOGS_STREAM', 116: 'LOGS_STREAM_RESPONSE', 117: 'SEARCH_COLLECTED_LOGS_REQUEST', 118: 'SEARCH_COLLECTED_LOGS_RESPONSE', 126: 'REPLAY_EVENTS_REQUEST', 129: 'AMPLIFIER_SIGNAL_MESSAGE', 130: 'FILTERED_SIGNAL_MESSAGE', 131: 'SIGNAL_CATCHER_REQUEST_MESSAGE', 132: 'SIGNAL_CATCHER_RESPONSE_MESSAGE', 133: 'DICT_GET_REQUEST_MESSAGE', 134: 'DICT_GET_RESPONSE_MESSAGE', 135: 'DICT_SET_MESSAGE', 136: 'DECISION_MESSAGE', 137: 'DIODE_MESSAGE', 138: 'DIODE_REQUEST', 139: 'DIODE_RESPONSE', 140: 'P300_DECISION_MESSAGE', 141: 'SSVEP_DECISION_MESSAGE', 142: 'SWITCH_MODE', 143: 'STREAMED_SIGNAL_MESSAGE', 144: 'SIGNAL_STREAMER_START', 145: 'SIGNAL_STREAMER_STOP', 146: 'SAMPLING_FREQUENCY', 147: 'CALIBRATION', 149: 'UGM_UPDATE_MESSAGE', 150: 'TAG', 151: 'DIODE_CONTROL_MESSAGE', 152: 'TAG_CATCHER_REQUEST_MESSAGE', 153: 'TAG_CATCHER_RESPONSE_MESSAGE', 154: 'BLINK_MESSAGE', 155: 'ACQUISITION_CONTROL_MESSAGE', 156: 'SIGNAL_SAVER_FINISHED', 157: 'INFO_SAVER_FINISHED', 158: 'TAG_SAVER_FINISHED', 159: 'BLINK_VECTOR_MESSAGE', 160: 'HAPTIC_CONTROL_MESSAGE', 180: 'BENCHMARK_INPUT_MESSAGE_0', 181: 'BENCHMARK_INPUT_MESSAGE_1', 182: 'BENCHMARK_INPUT_MESSAGE_2', 183: 'BENCHMARK_INPUT_MESSAGE_3', 184: 'BENCHMARK_INPUT_MESSAGE_4', 185: 'BENCHMARK_INPUT_MESSAGE_5', 186: 'BENCHMARK_INPUT_MESSAGE_6', 187: 'BENCHMARK_INPUT_MESSAGE_7', 188: 'BENCHMARK_INPUT_MESSAGE_8', 189: 'BENCHMARK_INPUT_MESSAGE_9', 190: 'BENCHMARK_OUTPUT_MESSAGE_0', 191: 'BENCHMARK_OUTPUT_MESSAGE_1', 192: 'BENCHMARK_OUTPUT_MESSAGE_2', 193: 'BENCHMARK_OUTPUT_MESSAGE_3', 194: 'BENCHMARK_OUTPUT_MESSAGE_4', 195: 'BENCHMARK_OUTPUT_MESSAGE_5', 196: 'BENCHMARK_OUTPUT_MESSAGE_6', 197: 'BENCHMARK_OUTPUT_MESSAGE_7', 198: 'BENCHMARK_OUTPUT_MESSAGE_8', 199: 'BENCHMARK_OUTPUT_MESSAGE_9', 209: 'ETR_SIGNAL_MESSAGE', 210: 'SYSTEM_CONFIGURATION', 211: 'UGM_ENGINE_MESSAGE', 212: 'UGM_CONTROL_MESSAGE', 213: 'CONFIG_MESSAGE', 214: 'GET_CONFIG_PARAMS', 215: 'CONFIG_PARAMS', 216: 'REGISTER_PEER_CONFIG', 217: 'PEER_REGISTERED', 218: 'UPDATE_PARAMS', 219: 'PARAMS_CHANGED', 220: 'PEER_READY', 221: 'PEERS_READY_QUERY', 222: 'READY_STATUS', 223: 'UNREGISTER_PEER_CONFIG', 224: 'CONFIG_ERROR', 225: 'PEER_READY_SIGNAL', 226: 'SHUTDOWN_REQUEST', 227: 'LAUNCHER_COMMAND', 228: 'SWITCH_MESSAGE', 229: 'ROBOT_FEEDBACK_CONTROL', 231: 'P300_ANALYSIS_RESULTS', 232: 'ETR_ANALYSIS_RESULTS', 233: 'ETR_CALIBRATION_RESULTS', 234: 'OBCI_LOG_MESSAGE', 235: 'OBCI_LOG_DUMP_REQUEST', 236: 'OBCI_LOG_DUMP_RESPONSE', 240: 'TOBII_SIGNAL_SAVER_FINISHED', 241: 'TOBII_INFO_SAVER_FINISHED', 242: 'TOBII_TAG_SAVER_FINISHED', 243: 'TOBII_SIGNAL_MESSAGE', 250: 'WII_BOARD_SIGNAL_SAVER_FINISHED', 251: 'WII_BOARD_INFO_SAVER_FINISHED', 252: 'WII_BOARD_TAG_SAVER_FINISHED', 253: 'WII_BOARD_SIGNAL_MESSAGE', 254: 'WII_BOARD_ANALYSIS_RESULTS'}</em><a class="headerlink" href="#obci.mx_legacy.multiplexer_constants.types.idtoname" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.mx_legacy">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-obci.mx_legacy" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">obci</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="obci.html">obci package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="obci.acquisition.html">obci.acquisition package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.analysis.html">obci.analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.benchmark.html">obci.benchmark package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.cmd.html">obci.cmd package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.configs.html">obci.configs package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.control.html">obci.control package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.core.html">obci.core package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.drivers.html">obci.drivers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.gui.html">obci.gui package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">obci.mx_legacy package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.peers.html">obci.peers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.scenarios.html">obci.scenarios package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.utils.html">obci.utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">obci</a><ul>
+  <li><a href="obci.html">obci package</a><ul>
+      <li>Previous: <a href="obci.gui.frontend.html" title="previous chapter">obci.gui.frontend package</a></li>
+      <li>Next: <a href="obci.peers.html" title="next chapter">obci.peers package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/apidoc/obci.mx_legacy.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

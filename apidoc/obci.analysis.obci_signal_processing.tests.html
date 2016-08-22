@@ -1,0 +1,956 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.analysis.obci_signal_processing.tests package &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../index.html" />
+    <link rel="up" title="obci.analysis.obci_signal_processing package" href="obci.analysis.obci_signal_processing.html" />
+    <link rel="next" title="obci.benchmark package" href="obci.benchmark.html" />
+    <link rel="prev" title="obci.analysis.obci_signal_processing.tags package" href="obci.analysis.obci_signal_processing.tags.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="obci-analysis-obci-signal-processing-tests-package">
+<h1>obci.analysis.obci_signal_processing.tests package<a class="headerlink" href="#obci-analysis-obci-signal-processing-tests-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.tests.test_data_file_proxy">
+<span id="obci-analysis-obci-signal-processing-tests-test-data-file-proxy-module"></span><h2>obci.analysis.obci_signal_processing.tests.test_data_file_proxy module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.tests.test_data_file_proxy" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obci.analysis.obci_signal_processing.signal.data_read_proxy</span> <span class="k">import</span> <span class="n">DataReadProxy</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obci.analysis.obci_signal_processing.signal.data_raw_write_proxy</span> <span class="k">import</span> <span class="n">DataRawWriteProxy</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">os.path</span><span class="o">,</span> <span class="nn">os</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span> <span class="o">=</span> <span class="n">DataRawWriteProxy</span><span class="p">(</span><span class="s1">&#39;./tescik.obci.dat&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">set_data_len</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">data_received</span><span class="p">(</span><span class="mf">1.2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">data_received</span><span class="p">(</span><span class="mf">0.0023</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">data_received</span><span class="p">(</span><span class="o">-</span><span class="mf">123.456</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">data_received</span><span class="p">(</span><span class="mf">3.3</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">data_received</span><span class="p">(</span><span class="mf">5.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nic</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">finish_saving</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="s1">&#39;./tescik.obci.dat&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span> <span class="o">=</span> <span class="n">DataReadProxy</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">abs</span><span class="p">(</span><span class="mf">1.2</span> <span class="o">-</span> <span class="n">py</span><span class="o">.</span><span class="n">get_next_value</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mf">0.0001</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">abs</span><span class="p">(</span><span class="mf">0.0023</span><span class="o">-</span><span class="n">py</span><span class="o">.</span><span class="n">get_next_value</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mf">0.000000001</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">abs</span><span class="p">(</span><span class="o">-</span><span class="mf">123.456</span><span class="o">-</span><span class="n">py</span><span class="o">.</span><span class="n">get_next_value</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mf">0.00001</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span><span class="o">.</span><span class="n">goto_value</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">abs</span><span class="p">(</span><span class="mf">0.0023</span><span class="o">-</span><span class="n">py</span><span class="o">.</span><span class="n">get_next_value</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mf">0.000000001</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span><span class="o">.</span><span class="n">goto_value</span><span class="p">(</span><span class="mi">4</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">abs</span><span class="p">(</span><span class="mf">5.0</span><span class="o">-</span><span class="n">py</span><span class="o">.</span><span class="n">get_next_value</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mf">0.0001</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span><span class="o">.</span><span class="n">goto_value</span><span class="p">(</span><span class="mi">6</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span>&gt;&gt;&gt; py.get_next_value()
+Traceback (most recent call last):
+...
+obci.analysis.obci_signal_processing.signal.signal_exceptions.NoNextValue
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span><span class="o">.</span><span class="n">finish_reading</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span><span class="o">.</span><span class="n">start_reading</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">vs</span> <span class="o">=</span> <span class="n">py</span><span class="o">.</span><span class="n">get_next_values</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">abs</span><span class="p">(</span><span class="n">vs</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mf">1.20000000e+00</span><span class="p">)</span><span class="o">+</span><span class="nb">abs</span><span class="p">(</span><span class="n">vs</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">-</span><span class="mf">2.30000000e-03</span><span class="p">)</span><span class="o">+</span><span class="nb">abs</span><span class="p">(</span><span class="n">vs</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">+</span><span class="mf">1.23456000e+02</span><span class="p">)</span><span class="o">&lt;</span><span class="mi">3</span><span class="o">*</span><span class="mf">0.0001</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span>&gt;&gt;&gt; py.get_next_values(3)
+Traceback (most recent call last):
+...
+obci.analysis.obci_signal_processing.signal.signal_exceptions.NoNextValue
+&gt;&gt;&gt; #warning here
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span><span class="o">.</span><span class="n">finish_reading</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.tests.test_data_file_proxy.run">
+<code class="descclassname">obci.analysis.obci_signal_processing.tests.test_data_file_proxy.</code><code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tests/test_data_file_proxy.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tests.test_data_file_proxy.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.tests.test_file_tags_writer_reader">
+<span id="obci-analysis-obci-signal-processing-tests-test-file-tags-writer-reader-module"></span><h2>obci.analysis.obci_signal_processing.tests.test_file_tags_writer_reader module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.tests.test_file_tags_writer_reader" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obci.analysis.obci_signal_processing.tags</span> <span class="k">import</span> <span class="n">tags_file_writer</span> <span class="k">as</span> <span class="n">p</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obci.analysis.obci_signal_processing.tags</span> <span class="k">import</span> <span class="n">tags_file_reader</span> <span class="k">as</span> <span class="n">t</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">TagsFileWriter</span><span class="p">(</span><span class="s1">&#39;./tescik.obci.tags&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">tag_received</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">1001.0</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">1002.0</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;A B C&#39;</span><span class="p">,</span>                    <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">123</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">456</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">tag_received</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">1003.0</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">1004.0</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic2&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;A B C&#39;</span><span class="p">,</span>                    <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">1234</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">4567</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">tag_received</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">1005.0</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">1006.0</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic3&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;A B C&#39;</span><span class="p">,</span>                    <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">12345</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">45678</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">finish_saving</span><span class="p">(</span><span class="mf">1000.0</span><span class="p">)</span>
+<span class="go">&#39;./tescik.obci.tags&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span> <span class="o">=</span> <span class="n">t</span><span class="o">.</span><span class="n">TagsFileReader</span><span class="p">(</span><span class="s1">&#39;tescik.obci.tags&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">g</span> <span class="o">=</span> <span class="n">py</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">])</span>
+<span class="go">1.0</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="s1">&#39;end_timestamp&#39;</span><span class="p">])</span>
+<span class="go">2.0</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+<span class="go">nic</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">g</span><span class="p">[</span><span class="s1">&#39;desc&#39;</span><span class="p">][</span><span class="s1">&#39;y&#39;</span><span class="p">])</span>
+<span class="go">456</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">py</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()])</span>
+<span class="go">[1, 3, 5]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1">#REORDER AND TEST ORDERING AGAIN ....</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">TagsFileWriter</span><span class="p">(</span><span class="s1">&#39;./tescik.obci.tags&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">tag_received</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">1003.0</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">1004.0</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic2&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;A B C&#39;</span><span class="p">,</span>                     <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">1234</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">4567</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">tag_received</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">1005.0</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">1006.0</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic3&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;A B C&#39;</span><span class="p">,</span>                    <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">12345</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">45678</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">tag_received</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">1001.0</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">1002.0</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;A B C&#39;</span><span class="p">,</span>                    <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">123</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">456</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">([</span><span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">py</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()])</span>
+<span class="go">[1, 3, 5]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">os</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">glob</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">fl</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;tescik*&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">fl</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.tests.test_file_tags_writer_reader.run">
+<code class="descclassname">obci.analysis.obci_signal_processing.tests.test_file_tags_writer_reader.</code><code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tests/test_file_tags_writer_reader.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tests.test_file_tags_writer_reader.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.tests.test_info_file_proxy">
+<span id="obci-analysis-obci-signal-processing-tests-test-info-file-proxy-module"></span><h2>obci.analysis.obci_signal_processing.tests.test_info_file_proxy module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.tests.test_info_file_proxy" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">os</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obci.analysis.obci_signal_processing.signal</span> <span class="k">import</span> <span class="n">info_file_proxy</span> <span class="k">as</span> <span class="n">p</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">InfoFileWriteProxy</span><span class="p">(</span><span class="s1">&#39;./tescik.obci.svarog.info&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">set_attributes</span><span class="p">({</span><span class="s1">&#39;number_of_channels&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">,</span> <span class="s1">&#39;sampling_frequency&#39;</span><span class="p">:</span><span class="mi">128</span><span class="p">,</span> <span class="s1">&#39;channels_names&#39;</span><span class="p">:</span> <span class="p">[</span><span class="s1">&#39;1&#39;</span><span class="p">,</span><span class="s1">&#39;2&#39;</span><span class="p">],</span>                      <span class="s1">&#39;file&#39;</span><span class="p">:</span><span class="s1">&#39;soufce.obci.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;number_of_samples&#39;</span><span class="p">:</span><span class="mi">3</span>                      <span class="p">}</span>                     <span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">finish_saving</span><span class="p">()</span>
+<span class="go">&#39;./tescik.obci.svarog.info&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">InfoFileReadProxy</span><span class="p">(</span><span class="s1">&#39;./tescik.obci.svarog.info&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">py</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;number_of_channels&#39;</span><span class="p">))</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">py</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;channels_names&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">])</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;./tescik.obci.svarog.info&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.tests.test_info_file_proxy.run">
+<code class="descclassname">obci.analysis.obci_signal_processing.tests.test_info_file_proxy.</code><code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tests/test_info_file_proxy.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tests.test_info_file_proxy.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.tests.test_read_data_source">
+<span id="obci-analysis-obci-signal-processing-tests-test-read-data-source-module"></span><h2>obci.analysis.obci_signal_processing.tests.test_read_data_source module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.tests.test_read_data_source" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obci.analysis.obci_signal_processing.signal.data_raw_write_proxy</span> <span class="k">import</span> <span class="n">DataRawWriteProxy</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">os.path</span><span class="o">,</span> <span class="nn">os</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># PREPARE SOME SAMPLE FILE *************************************************</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span> <span class="o">=</span> <span class="n">DataRawWriteProxy</span><span class="p">(</span><span class="s1">&#39;./tescik.obci.dat&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">data_received</span><span class="p">(</span><span class="mf">1.2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">data_received</span><span class="p">(</span><span class="mf">0.0023</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">data_received</span><span class="p">(</span><span class="o">-</span><span class="mf">123.456</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">data_received</span><span class="p">(</span><span class="mf">3.3</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">data_received</span><span class="p">(</span><span class="mf">5.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">data_received</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nic</span> <span class="o">=</span> <span class="n">px</span><span class="o">.</span><span class="n">finish_saving</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="s1">&#39;./tescik.obci.dat&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obci.analysis.obci_signal_processing.signal</span> <span class="k">import</span> <span class="n">read_data_source</span> <span class="k">as</span> <span class="n">s</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># TEST MEMORY DATA SOURCE **************************************************</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">MemoryDataSource</span><span class="p">(</span><span class="n">numpy</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">2</span><span class="p">,</span><span class="mi">3</span><span class="p">)))</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span><span class="o">.</span><span class="n">set_sample</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span><span class="o">.</span><span class="n">set_sample</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="p">[</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span><span class="o">.</span><span class="n">set_sample</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="mf">5.0</span><span class="p">,</span> <span class="mf">6.0</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">py</span><span class="o">.</span><span class="n">iter_samples</span><span class="p">()]</span>
+<span class="go">[array([ 1.,  2.]), array([ 3.,  4.]), array([ 5.,  6.])]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">py</span><span class="o">.</span><span class="n">iter_samples</span><span class="p">()]</span>
+<span class="go">[array([ 1.,  2.]), array([ 3.,  4.]), array([ 5.,  6.])]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+<span class="go">array([[ 1.],</span>
+<span class="go">       [ 2.]])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span><span class="o">.</span><span class="n">set_sample</span><span class="p">(</span><span class="mi">3</span><span class="p">,</span> <span class="p">[</span><span class="mf">3.0</span><span class="p">,</span> <span class="mf">4.0</span><span class="p">])</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">IndexError</span>: <span class="n">index 3 is out of bounds for axis 1 with size 3</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span><span class="o">.</span><span class="n">set_sample</span><span class="p">(</span><span class="mi">2</span><span class="p">,</span> <span class="p">[</span><span class="mf">1.0</span><span class="p">,</span> <span class="mf">2.0</span><span class="p">,</span> <span class="mf">3.0</span><span class="p">])</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">ValueError</span>: <span class="n">cannot copy sequence with size 3 to array axis with dimension 2</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># TEST FILE DATA SOURCE ****************************************************</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">FileDataSource</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+<span class="go">array([], shape=(2, 0), dtype=float64)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span>  <span class="mf">1.20000000e+00</span><span class="p">,</span>  <span class="o">-</span><span class="mf">1.23456000e+02</span><span class="p">],</span>       <span class="p">[</span>  <span class="mf">2.30000000e-03</span><span class="p">,</span>   <span class="mf">3.30000000e+00</span><span class="p">]])</span> <span class="o">-</span> <span class="n">py</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">2</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mf">0.001</span>
+<span class="go">array([[ True,  True],</span>
+<span class="go">       [ True,  True]], dtype=bool)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span>&gt;&gt;&gt; py.get_samples(0, 10)
+Traceback (most recent call last):
+...
+obci.analysis.obci_signal_processing.signal.signal_exceptions.NoNextValue
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span>  <span class="mf">1.20000000e+00</span><span class="p">,</span>  <span class="o">-</span><span class="mf">1.23456000e+02</span><span class="p">,</span>   <span class="mf">5.00000000e+00</span><span class="p">],</span>       <span class="p">[</span>  <span class="mf">2.30000000e-03</span><span class="p">,</span>   <span class="mf">3.30000000e+00</span><span class="p">,</span>   <span class="mf">0.00000000e+00</span><span class="p">]])</span> <span class="o">-</span> <span class="n">py</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">3</span><span class="p">))</span> <span class="o">&lt;</span> <span class="mf">0.001</span>
+<span class="go">array([[ True,  True,  True],</span>
+<span class="go">       [ True,  True,  True]], dtype=bool)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span>&gt;&gt;&gt; py.get_samples(1, 3)
+Traceback (most recent call last):
+...
+obci.analysis.obci_signal_processing.signal.signal_exceptions.NoNextValue
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([[</span>  <span class="mf">1.20000000e+00</span><span class="p">,</span>  <span class="o">-</span><span class="mf">1.23456000e+02</span><span class="p">,</span>   <span class="mf">5.00000000e+00</span><span class="p">],</span>       <span class="p">[</span>  <span class="mf">2.30000000e-03</span><span class="p">,</span>   <span class="mf">3.30000000e+00</span><span class="p">,</span>   <span class="mf">0.00000000e+00</span><span class="p">]])</span> <span class="o">-</span> <span class="n">py</span><span class="o">.</span><span class="n">get_samples</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mf">0.001</span>
+<span class="go">array([[ True,  True,  True],</span>
+<span class="go">       [ True,  True,  True]], dtype=bool)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">FileDataSource</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">numpy</span> <span class="k">import</span> <span class="n">array</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span>  <span class="mf">1.20000000e+00</span><span class="p">,</span>  <span class="o">-</span><span class="mf">1.23456000e+02</span><span class="p">,</span>   <span class="mf">5.00000000e+00</span><span class="p">],</span>       <span class="p">[</span>  <span class="mf">2.30000000e-03</span><span class="p">,</span>   <span class="mf">3.30000000e+00</span><span class="p">,</span>   <span class="mf">0.00000000e+00</span><span class="p">]])</span> <span class="o">-</span> <span class="n">py</span><span class="o">.</span><span class="n">get_samples</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mf">0.001</span>
+<span class="go">array([[ True,  True,  True],</span>
+<span class="go">       [ True,  True,  True]], dtype=bool)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">FileDataSource</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span>  <span class="mf">1.20000000e+00</span><span class="p">,</span>  <span class="o">-</span><span class="mf">1.23456000e+02</span><span class="p">,</span>   <span class="mf">5.00000000e+00</span><span class="p">],</span>       <span class="p">[</span>  <span class="mf">2.30000000e-03</span><span class="p">,</span>   <span class="mf">3.30000000e+00</span><span class="p">,</span>   <span class="mf">0.00000000e+00</span><span class="p">]])</span> <span class="o">-</span> <span class="n">py</span><span class="o">.</span><span class="n">get_samples</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mf">0.001</span>
+<span class="go">array([[ True,  True,  True],</span>
+<span class="go">       [ True,  True,  True]], dtype=bool)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">array</span><span class="p">([[</span>  <span class="mf">1.20000000e+00</span><span class="p">,</span>  <span class="o">-</span><span class="mf">1.23456000e+02</span><span class="p">,</span>   <span class="mf">5.00000000e+00</span><span class="p">],</span>       <span class="p">[</span>  <span class="mf">2.30000000e-03</span><span class="p">,</span>   <span class="mf">3.30000000e+00</span><span class="p">,</span>   <span class="mf">0.00000000e+00</span><span class="p">]])</span> <span class="o">-</span> <span class="n">py</span><span class="o">.</span><span class="n">get_samples</span><span class="p">())</span> <span class="o">&lt;</span> <span class="mf">0.001</span>
+<span class="go">array([[ True,  True,  True],</span>
+<span class="go">       [ True,  True,  True]], dtype=bool)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="n">y</span><span class="p">))</span><span class="o">&lt;</span><span class="mf">0.0001</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">py</span><span class="o">.</span><span class="n">iter_samples</span><span class="p">(),</span> <span class="p">[</span><span class="n">array</span><span class="p">([</span> <span class="mf">1.2</span>   <span class="p">,</span>  <span class="mf">0.0023</span><span class="p">]),</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">123.456</span><span class="p">,</span>    <span class="mf">3.3</span>  <span class="p">]),</span> <span class="n">array</span><span class="p">([</span> <span class="mf">5.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">])])]</span>
+<span class="go">[True, True, True]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">py</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">FileDataSource</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="mi">2</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="n">y</span><span class="p">))</span><span class="o">&lt;</span><span class="mf">0.0001</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">py</span><span class="o">.</span><span class="n">iter_samples</span><span class="p">(),[</span><span class="n">array</span><span class="p">([</span> <span class="mf">1.2</span>   <span class="p">,</span>  <span class="mf">0.0023</span><span class="p">]),</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">123.456</span><span class="p">,</span>    <span class="mf">3.3</span>  <span class="p">]),</span> <span class="n">array</span><span class="p">([</span> <span class="mf">5.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">])])]</span>
+<span class="go">[True, True, True]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="nb">max</span><span class="p">(</span><span class="nb">abs</span><span class="p">(</span><span class="n">i</span><span class="o">-</span><span class="n">y</span><span class="p">))</span><span class="o">&lt;</span><span class="mf">0.0001</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span><span class="n">y</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">py</span><span class="o">.</span><span class="n">iter_samples</span><span class="p">(),</span> <span class="p">[</span><span class="n">array</span><span class="p">([</span> <span class="mf">1.2</span>   <span class="p">,</span>  <span class="mf">0.0023</span><span class="p">]),</span> <span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">123.456</span><span class="p">,</span>    <span class="mf">3.3</span>  <span class="p">]),</span> <span class="n">array</span><span class="p">([</span> <span class="mf">5.</span><span class="p">,</span>  <span class="mf">0.</span><span class="p">])])]</span>
+<span class="go">[True, True, True]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.tests.test_read_data_source.run">
+<code class="descclassname">obci.analysis.obci_signal_processing.tests.test_read_data_source.</code><code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tests/test_read_data_source.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tests.test_read_data_source.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.tests.test_read_manager">
+<span id="obci-analysis-obci-signal-processing-tests-test-read-manager-module"></span><h2>obci.analysis.obci_signal_processing.tests.test_read_manager module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.tests.test_read_manager" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obci.analysis.obci_signal_processing</span> <span class="k">import</span> <span class="n">read_manager</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">os.path</span><span class="o">,</span> <span class="nn">sys</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pth</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">read_manager</span><span class="o">.</span><span class="n">__file__</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pth</span><span class="p">[:</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">pth</span><span class="p">))],</span> <span class="s1">&#39;tests&#39;</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mgr</span> <span class="o">=</span> <span class="n">read_manager</span><span class="o">.</span><span class="n">ReadManager</span><span class="p">(</span><span class="n">f</span><span class="o">+</span><span class="s1">&#39;.obci.info&#39;</span><span class="p">,</span> <span class="n">f</span><span class="o">+</span><span class="s1">&#39;.obci.dat&#39;</span><span class="p">,</span> <span class="n">f</span><span class="o">+</span><span class="s1">&#39;.obci.tags&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mgr</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">-27075.0</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mgr</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">1</span><span class="p">,</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">39641.0</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ch</span> <span class="o">=</span> <span class="n">mgr</span><span class="o">.</span><span class="n">get_samples</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ch</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">-27075.0</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">ch</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+<span class="go">39641.0</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">x</span><span class="p">)</span> <span class="k">for</span> <span class="n">x</span> <span class="ow">in</span> <span class="n">ch</span><span class="p">]</span>
+<span class="go">[112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407, 112407]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mgr</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">u&#39;number_of_samples&#39;</span><span class="p">)</span>
+<span class="go">&#39;2810175&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mgr</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">u&#39;sampling_frequency&#39;</span><span class="p">)</span>
+<span class="go">&#39;128&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mgr</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">u&#39;number_of_channels&#39;</span><span class="p">)</span>
+<span class="go">&#39;25&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mgr</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;channels_names&#39;</span><span class="p">)</span>
+<span class="go">[&#39;Fp1&#39;, &#39;Fpz&#39;, &#39;Fp2&#39;, &#39;F7&#39;, &#39;F3&#39;, &#39;Fz&#39;, &#39;F4&#39;, &#39;F8&#39;, &#39;M1&#39;, &#39;C7&#39;, &#39;C3&#39;, &#39;Cz&#39;, &#39;C4&#39;, &#39;T8&#39;, &#39;M2&#39;, &#39;P7&#39;, &#39;P3&#39;, &#39;Pz&#39;, &#39;P4&#39;, &#39;P8&#39;, &#39;O1&#39;, &#39;Oz&#39;, &#39;O2&#39;, &#39;NIC&#39;, &#39;OKO_GORA_DOL&#39;]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mgr</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;im_not_there&#39;</span><span class="p">)</span>
+<span class="gt">Traceback (most recent call last):</span>
+<span class="c">...</span>
+<span class="gr">obci.analysis.obci_signal_processing.signal.signal_exceptions.NoParameter</span>: <span class="n">No parameter &#39;im_not_there&#39; was found in info source!</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">([</span><span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">]</span><span class="o">-</span><span class="n">et</span><span class="p">)</span><span class="o">&lt;</span><span class="mf">0.0001</span> <span class="k">for</span> <span class="n">t</span><span class="p">,</span><span class="n">et</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">mgr</span><span class="o">.</span><span class="n">iter_tags</span><span class="p">(),</span> <span class="p">[</span><span class="mf">0.36085605621337891</span><span class="p">,</span> <span class="mf">1.3654811382293701</span><span class="p">,</span> <span class="mf">3.2938590049743652</span><span class="p">,</span> <span class="mf">4.8368752002716064</span><span class="p">,</span> <span class="mf">6.6318840980529785</span><span class="p">,</span><span class="mf">8.2858760356903076</span><span class="p">,</span> <span class="mf">9.8918850421905518</span><span class="p">,</span> <span class="mf">11.599879026412964</span><span class="p">,</span> <span class="mf">13.15486216545105</span><span class="p">,</span> <span class="mf">14.747888088226318</span><span class="p">,</span> <span class="mf">15.760866165161133</span><span class="p">,</span><span class="mf">17.531879186630249</span><span class="p">,</span> <span class="mf">19.168869018554688</span><span class="p">,</span> <span class="mf">21.020870208740234</span><span class="p">,</span> <span class="mf">22.716873168945312</span><span class="p">,</span> <span class="mf">24.6128830909729</span><span class="p">,</span> <span class="mf">26.412859201431274</span><span class="p">,</span><span class="mf">28.320885181427002</span><span class="p">,</span> <span class="mf">29.348877191543579</span><span class="p">,</span> <span class="mf">30.735865116119385</span><span class="p">,</span> <span class="mf">31.838881015777588</span><span class="p">,</span> <span class="mf">33.505880117416382</span><span class="p">,</span> <span class="mf">34.594882011413574</span><span class="p">,</span><span class="mf">36.5418860912323</span><span class="p">,</span> <span class="mf">37.700882196426392</span><span class="p">,</span> <span class="mf">38.795868158340454</span><span class="p">,</span> <span class="mf">40.185863971710205</span><span class="p">,</span> <span class="mf">41.975889205932617</span><span class="p">,</span> <span class="mf">43.608882188796997</span><span class="p">,</span><span class="mf">44.695883989334106</span><span class="p">,</span> <span class="mf">45.91289210319519</span><span class="p">,</span> <span class="mf">47.635885000228882</span><span class="p">,</span> <span class="mf">49.343885183334351</span><span class="p">,</span> <span class="mf">50.655886173248291</span><span class="p">,</span> <span class="mf">52.486284017562866</span><span class="p">,</span><span class="mf">53.563876152038574</span><span class="p">,</span> <span class="mf">55.53387713432312</span><span class="p">,</span> <span class="mf">57.343875169754028</span><span class="p">,</span> <span class="mf">59.317936182022095</span><span class="p">,</span> <span class="mf">61.018882989883423</span><span class="p">,</span> <span class="mf">62.311890125274658</span><span class="p">,</span><span class="mf">63.758885145187378</span><span class="p">,</span> <span class="mf">65.596870183944702</span><span class="p">,</span> <span class="mf">67.496883153915405</span><span class="p">,</span> <span class="mf">68.828874111175537</span><span class="p">,</span> <span class="mf">70.646870136260986</span><span class="p">,</span> <span class="mf">71.883864164352417</span><span class="p">,</span><span class="mf">73.352570056915283</span><span class="p">,</span> <span class="mf">75.352887153625488</span><span class="p">,</span> <span class="mf">77.352883100509644</span><span class="p">,</span> <span class="mf">78.996880054473877</span><span class="p">])])</span>
+<span class="go">51</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">i</span> <span class="o">=</span> <span class="n">mgr</span><span class="o">.</span><span class="n">iter_tags</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">==</span><span class="p">{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">0.36085605621337891</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">u&#39;value&#39;</span><span class="p">:</span> <span class="s1">u&#39;1&#39;</span><span class="p">},</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">u&#39;trigger&#39;</span><span class="p">,</span><span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">1.3654811382293701</span><span class="p">}</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">next</span><span class="p">(</span><span class="n">i</span><span class="p">)</span><span class="o">==</span><span class="p">{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">1.3654811382293701</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">u&#39;value&#39;</span><span class="p">:</span> <span class="s1">u&#39;0&#39;</span><span class="p">},</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">u&#39;trigger&#39;</span><span class="p">,</span><span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">3.2938590049743652</span><span class="p">}</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.tests.test_read_manager.run">
+<code class="descclassname">obci.analysis.obci_signal_processing.tests.test_read_manager.</code><code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tests/test_read_manager.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tests.test_read_manager.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.tests.test_read_tags_source">
+<span id="obci-analysis-obci-signal-processing-tests-test-read-tags-source-module"></span><h2>obci.analysis.obci_signal_processing.tests.test_read_tags_source module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.tests.test_read_tags_source" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tags</span> <span class="o">=</span> <span class="p">[]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tags</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">1001.0</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">1002.0</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;A B C&#39;</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">123</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">456</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tags</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">1003.0</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">1004.0</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic2&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;A B C&#39;</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">1234</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">4567</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tags</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">1005.0</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">1006.0</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic3&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;A B C&#39;</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">12345</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">45678</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tags</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">1005.5</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">1007.0</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic2&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;A B C&#39;</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">12345</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">45678</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tags</span><span class="o">.</span><span class="n">append</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">1008.0</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">1009.0</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic3&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;A B C&#39;</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">12345</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">45678</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obci.analysis.obci_signal_processing.tags</span> <span class="k">import</span> <span class="n">read_tags_source</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span> <span class="o">=</span> <span class="n">read_tags_source</span><span class="o">.</span><span class="n">MemoryTagsSource</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()</span><span class="o">==</span><span class="p">[{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;A B C&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">1001.0</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mi">456</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mi">123</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">},</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic&#39;</span><span class="p">,</span><span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">1002.0</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;A B C&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">1003.0</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mi">4567</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mi">1234</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">},</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic2&#39;</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">1004.0</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;A B C&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">1005.0</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mi">45678</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mi">12345</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">},</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic3&#39;</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">1006.0</span><span class="p">},{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;A B C&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">1005.5</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mi">45678</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mi">12345</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">},</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic2&#39;</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">1007.0</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;A B C&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">1008.0</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mi">45678</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mi">12345</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">},</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic3&#39;</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">1009.0</span><span class="p">}]</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">get_tags</span><span class="p">(</span><span class="s1">&#39;nic2&#39;</span><span class="p">)</span><span class="o">==</span><span class="p">[{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;A B C&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">1003.0</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mi">4567</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mi">1234</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">},</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic2&#39;</span><span class="p">,</span><span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">1004.0</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;A B C&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">1005.5</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mi">45678</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mi">12345</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">},</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic2&#39;</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">1007.0</span><span class="p">}]</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">get_tags</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="mf">1005.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span><span class="o">==</span><span class="p">[{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;A B C&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">1005.0</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mi">45678</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mi">12345</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">},</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic3&#39;</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">1006.0</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;A B C&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">1005.5</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mi">45678</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mi">12345</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">},</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic2&#39;</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">1007.0</span><span class="p">}]</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">get_tags</span><span class="p">(</span><span class="s1">&#39;nic3&#39;</span><span class="p">,</span> <span class="mf">1005.0</span><span class="p">,</span> <span class="mf">1.0</span><span class="p">)</span><span class="o">==</span><span class="p">[{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;A B C&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">1005.0</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mi">45678</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mi">12345</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">},</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic3&#39;</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">1006.0</span><span class="p">}]</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">s</span><span class="o">.</span><span class="n">get_tags</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="k">lambda</span> <span class="n">tag</span><span class="p">:</span> <span class="n">tag</span><span class="p">[</span><span class="s1">&#39;desc&#39;</span><span class="p">][</span><span class="s1">&#39;x&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="mi">12345</span><span class="p">)</span><span class="o">==</span><span class="p">[{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;A B C&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">1005.0</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mi">45678</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mi">12345</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">},</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic3&#39;</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">1006.0</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;A B C&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">1005.5</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mi">45678</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mi">12345</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">},</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic2&#39;</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">1007.0</span><span class="p">},{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;A B C&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">1008.0</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;y&#39;</span><span class="p">:</span> <span class="mi">45678</span><span class="p">,</span> <span class="s1">&#39;x&#39;</span><span class="p">:</span> <span class="mi">12345</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">},</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;nic3&#39;</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">1009.0</span><span class="p">}]</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.tests.test_read_tags_source.run">
+<code class="descclassname">obci.analysis.obci_signal_processing.tests.test_read_tags_source.</code><code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tests/test_read_tags_source.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tests.test_read_tags_source.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.tests.test_smart_tag_definition">
+<span id="obci-analysis-obci-signal-processing-tests-test-smart-tag-definition-module"></span><h2>obci.analysis.obci_signal_processing.tests.test_smart_tag_definition module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.tests.test_smart_tag_definition" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obci.analysis.obci_signal_processing.tags</span> <span class="k">import</span> <span class="n">smart_tag_definition</span> <span class="k">as</span> <span class="n">d</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">x</span> <span class="o">=</span> <span class="n">d</span><span class="o">.</span><span class="n">SmartTagDurationDefinition</span><span class="p">(</span><span class="n">start_tag_name</span><span class="o">=</span><span class="s1">&#39;x&#39;</span><span class="p">,</span> <span class="n">start_offset</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">end_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mi">21</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s1">&#39;start_tag_name&#39;</span><span class="p">])</span>
+<span class="go">x</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s1">&#39;start_offset&#39;</span><span class="p">])</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s1">&#39;end_offset&#39;</span><span class="p">])</span>
+<span class="go">0</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">x</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="s1">&#39;duration&#39;</span><span class="p">])</span>
+<span class="go">21</span>
+</pre></div>
+</div>
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.tests.test_smart_tag_definition.run">
+<code class="descclassname">obci.analysis.obci_signal_processing.tests.test_smart_tag_definition.</code><code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tests/test_smart_tag_definition.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tests.test_smart_tag_definition.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.tests.test_smart_tags_manager">
+<span id="obci-analysis-obci-signal-processing-tests-test-smart-tags-manager-module"></span><h2>obci.analysis.obci_signal_processing.tests.test_smart_tags_manager module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.tests.test_smart_tags_manager" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">os</span><span class="o">,</span> <span class="nn">os.path</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obci.analysis.obci_signal_processing</span> <span class="k">import</span> <span class="n">smart_tags_manager</span> <span class="k">as</span> <span class="n">mgr</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">obci.analysis.obci_signal_processing.tags</span> <span class="k">import</span> <span class="n">smart_tag_definition</span> <span class="k">as</span> <span class="n">df</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">d</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">SmartTagDurationDefinition</span><span class="p">(</span><span class="n">start_tag_name</span><span class="o">=</span><span class="s1">&#39;trigger&#39;</span><span class="p">,</span> <span class="n">start_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">pth</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">mgr</span><span class="o">.</span><span class="n">__file__</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">f</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;info&#39;</span><span class="p">:</span>  <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pth</span><span class="p">[:</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">pth</span><span class="p">))],</span> <span class="s1">&#39;tests&#39;</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;nic.obci.svarog.info&#39;</span><span class="p">),</span><span class="s1">&#39;data&#39;</span><span class="p">:</span><span class="s1">&#39;nic.obci.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;tags&#39;</span><span class="p">:</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">pth</span><span class="p">[:</span><span class="o">-</span><span class="nb">len</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">pth</span><span class="p">))],</span> <span class="s1">&#39;tests&#39;</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;nic.obci.svarog.tags&#39;</span><span class="p">)}</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fabricate_data_file</span><span class="p">(</span><span class="n">f</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">m</span> <span class="o">=</span> <span class="n">mgr</span><span class="o">.</span><span class="n">SmartTagsManager</span><span class="p">(</span><span class="n">d</span><span class="p">,</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">],</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">m</span><span class="o">.</span><span class="n">_smart_tags</span><span class="p">))</span>
+<span class="go">51</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tags</span><span class="p">,</span> <span class="n">num</span> <span class="o">=</span> <span class="n">iter_all_tags</span><span class="p">(</span><span class="n">m</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+<span class="go">51</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">abs</span><span class="p">(</span><span class="n">tags</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_start_timestamp</span><span class="p">()</span><span class="o">-</span><span class="mf">0.36085605621337891</span><span class="p">)</span><span class="o">&lt;</span><span class="mf">0.0001</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">abs</span><span class="p">(</span><span class="n">tags</span><span class="p">[</span><span class="mi">50</span><span class="p">]</span><span class="o">.</span><span class="n">get_end_timestamp</span><span class="p">()</span><span class="o">-</span><span class="mf">79.996880054473877</span><span class="p">)</span><span class="o">&lt;</span><span class="mf">0.0001</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">abs</span><span class="p">(</span><span class="n">tags</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span><span class="o">.</span><span class="n">get_channel_samples</span><span class="p">(</span><span class="s1">&#39;Fp1&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">-</span><span class="mf">19389.0</span><span class="p">)</span><span class="o">&lt;</span><span class="mf">0.0001</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">tags_len_ok</span><span class="p">(</span><span class="n">tags</span><span class="p">))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dd</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">SmartTagEndTagDefinition</span><span class="p">(</span><span class="n">start_tag_name</span><span class="o">=</span><span class="s1">&#39;trigger&#39;</span><span class="p">,</span> <span class="n">start_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end_tags_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;trigger&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mm</span> <span class="o">=</span> <span class="n">mgr</span><span class="o">.</span><span class="n">SmartTagsManager</span><span class="p">(</span><span class="n">dd</span><span class="p">,</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;info&#39;</span><span class="p">],</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">],</span> <span class="n">f</span><span class="p">[</span><span class="s1">&#39;tags&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tags</span><span class="p">,</span> <span class="n">num</span> <span class="o">=</span> <span class="n">iter_all_tags</span><span class="p">(</span><span class="n">mm</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">num</span><span class="p">)</span>
+<span class="go">50</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">not_duration_tags_data_len</span><span class="p">(</span><span class="n">tags</span><span class="p">))</span>
+<span class="go">20131</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">not_duration_tags_data_sub</span><span class="p">(</span><span class="n">tags</span><span class="p">))</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="c1"># Another test</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">..tags</span> <span class="k">import</span> <span class="n">tags_file_writer</span> <span class="k">as</span> <span class="n">p</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span> <span class="o">=</span> <span class="n">p</span><span class="o">.</span><span class="n">TagsFileWriter</span><span class="p">(</span><span class="s1">&#39;./tescik.obci.tags&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">tag_received</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">1.0</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">5.0</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">123</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">456</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">tag_received</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">6.0</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">10.0</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">1234</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">4567</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">tag_received</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">6.1</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">6.5</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">123</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">456</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">tag_received</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">7.0</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">7.0</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">123</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">456</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">tag_received</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">7.5</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">8.7</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">123</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">456</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">tag_received</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">9.0</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">15.0</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">12345</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">45678</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">tag_received</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">10.2</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">11.0</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">123</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">456</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">tag_received</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">12.0</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">12.5</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">123</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">456</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">tag_received</span><span class="p">({</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mf">20.0</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">25.0</span><span class="p">,</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;&#39;</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;x&#39;</span><span class="p">:</span><span class="mi">12345</span><span class="p">,</span> <span class="s1">&#39;y&#39;</span><span class="p">:</span><span class="mi">45678</span><span class="p">,</span> <span class="s1">&#39;z&#39;</span><span class="p">:</span> <span class="mi">789</span><span class="p">}})</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">px</span><span class="o">.</span><span class="n">finish_saving</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+<span class="go">&#39;./tescik.obci.tags&#39;</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fabricate_data_file</span><span class="p">(</span><span class="s1">&#39;./tescik.obci.dat&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">fabricate_info_file</span><span class="p">(</span><span class="s1">&#39;./tescik.obci.info&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dd</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">SmartTagEndTagDefinition</span><span class="p">(</span><span class="n">start_tag_name</span><span class="o">=</span><span class="s1">&#39;A&#39;</span><span class="p">,</span> <span class="n">start_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end_tags_names</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;A&#39;</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mm</span> <span class="o">=</span> <span class="n">mgr</span><span class="o">.</span><span class="n">SmartTagsManager</span><span class="p">(</span><span class="n">dd</span><span class="p">,</span> <span class="s1">&#39;./tescik.obci.info&#39;</span><span class="p">,</span> <span class="s1">&#39;./tescik.obci.dat&#39;</span><span class="p">,</span> <span class="s1">&#39;./tescik.obci.tags&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tags</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">mm</span><span class="o">.</span><span class="n">iter_smart_tags</span><span class="p">()]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">tags</span><span class="p">)</span>
+<span class="go">3</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tags2</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">mm</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">tags2</span><span class="p">)</span>
+<span class="go">3</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tags</span> <span class="o">==</span> <span class="n">tags2</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">tags</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_samples</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+<span class="go">768.0</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dd</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">SmartTagDurationDefinition</span><span class="p">(</span><span class="n">start_tag_name</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">start_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mm</span> <span class="o">=</span> <span class="n">mgr</span><span class="o">.</span><span class="n">SmartTagsManager</span><span class="p">(</span><span class="n">dd</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tags</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tss</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">mm</span><span class="o">.</span><span class="n">iter_smart_tags</span><span class="p">()]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">tss</span><span class="p">)</span>
+<span class="go">3</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tss_tags</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">get_start_tag</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tss</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tss_tags</span> <span class="o">==</span><span class="p">[{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">6.0999999999999996</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">u&#39;y&#39;</span><span class="p">:</span> <span class="s1">u&#39;456&#39;</span><span class="p">,</span> <span class="s1">u&#39;x&#39;</span><span class="p">:</span> <span class="s1">u&#39;123&#39;</span><span class="p">,</span> <span class="s1">u&#39;z&#39;</span><span class="p">:</span> <span class="s1">u&#39;789&#39;</span><span class="p">},</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">u&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">6.5</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">7.0</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">u&#39;y&#39;</span><span class="p">:</span> <span class="s1">u&#39;456&#39;</span><span class="p">,</span> <span class="s1">u&#39;x&#39;</span><span class="p">:</span> <span class="s1">u&#39;123&#39;</span><span class="p">,</span> <span class="s1">u&#39;z&#39;</span><span class="p">:</span> <span class="s1">u&#39;789&#39;</span><span class="p">},</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">u&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">7.0</span><span class="p">},{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">7.5</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">u&#39;y&#39;</span><span class="p">:</span> <span class="s1">u&#39;456&#39;</span><span class="p">,</span> <span class="s1">u&#39;x&#39;</span><span class="p">:</span> <span class="s1">u&#39;123&#39;</span><span class="p">,</span> <span class="s1">u&#39;z&#39;</span><span class="p">:</span> <span class="s1">u&#39;789&#39;</span><span class="p">},</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">u&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">8.6999999999999993</span><span class="p">}]</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span><span class="p">(</span><span class="n">tss</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_samples</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+<span class="go">780.0</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">dd</span> <span class="o">=</span> <span class="n">df</span><span class="o">.</span><span class="n">SmartTagDurationDefinition</span><span class="p">(</span><span class="n">start_tag_name</span><span class="o">=</span><span class="s1">&#39;B&#39;</span><span class="p">,</span> <span class="n">start_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">end_offset</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">duration</span><span class="o">=</span><span class="mf">1.0</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mm</span> <span class="o">=</span> <span class="n">mgr</span><span class="o">.</span><span class="n">SmartTagsManager</span><span class="p">(</span><span class="n">dd</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">tags</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tss</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">mm</span><span class="o">.</span><span class="n">iter_smart_tags</span><span class="p">()]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">len</span><span class="p">(</span><span class="n">tss</span><span class="p">)</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tss_tags</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span><span class="o">.</span><span class="n">get_start_tag</span><span class="p">()</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tss</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tss_tags</span><span class="o">==</span><span class="p">[{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">10.199999999999999</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">u&#39;y&#39;</span><span class="p">:</span> <span class="s1">u&#39;456&#39;</span><span class="p">,</span> <span class="s1">u&#39;x&#39;</span><span class="p">:</span> <span class="s1">u&#39;123&#39;</span><span class="p">,</span> <span class="s1">u&#39;z&#39;</span><span class="p">:</span> <span class="s1">u&#39;789&#39;</span><span class="p">},</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">u&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">11.0</span><span class="p">},</span> <span class="p">{</span><span class="s1">&#39;channels&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span> <span class="mf">12.0</span><span class="p">,</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">u&#39;y&#39;</span><span class="p">:</span> <span class="s1">u&#39;456&#39;</span><span class="p">,</span> <span class="s1">u&#39;x&#39;</span><span class="p">:</span> <span class="s1">u&#39;123&#39;</span><span class="p">,</span> <span class="s1">u&#39;z&#39;</span><span class="p">:</span> <span class="s1">u&#39;789&#39;</span><span class="p">},</span> <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="s1">u&#39;B&#39;</span><span class="p">,</span> <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span> <span class="mf">12.5</span><span class="p">}]</span>
+<span class="go">True</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">os</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">import</span> <span class="nn">glob</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">fl</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;tescik*&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">fl</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="k">for</span> <span class="n">fl</span> <span class="ow">in</span> <span class="n">glob</span><span class="o">.</span><span class="n">glob</span><span class="p">(</span><span class="s1">&#39;nic.obci*&#39;</span><span class="p">):</span> <span class="n">os</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">fl</span><span class="p">)</span>
+</pre></div>
+</div>
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.fabricate_data_file">
+<code class="descclassname">obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.</code><code class="descname">fabricate_data_file</code><span class="sig-paren">(</span><em>f</em>, <em>ch=23</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tests/test_smart_tags_manager.html#fabricate_data_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.fabricate_data_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.fabricate_info_file">
+<code class="descclassname">obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.</code><code class="descname">fabricate_info_file</code><span class="sig-paren">(</span><em>f</em>, <em>ch=23</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tests/test_smart_tags_manager.html#fabricate_info_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.fabricate_info_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.iter_all_tags">
+<code class="descclassname">obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.</code><code class="descname">iter_all_tags</code><span class="sig-paren">(</span><em>m</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tests/test_smart_tags_manager.html#iter_all_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.iter_all_tags" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.iter_first_tag">
+<code class="descclassname">obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.</code><code class="descname">iter_first_tag</code><span class="sig-paren">(</span><em>m</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tests/test_smart_tags_manager.html#iter_first_tag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.iter_first_tag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.not_duration_tags_data_len">
+<code class="descclassname">obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.</code><code class="descname">not_duration_tags_data_len</code><span class="sig-paren">(</span><em>tags</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tests/test_smart_tags_manager.html#not_duration_tags_data_len"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.not_duration_tags_data_len" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.not_duration_tags_data_sub">
+<code class="descclassname">obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.</code><code class="descname">not_duration_tags_data_sub</code><span class="sig-paren">(</span><em>tags</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tests/test_smart_tags_manager.html#not_duration_tags_data_sub"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.not_duration_tags_data_sub" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if data in tags are sequential -
+they should be, as we have trigger-to-trigger tags
+and data in file are sequential.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.run">
+<code class="descclassname">obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.</code><code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tests/test_smart_tags_manager.html#run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.tags_len_ok">
+<code class="descclassname">obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.</code><code class="descname">tags_len_ok</code><span class="sig-paren">(</span><em>tags</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tests/test_smart_tags_manager.html#tags_len_ok"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.tags_len_ok" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.tests">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.tests" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">obci</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="obci.html">obci package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="obci.acquisition.html">obci.acquisition package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="obci.analysis.html">obci.analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.benchmark.html">obci.benchmark package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.cmd.html">obci.cmd package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.configs.html">obci.configs package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.control.html">obci.control package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.core.html">obci.core package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.drivers.html">obci.drivers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.gui.html">obci.gui package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.mx_legacy.html">obci.mx_legacy package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.peers.html">obci.peers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.scenarios.html">obci.scenarios package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.utils.html">obci.utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">obci</a><ul>
+  <li><a href="obci.html">obci package</a><ul>
+  <li><a href="obci.analysis.html">obci.analysis package</a><ul>
+  <li><a href="obci.analysis.obci_signal_processing.html">obci.analysis.obci_signal_processing package</a><ul>
+      <li>Previous: <a href="obci.analysis.obci_signal_processing.tags.html" title="previous chapter">obci.analysis.obci_signal_processing.tags package</a></li>
+      <li>Next: <a href="obci.benchmark.html" title="next chapter">obci.benchmark package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/apidoc/obci.analysis.obci_signal_processing.tests.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,78 @@
+obci.analysis.obci_signal_processing.tests package
+==================================================
+
+Submodules
+----------
+
+obci.analysis.obci_signal_processing.tests.test_data_file_proxy module
+----------------------------------------------------------------------
+
+.. automodule:: obci.analysis.obci_signal_processing.tests.test_data_file_proxy
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.analysis.obci_signal_processing.tests.test_file_tags_writer_reader module
+------------------------------------------------------------------------------
+
+.. automodule:: obci.analysis.obci_signal_processing.tests.test_file_tags_writer_reader
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.analysis.obci_signal_processing.tests.test_info_file_proxy module
+----------------------------------------------------------------------
+
+.. automodule:: obci.analysis.obci_signal_processing.tests.test_info_file_proxy
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.analysis.obci_signal_processing.tests.test_read_data_source module
+-----------------------------------------------------------------------
+
+.. automodule:: obci.analysis.obci_signal_processing.tests.test_read_data_source
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.analysis.obci_signal_processing.tests.test_read_manager module
+-------------------------------------------------------------------
+
+.. automodule:: obci.analysis.obci_signal_processing.tests.test_read_manager
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.analysis.obci_signal_processing.tests.test_read_tags_source module
+-----------------------------------------------------------------------
+
+.. automodule:: obci.analysis.obci_signal_processing.tests.test_read_tags_source
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.analysis.obci_signal_processing.tests.test_smart_tag_definition module
+---------------------------------------------------------------------------
+
+.. automodule:: obci.analysis.obci_signal_processing.tests.test_smart_tag_definition
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.analysis.obci_signal_processing.tests.test_smart_tags_manager module
+-------------------------------------------------------------------------
+
+.. automodule:: obci.analysis.obci_signal_processing.tests.test_smart_tags_manager
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.analysis.obci_signal_processing.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,166 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.launcher.remote_process &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.launcher.remote_process</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">zmq</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.common.message</span> <span class="k">import</span> <span class="n">OBCIMessageTool</span><span class="p">,</span> <span class="n">PollingObject</span><span class="p">,</span> <span class="n">send_msg</span>
+<span class="kn">from</span> <span class="nn">obci.control.launcher.launcher_messages</span> <span class="k">import</span> <span class="n">message_templates</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">process</span>
+<span class="kn">from</span> <span class="nn">.process</span> <span class="k">import</span> <span class="n">FAILED</span><span class="p">,</span> <span class="n">TERMINATED</span><span class="p">,</span> <span class="n">PING</span><span class="p">,</span> <span class="n">RETURNCODE</span><span class="p">,</span> <span class="n">REG_TIMER</span>
+
+
+<div class="viewcode-block" id="RemoteProcess"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.remote_process.RemoteProcess">[docs]</a><span class="k">class</span> <span class="nc">RemoteProcess</span><span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">Process</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proc_description</span><span class="p">,</span> <span class="n">rq_address</span><span class="p">,</span>
+                 <span class="n">reg_timeout_desc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">monitoring_optflags</span><span class="o">=</span><span class="n">PING</span><span class="p">,</span>
+                 <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">rq_address</span> <span class="o">=</span> <span class="n">rq_address</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># returncode monitoring is not supported in remote processes..</span>
+        <span class="n">monitoring_optflags</span> <span class="o">=</span> <span class="n">monitoring_optflags</span> <span class="o">&amp;</span> <span class="o">~</span><span class="p">(</span><span class="mi">1</span> <span class="o">&lt;&lt;</span> <span class="n">RETURNCODE</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">RemoteProcess</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">proc_description</span><span class="p">,</span>
+                                            <span class="n">reg_timeout_desc</span><span class="p">,</span> <span class="n">monitoring_optflags</span><span class="p">,</span>
+                                            <span class="n">logger</span><span class="p">)</span>
+
+<div class="viewcode-block" id="RemoteProcess.is_local"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.remote_process.RemoteProcess.is_local">[docs]</a>    <span class="k">def</span> <span class="nf">is_local</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span></div>
+
+    <span class="k">def</span> <span class="nf">_do_handle_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">type_</span> <span class="o">==</span> <span class="n">REG_TIMER</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">FAILED</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_status_details</span> <span class="o">=</span> <span class="s2">&quot;Failed to register before timeout.&quot;</span>
+
+<div class="viewcode-block" id="RemoteProcess.registered"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.remote_process.RemoteProcess.registered">[docs]</a>    <span class="k">def</span> <span class="nf">registered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reg_data</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">RemoteProcess</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">registered</span><span class="p">(</span><span class="n">reg_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">desc</span><span class="o">.</span><span class="n">pid</span> <span class="o">=</span> <span class="n">reg_data</span><span class="o">.</span><span class="n">pid</span></div>
+
+<div class="viewcode-block" id="RemoteProcess.returncode_monitor"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.remote_process.RemoteProcess.returncode_monitor">[docs]</a>    <span class="k">def</span> <span class="nf">returncode_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="RemoteProcess.kill"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.remote_process.RemoteProcess.kill">[docs]</a>    <span class="k">def</span> <span class="nf">kill</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># send &quot;kill&quot; to the process or kill request to its supervisor?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop_monitoring</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">()</span>
+        <span class="n">rq_sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REQ</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rq_sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rq_address</span><span class="p">)</span>
+            <span class="n">mtool</span> <span class="o">=</span> <span class="n">OBCIMessageTool</span><span class="p">(</span><span class="n">message_templates</span><span class="p">)</span>
+            <span class="n">poller</span> <span class="o">=</span> <span class="n">PollingObject</span><span class="p">()</span>
+            <span class="n">send_msg</span><span class="p">(</span><span class="n">rq_sock</span><span class="p">,</span> <span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;kill_process&quot;</span><span class="p">,</span> <span class="n">pid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pid</span><span class="p">,</span> <span class="n">machine</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">machine_ip</span><span class="p">))</span>
+            <span class="n">res</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">poller</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">rq_sock</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">rq_sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">res</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="n">mtool</span><span class="o">.</span><span class="n">unpack_msg</span><span class="p">(</span><span class="n">res</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Response to kill request: &quot;</span><span class="p">,</span> <span class="n">res</span><span class="p">)</span>
+
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status_lock</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">TERMINATED</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

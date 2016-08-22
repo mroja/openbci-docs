@@ -1,0 +1,480 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.mx_legacy.multiplexer_constants &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.mx_legacy.multiplexer_constants</h1><div class="highlight"><pre>
+<span></span>
+<span class="c1">#</span>
+<span class="c1"># this file is generated from ../multiplexer.rules</span>
+<span class="c1"># by a program from generate_constants.cc compiled Aug  3 2016 16:07:32</span>
+<span class="c1">#</span>
+
+<span class="k">class</span> <span class="nc">_constants_base</span><span class="p">:</span>
+	<span class="n">idtoname</span> <span class="o">=</span> <span class="kc">None</span> <span class="c1"># dict defined by a subclass</span>
+	<span class="nd">@classmethod</span>
+	<span class="k">def</span> <span class="nf">get_name</span><span class="p">(</span><span class="n">cls</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">default</span> <span class="o">=</span> <span class="s1">&#39;UNKNOWN&#39;</span><span class="p">):</span>
+		<span class="k">return</span> <span class="n">cls</span><span class="o">.</span><span class="n">idtoname</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">default</span><span class="p">)</span>
+	<span class="k">pass</span>
+
+<div class="viewcode-block" id="types"><a class="viewcode-back" href="../../../apidoc/obci.mx_legacy.html#obci.mx_legacy.multiplexer_constants.types">[docs]</a><span class="k">class</span> <span class="nc">types</span><span class="p">(</span><span class="n">_constants_base</span><span class="p">):</span>
+
+	<span class="n">PING</span> <span class="o">=</span> <span class="mi">1</span>
+	<span class="n">CONNECTION_WELCOME</span> <span class="o">=</span> <span class="mi">2</span>
+	<span class="n">BACKEND_FOR_PACKET_SEARCH</span> <span class="o">=</span> <span class="mi">3</span>
+	<span class="n">HEARTBIT</span> <span class="o">=</span> <span class="mi">4</span>
+	<span class="n">DELIVERY_ERROR</span> <span class="o">=</span> <span class="mi">5</span>
+	<span class="n">MAX_MULTIPLEXER_META_PACKET</span> <span class="o">=</span> <span class="mi">99</span>
+	<span class="n">PYTHON_TEST_REQUEST</span> <span class="o">=</span> <span class="mi">110</span>
+	<span class="n">PYTHON_TEST_RESPONSE</span> <span class="o">=</span> <span class="mi">111</span>
+	<span class="n">PICKLE_RESPONSE</span> <span class="o">=</span> <span class="mi">112</span>
+	<span class="n">REQUEST_RECEIVED</span> <span class="o">=</span> <span class="mi">113</span>
+	<span class="n">BACKEND_ERROR</span> <span class="o">=</span> <span class="mi">114</span>
+	<span class="n">LOGS_STREAM</span> <span class="o">=</span> <span class="mi">115</span>
+	<span class="n">LOGS_STREAM_RESPONSE</span> <span class="o">=</span> <span class="mi">116</span>
+	<span class="n">SEARCH_COLLECTED_LOGS_REQUEST</span> <span class="o">=</span> <span class="mi">117</span>
+	<span class="n">SEARCH_COLLECTED_LOGS_RESPONSE</span> <span class="o">=</span> <span class="mi">118</span>
+	<span class="n">REPLAY_EVENTS_REQUEST</span> <span class="o">=</span> <span class="mi">126</span>
+	<span class="n">AMPLIFIER_SIGNAL_MESSAGE</span> <span class="o">=</span> <span class="mi">129</span>
+	<span class="n">FILTERED_SIGNAL_MESSAGE</span> <span class="o">=</span> <span class="mi">130</span>
+	<span class="n">SIGNAL_CATCHER_REQUEST_MESSAGE</span> <span class="o">=</span> <span class="mi">131</span>
+	<span class="n">SIGNAL_CATCHER_RESPONSE_MESSAGE</span> <span class="o">=</span> <span class="mi">132</span>
+	<span class="n">DICT_GET_REQUEST_MESSAGE</span> <span class="o">=</span> <span class="mi">133</span>
+	<span class="n">DICT_GET_RESPONSE_MESSAGE</span> <span class="o">=</span> <span class="mi">134</span>
+	<span class="n">DICT_SET_MESSAGE</span> <span class="o">=</span> <span class="mi">135</span>
+	<span class="n">DECISION_MESSAGE</span> <span class="o">=</span> <span class="mi">136</span>
+	<span class="n">DIODE_MESSAGE</span> <span class="o">=</span> <span class="mi">137</span>
+	<span class="n">DIODE_REQUEST</span> <span class="o">=</span> <span class="mi">138</span>
+	<span class="n">DIODE_RESPONSE</span> <span class="o">=</span> <span class="mi">139</span>
+	<span class="n">P300_DECISION_MESSAGE</span> <span class="o">=</span> <span class="mi">140</span>
+	<span class="n">SSVEP_DECISION_MESSAGE</span> <span class="o">=</span> <span class="mi">141</span>
+	<span class="n">SWITCH_MODE</span> <span class="o">=</span> <span class="mi">142</span>
+	<span class="n">STREAMED_SIGNAL_MESSAGE</span> <span class="o">=</span> <span class="mi">143</span>
+	<span class="n">SIGNAL_STREAMER_START</span> <span class="o">=</span> <span class="mi">144</span>
+	<span class="n">SIGNAL_STREAMER_STOP</span> <span class="o">=</span> <span class="mi">145</span>
+	<span class="n">SAMPLING_FREQUENCY</span> <span class="o">=</span> <span class="mi">146</span>
+	<span class="n">CALIBRATION</span> <span class="o">=</span> <span class="mi">147</span>
+	<span class="n">UGM_UPDATE_MESSAGE</span> <span class="o">=</span> <span class="mi">149</span>
+	<span class="n">TAG</span> <span class="o">=</span> <span class="mi">150</span>
+	<span class="n">DIODE_CONTROL_MESSAGE</span> <span class="o">=</span> <span class="mi">151</span>
+	<span class="n">TAG_CATCHER_REQUEST_MESSAGE</span> <span class="o">=</span> <span class="mi">152</span>
+	<span class="n">TAG_CATCHER_RESPONSE_MESSAGE</span> <span class="o">=</span> <span class="mi">153</span>
+	<span class="n">BLINK_MESSAGE</span> <span class="o">=</span> <span class="mi">154</span>
+	<span class="n">ACQUISITION_CONTROL_MESSAGE</span> <span class="o">=</span> <span class="mi">155</span>
+	<span class="n">SIGNAL_SAVER_FINISHED</span> <span class="o">=</span> <span class="mi">156</span>
+	<span class="n">INFO_SAVER_FINISHED</span> <span class="o">=</span> <span class="mi">157</span>
+	<span class="n">TAG_SAVER_FINISHED</span> <span class="o">=</span> <span class="mi">158</span>
+	<span class="n">BLINK_VECTOR_MESSAGE</span> <span class="o">=</span> <span class="mi">159</span>
+	<span class="n">HAPTIC_CONTROL_MESSAGE</span> <span class="o">=</span> <span class="mi">160</span>
+	<span class="n">BENCHMARK_INPUT_MESSAGE_0</span> <span class="o">=</span> <span class="mi">180</span>
+	<span class="n">BENCHMARK_INPUT_MESSAGE_1</span> <span class="o">=</span> <span class="mi">181</span>
+	<span class="n">BENCHMARK_INPUT_MESSAGE_2</span> <span class="o">=</span> <span class="mi">182</span>
+	<span class="n">BENCHMARK_INPUT_MESSAGE_3</span> <span class="o">=</span> <span class="mi">183</span>
+	<span class="n">BENCHMARK_INPUT_MESSAGE_4</span> <span class="o">=</span> <span class="mi">184</span>
+	<span class="n">BENCHMARK_INPUT_MESSAGE_5</span> <span class="o">=</span> <span class="mi">185</span>
+	<span class="n">BENCHMARK_INPUT_MESSAGE_6</span> <span class="o">=</span> <span class="mi">186</span>
+	<span class="n">BENCHMARK_INPUT_MESSAGE_7</span> <span class="o">=</span> <span class="mi">187</span>
+	<span class="n">BENCHMARK_INPUT_MESSAGE_8</span> <span class="o">=</span> <span class="mi">188</span>
+	<span class="n">BENCHMARK_INPUT_MESSAGE_9</span> <span class="o">=</span> <span class="mi">189</span>
+	<span class="n">BENCHMARK_OUTPUT_MESSAGE_0</span> <span class="o">=</span> <span class="mi">190</span>
+	<span class="n">BENCHMARK_OUTPUT_MESSAGE_1</span> <span class="o">=</span> <span class="mi">191</span>
+	<span class="n">BENCHMARK_OUTPUT_MESSAGE_2</span> <span class="o">=</span> <span class="mi">192</span>
+	<span class="n">BENCHMARK_OUTPUT_MESSAGE_3</span> <span class="o">=</span> <span class="mi">193</span>
+	<span class="n">BENCHMARK_OUTPUT_MESSAGE_4</span> <span class="o">=</span> <span class="mi">194</span>
+	<span class="n">BENCHMARK_OUTPUT_MESSAGE_5</span> <span class="o">=</span> <span class="mi">195</span>
+	<span class="n">BENCHMARK_OUTPUT_MESSAGE_6</span> <span class="o">=</span> <span class="mi">196</span>
+	<span class="n">BENCHMARK_OUTPUT_MESSAGE_7</span> <span class="o">=</span> <span class="mi">197</span>
+	<span class="n">BENCHMARK_OUTPUT_MESSAGE_8</span> <span class="o">=</span> <span class="mi">198</span>
+	<span class="n">BENCHMARK_OUTPUT_MESSAGE_9</span> <span class="o">=</span> <span class="mi">199</span>
+	<span class="n">ETR_SIGNAL_MESSAGE</span> <span class="o">=</span> <span class="mi">209</span>
+	<span class="n">SYSTEM_CONFIGURATION</span> <span class="o">=</span> <span class="mi">210</span>
+	<span class="n">UGM_ENGINE_MESSAGE</span> <span class="o">=</span> <span class="mi">211</span>
+	<span class="n">UGM_CONTROL_MESSAGE</span> <span class="o">=</span> <span class="mi">212</span>
+	<span class="n">CONFIG_MESSAGE</span> <span class="o">=</span> <span class="mi">213</span>
+	<span class="n">GET_CONFIG_PARAMS</span> <span class="o">=</span> <span class="mi">214</span>
+	<span class="n">CONFIG_PARAMS</span> <span class="o">=</span> <span class="mi">215</span>
+	<span class="n">REGISTER_PEER_CONFIG</span> <span class="o">=</span> <span class="mi">216</span>
+	<span class="n">PEER_REGISTERED</span> <span class="o">=</span> <span class="mi">217</span>
+	<span class="n">UPDATE_PARAMS</span> <span class="o">=</span> <span class="mi">218</span>
+	<span class="n">PARAMS_CHANGED</span> <span class="o">=</span> <span class="mi">219</span>
+	<span class="n">PEER_READY</span> <span class="o">=</span> <span class="mi">220</span>
+	<span class="n">PEERS_READY_QUERY</span> <span class="o">=</span> <span class="mi">221</span>
+	<span class="n">READY_STATUS</span> <span class="o">=</span> <span class="mi">222</span>
+	<span class="n">UNREGISTER_PEER_CONFIG</span> <span class="o">=</span> <span class="mi">223</span>
+	<span class="n">CONFIG_ERROR</span> <span class="o">=</span> <span class="mi">224</span>
+	<span class="n">PEER_READY_SIGNAL</span> <span class="o">=</span> <span class="mi">225</span>
+	<span class="n">SHUTDOWN_REQUEST</span> <span class="o">=</span> <span class="mi">226</span>
+	<span class="n">LAUNCHER_COMMAND</span> <span class="o">=</span> <span class="mi">227</span>
+	<span class="n">SWITCH_MESSAGE</span> <span class="o">=</span> <span class="mi">228</span>
+	<span class="n">ROBOT_FEEDBACK_CONTROL</span> <span class="o">=</span> <span class="mi">229</span>
+	<span class="n">P300_ANALYSIS_RESULTS</span> <span class="o">=</span> <span class="mi">231</span>
+	<span class="n">ETR_ANALYSIS_RESULTS</span> <span class="o">=</span> <span class="mi">232</span>
+	<span class="n">ETR_CALIBRATION_RESULTS</span> <span class="o">=</span> <span class="mi">233</span>
+	<span class="n">OBCI_LOG_MESSAGE</span> <span class="o">=</span> <span class="mi">234</span>
+	<span class="n">OBCI_LOG_DUMP_REQUEST</span> <span class="o">=</span> <span class="mi">235</span>
+	<span class="n">OBCI_LOG_DUMP_RESPONSE</span> <span class="o">=</span> <span class="mi">236</span>
+	<span class="n">TOBII_SIGNAL_SAVER_FINISHED</span> <span class="o">=</span> <span class="mi">240</span>
+	<span class="n">TOBII_INFO_SAVER_FINISHED</span> <span class="o">=</span> <span class="mi">241</span>
+	<span class="n">TOBII_TAG_SAVER_FINISHED</span> <span class="o">=</span> <span class="mi">242</span>
+	<span class="n">TOBII_SIGNAL_MESSAGE</span> <span class="o">=</span> <span class="mi">243</span>
+	<span class="n">WII_BOARD_SIGNAL_SAVER_FINISHED</span> <span class="o">=</span> <span class="mi">250</span>
+	<span class="n">WII_BOARD_INFO_SAVER_FINISHED</span> <span class="o">=</span> <span class="mi">251</span>
+	<span class="n">WII_BOARD_TAG_SAVER_FINISHED</span> <span class="o">=</span> <span class="mi">252</span>
+	<span class="n">WII_BOARD_SIGNAL_MESSAGE</span> <span class="o">=</span> <span class="mi">253</span>
+	<span class="n">WII_BOARD_ANALYSIS_RESULTS</span> <span class="o">=</span> <span class="mi">254</span>
+
+	<span class="n">idtoname</span> <span class="o">=</span> <span class="p">{}</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">PING</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;PING&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">CONNECTION_WELCOME</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;CONNECTION_WELCOME&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BACKEND_FOR_PACKET_SEARCH</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BACKEND_FOR_PACKET_SEARCH&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">HEARTBIT</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;HEARTBIT&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">DELIVERY_ERROR</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;DELIVERY_ERROR&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">MAX_MULTIPLEXER_META_PACKET</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;MAX_MULTIPLEXER_META_PACKET&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">PYTHON_TEST_REQUEST</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;PYTHON_TEST_REQUEST&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">PYTHON_TEST_RESPONSE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;PYTHON_TEST_RESPONSE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">PICKLE_RESPONSE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;PICKLE_RESPONSE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">REQUEST_RECEIVED</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;REQUEST_RECEIVED&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BACKEND_ERROR</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BACKEND_ERROR&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">LOGS_STREAM</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;LOGS_STREAM&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">LOGS_STREAM_RESPONSE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;LOGS_STREAM_RESPONSE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SEARCH_COLLECTED_LOGS_REQUEST</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SEARCH_COLLECTED_LOGS_REQUEST&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SEARCH_COLLECTED_LOGS_RESPONSE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SEARCH_COLLECTED_LOGS_RESPONSE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">REPLAY_EVENTS_REQUEST</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;REPLAY_EVENTS_REQUEST&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">AMPLIFIER_SIGNAL_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;AMPLIFIER_SIGNAL_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">FILTERED_SIGNAL_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;FILTERED_SIGNAL_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SIGNAL_CATCHER_REQUEST_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SIGNAL_CATCHER_REQUEST_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SIGNAL_CATCHER_RESPONSE_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SIGNAL_CATCHER_RESPONSE_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">DICT_GET_REQUEST_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;DICT_GET_REQUEST_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">DICT_GET_RESPONSE_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;DICT_GET_RESPONSE_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">DICT_SET_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;DICT_SET_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">DECISION_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;DECISION_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">DIODE_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;DIODE_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">DIODE_REQUEST</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;DIODE_REQUEST&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">DIODE_RESPONSE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;DIODE_RESPONSE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">P300_DECISION_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;P300_DECISION_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SSVEP_DECISION_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SSVEP_DECISION_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SWITCH_MODE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SWITCH_MODE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">STREAMED_SIGNAL_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;STREAMED_SIGNAL_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SIGNAL_STREAMER_START</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SIGNAL_STREAMER_START&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SIGNAL_STREAMER_STOP</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SIGNAL_STREAMER_STOP&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SAMPLING_FREQUENCY</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SAMPLING_FREQUENCY&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">CALIBRATION</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;CALIBRATION&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">UGM_UPDATE_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;UGM_UPDATE_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">TAG</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;TAG&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">DIODE_CONTROL_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;DIODE_CONTROL_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">TAG_CATCHER_REQUEST_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;TAG_CATCHER_REQUEST_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">TAG_CATCHER_RESPONSE_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;TAG_CATCHER_RESPONSE_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BLINK_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BLINK_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">ACQUISITION_CONTROL_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ACQUISITION_CONTROL_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SIGNAL_SAVER_FINISHED</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SIGNAL_SAVER_FINISHED&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">INFO_SAVER_FINISHED</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;INFO_SAVER_FINISHED&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">TAG_SAVER_FINISHED</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;TAG_SAVER_FINISHED&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BLINK_VECTOR_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BLINK_VECTOR_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">HAPTIC_CONTROL_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;HAPTIC_CONTROL_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_INPUT_MESSAGE_0</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_INPUT_MESSAGE_0&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_INPUT_MESSAGE_1</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_INPUT_MESSAGE_1&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_INPUT_MESSAGE_2</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_INPUT_MESSAGE_2&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_INPUT_MESSAGE_3</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_INPUT_MESSAGE_3&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_INPUT_MESSAGE_4</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_INPUT_MESSAGE_4&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_INPUT_MESSAGE_5</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_INPUT_MESSAGE_5&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_INPUT_MESSAGE_6</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_INPUT_MESSAGE_6&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_INPUT_MESSAGE_7</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_INPUT_MESSAGE_7&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_INPUT_MESSAGE_8</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_INPUT_MESSAGE_8&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_INPUT_MESSAGE_9</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_INPUT_MESSAGE_9&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_OUTPUT_MESSAGE_0</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_OUTPUT_MESSAGE_0&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_OUTPUT_MESSAGE_1</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_OUTPUT_MESSAGE_1&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_OUTPUT_MESSAGE_2</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_OUTPUT_MESSAGE_2&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_OUTPUT_MESSAGE_3</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_OUTPUT_MESSAGE_3&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_OUTPUT_MESSAGE_4</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_OUTPUT_MESSAGE_4&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_OUTPUT_MESSAGE_5</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_OUTPUT_MESSAGE_5&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_OUTPUT_MESSAGE_6</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_OUTPUT_MESSAGE_6&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_OUTPUT_MESSAGE_7</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_OUTPUT_MESSAGE_7&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_OUTPUT_MESSAGE_8</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_OUTPUT_MESSAGE_8&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BENCHMARK_OUTPUT_MESSAGE_9</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BENCHMARK_OUTPUT_MESSAGE_9&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">ETR_SIGNAL_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ETR_SIGNAL_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SYSTEM_CONFIGURATION</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SYSTEM_CONFIGURATION&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">UGM_ENGINE_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;UGM_ENGINE_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">UGM_CONTROL_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;UGM_CONTROL_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">CONFIG_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;CONFIG_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">GET_CONFIG_PARAMS</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;GET_CONFIG_PARAMS&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">CONFIG_PARAMS</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;CONFIG_PARAMS&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">REGISTER_PEER_CONFIG</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;REGISTER_PEER_CONFIG&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">PEER_REGISTERED</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;PEER_REGISTERED&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">UPDATE_PARAMS</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;UPDATE_PARAMS&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">PARAMS_CHANGED</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;PARAMS_CHANGED&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">PEER_READY</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;PEER_READY&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">PEERS_READY_QUERY</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;PEERS_READY_QUERY&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">READY_STATUS</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;READY_STATUS&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">UNREGISTER_PEER_CONFIG</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;UNREGISTER_PEER_CONFIG&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">CONFIG_ERROR</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;CONFIG_ERROR&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">PEER_READY_SIGNAL</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;PEER_READY_SIGNAL&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SHUTDOWN_REQUEST</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SHUTDOWN_REQUEST&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">LAUNCHER_COMMAND</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;LAUNCHER_COMMAND&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SWITCH_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SWITCH_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">ROBOT_FEEDBACK_CONTROL</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ROBOT_FEEDBACK_CONTROL&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">P300_ANALYSIS_RESULTS</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;P300_ANALYSIS_RESULTS&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">ETR_ANALYSIS_RESULTS</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ETR_ANALYSIS_RESULTS&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">ETR_CALIBRATION_RESULTS</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ETR_CALIBRATION_RESULTS&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">OBCI_LOG_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;OBCI_LOG_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">OBCI_LOG_DUMP_REQUEST</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;OBCI_LOG_DUMP_REQUEST&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">OBCI_LOG_DUMP_RESPONSE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;OBCI_LOG_DUMP_RESPONSE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">TOBII_SIGNAL_SAVER_FINISHED</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;TOBII_SIGNAL_SAVER_FINISHED&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">TOBII_INFO_SAVER_FINISHED</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;TOBII_INFO_SAVER_FINISHED&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">TOBII_TAG_SAVER_FINISHED</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;TOBII_TAG_SAVER_FINISHED&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">TOBII_SIGNAL_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;TOBII_SIGNAL_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">WII_BOARD_SIGNAL_SAVER_FINISHED</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;WII_BOARD_SIGNAL_SAVER_FINISHED&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">WII_BOARD_INFO_SAVER_FINISHED</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;WII_BOARD_INFO_SAVER_FINISHED&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">WII_BOARD_TAG_SAVER_FINISHED</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;WII_BOARD_TAG_SAVER_FINISHED&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">WII_BOARD_SIGNAL_MESSAGE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;WII_BOARD_SIGNAL_MESSAGE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">WII_BOARD_ANALYSIS_RESULTS</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;WII_BOARD_ANALYSIS_RESULTS&#39;</span>
+	<span class="k">pass</span></div>
+
+<div class="viewcode-block" id="peers"><a class="viewcode-back" href="../../../apidoc/obci.mx_legacy.html#obci.mx_legacy.multiplexer_constants.peers">[docs]</a><span class="k">class</span> <span class="nc">peers</span><span class="p">(</span><span class="n">_constants_base</span><span class="p">):</span>
+
+	<span class="n">MULTIPLEXER</span> <span class="o">=</span> <span class="mi">1</span>
+	<span class="n">ALL_TYPES</span> <span class="o">=</span> <span class="mi">2</span>
+	<span class="n">MAX_MULTIPLEXER_SPECIAL_PEER_TYPE</span> <span class="o">=</span> <span class="mi">99</span>
+	<span class="n">PYTHON_TEST_SERVER</span> <span class="o">=</span> <span class="mi">106</span>
+	<span class="n">PYTHON_TEST_CLIENT</span> <span class="o">=</span> <span class="mi">107</span>
+	<span class="n">LOG_STREAMER</span> <span class="o">=</span> <span class="mi">108</span>
+	<span class="n">LOG_COLLECTOR</span> <span class="o">=</span> <span class="mi">109</span>
+	<span class="n">EVENTS_COLLECTOR</span> <span class="o">=</span> <span class="mi">110</span>
+	<span class="n">LOG_RECEIVER_EXAMPLE</span> <span class="o">=</span> <span class="mi">111</span>
+	<span class="n">AMPLIFIER</span> <span class="o">=</span> <span class="mi">112</span>
+	<span class="n">SIGNAL_CATCHER</span> <span class="o">=</span> <span class="mi">113</span>
+	<span class="n">MONITOR</span> <span class="o">=</span> <span class="mi">114</span>
+	<span class="n">HASHTABLE</span> <span class="o">=</span> <span class="mi">115</span>
+	<span class="n">FILTER</span> <span class="o">=</span> <span class="mi">116</span>
+	<span class="n">ANALYSIS</span> <span class="o">=</span> <span class="mi">117</span>
+	<span class="n">LOGIC_DECISION</span> <span class="o">=</span> <span class="mi">118</span>
+	<span class="n">STREAM_RECEIVER</span> <span class="o">=</span> <span class="mi">119</span>
+	<span class="n">DIODE</span> <span class="o">=</span> <span class="mi">120</span>
+	<span class="n">DIODE_CATCHER</span> <span class="o">=</span> <span class="mi">121</span>
+	<span class="n">SUPER_DIODE</span> <span class="o">=</span> <span class="mi">122</span>
+	<span class="n">SIGNAL_STREAMER</span> <span class="o">=</span> <span class="mi">123</span>
+	<span class="n">SIGNAL_SAVER</span> <span class="o">=</span> <span class="mi">124</span>
+	<span class="n">ACQUISITION_CONTROL</span> <span class="o">=</span> <span class="mi">125</span>
+	<span class="n">UGM</span> <span class="o">=</span> <span class="mi">126</span>
+	<span class="n">PINGER</span> <span class="o">=</span> <span class="mi">127</span>
+	<span class="n">TAGS_SENDER</span> <span class="o">=</span> <span class="mi">128</span>
+	<span class="n">TAGS_RECEIVER</span> <span class="o">=</span> <span class="mi">129</span>
+	<span class="n">CALIBRATOR</span> <span class="o">=</span> <span class="mi">130</span>
+	<span class="n">TAG_CATCHER</span> <span class="o">=</span> <span class="mi">131</span>
+	<span class="n">AUTOSCALE_GENERATOR</span> <span class="o">=</span> <span class="mi">132</span>
+	<span class="n">TAG_SAVER</span> <span class="o">=</span> <span class="mi">133</span>
+	<span class="n">INFO_SAVER</span> <span class="o">=</span> <span class="mi">134</span>
+	<span class="n">BLINK_CATCHER</span> <span class="o">=</span> <span class="mi">135</span>
+	<span class="n">CONFIGURER</span> <span class="o">=</span> <span class="mi">136</span>
+	<span class="n">ETR_ANALYSIS</span> <span class="o">=</span> <span class="mi">137</span>
+	<span class="n">ETR_AMPLIFIER</span> <span class="o">=</span> <span class="mi">138</span>
+	<span class="n">UGM_ENGINE</span> <span class="o">=</span> <span class="mi">139</span>
+	<span class="n">ETR_SAVER</span> <span class="o">=</span> <span class="mi">140</span>
+	<span class="n">OBCI_LAUNCHER</span> <span class="o">=</span> <span class="mi">141</span>
+	<span class="n">PEER_CONFIG_CONTROL</span> <span class="o">=</span> <span class="mi">142</span>
+	<span class="n">CONFIG_SERVER</span> <span class="o">=</span> <span class="mi">143</span>
+	<span class="n">AMPLIFIER_SERVER</span> <span class="o">=</span> <span class="mi">144</span>
+	<span class="n">UGM_ENGINE_PEER</span> <span class="o">=</span> <span class="mi">145</span>
+	<span class="n">LOGIC_P300_CALIBRATION</span> <span class="o">=</span> <span class="mi">146</span>
+	<span class="n">LOGIC_SSVEP_CALIBRATION</span> <span class="o">=</span> <span class="mi">147</span>
+	<span class="n">SSVEP_ANALYSIS</span> <span class="o">=</span> <span class="mi">148</span>
+	<span class="n">LOGIC_SSVEP_CSP</span> <span class="o">=</span> <span class="mi">149</span>
+	<span class="n">DRIVER_DISCOVERY</span> <span class="o">=</span> <span class="mi">150</span>
+	<span class="n">LOGIC_FEEDBACK</span> <span class="o">=</span> <span class="mi">151</span>
+	<span class="n">P300_ANALYSIS</span> <span class="o">=</span> <span class="mi">152</span>
+	<span class="n">LOGIC_P300_CSP</span> <span class="o">=</span> <span class="mi">153</span>
+	<span class="n">SWITCH_AMPLIFIER</span> <span class="o">=</span> <span class="mi">154</span>
+	<span class="n">SWITCH_ANALYSIS</span> <span class="o">=</span> <span class="mi">155</span>
+	<span class="n">ROBOT_FEEDBACK</span> <span class="o">=</span> <span class="mi">156</span>
+	<span class="n">ROBOT_FEEDBACK_CONTROL</span> <span class="o">=</span> <span class="mi">157</span>
+	<span class="n">WII_BOARD_AMPLIFIER</span> <span class="o">=</span> <span class="mi">158</span>
+	<span class="n">WII_BOARD_ANALYSIS</span> <span class="o">=</span> <span class="mi">159</span>
+	<span class="n">LOGIC_WII_BOARD</span> <span class="o">=</span> <span class="mi">160</span>
+	<span class="n">EXTERNAL_SWITCH_AMPLIFIER</span> <span class="o">=</span> <span class="mi">161</span>
+	<span class="n">ETR_P300_ANALYSIS</span> <span class="o">=</span> <span class="mi">162</span>
+	<span class="n">RESULTS_ANALYSIS</span> <span class="o">=</span> <span class="mi">163</span>
+	<span class="n">ETR_CALIBRATION</span> <span class="o">=</span> <span class="mi">164</span>
+	<span class="n">CLIENT</span> <span class="o">=</span> <span class="mi">165</span>
+	<span class="n">OBCI_LOG_COLLECTOR</span> <span class="o">=</span> <span class="mi">166</span>
+	<span class="n">WII_BOARD_SIGNAL_SAVER</span> <span class="o">=</span> <span class="mi">167</span>
+	<span class="n">WII_BOARD_INFO_SAVER</span> <span class="o">=</span> <span class="mi">168</span>
+	<span class="n">WII_BOARD_TAG_SAVER</span> <span class="o">=</span> <span class="mi">169</span>
+	<span class="n">TOBII_SIGNAL_SAVER</span> <span class="o">=</span> <span class="mi">170</span>
+	<span class="n">TOBII_INFO_SAVER</span> <span class="o">=</span> <span class="mi">171</span>
+	<span class="n">TOBII_TAG_SAVER</span> <span class="o">=</span> <span class="mi">172</span>
+	<span class="n">WII_BOARD_SIGNAL_CATCHER</span> <span class="o">=</span> <span class="mi">173</span>
+	<span class="n">TOBII_SIGNAL_CATCHER</span> <span class="o">=</span> <span class="mi">174</span>
+	<span class="n">HAPTICS_STIMULATOR</span> <span class="o">=</span> <span class="mi">175</span>
+
+	<span class="n">idtoname</span> <span class="o">=</span> <span class="p">{}</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">MULTIPLEXER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;MULTIPLEXER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">ALL_TYPES</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ALL_TYPES&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">MAX_MULTIPLEXER_SPECIAL_PEER_TYPE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;MAX_MULTIPLEXER_SPECIAL_PEER_TYPE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">PYTHON_TEST_SERVER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;PYTHON_TEST_SERVER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">PYTHON_TEST_CLIENT</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;PYTHON_TEST_CLIENT&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">LOG_STREAMER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;LOG_STREAMER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">LOG_COLLECTOR</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;LOG_COLLECTOR&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">EVENTS_COLLECTOR</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;EVENTS_COLLECTOR&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">LOG_RECEIVER_EXAMPLE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;LOG_RECEIVER_EXAMPLE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">AMPLIFIER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;AMPLIFIER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SIGNAL_CATCHER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SIGNAL_CATCHER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">MONITOR</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;MONITOR&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">HASHTABLE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;HASHTABLE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">FILTER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;FILTER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">ANALYSIS</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ANALYSIS&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">LOGIC_DECISION</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;LOGIC_DECISION&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">STREAM_RECEIVER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;STREAM_RECEIVER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">DIODE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;DIODE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">DIODE_CATCHER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;DIODE_CATCHER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SUPER_DIODE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SUPER_DIODE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SIGNAL_STREAMER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SIGNAL_STREAMER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SIGNAL_SAVER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SIGNAL_SAVER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">ACQUISITION_CONTROL</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ACQUISITION_CONTROL&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">UGM</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;UGM&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">PINGER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;PINGER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">TAGS_SENDER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;TAGS_SENDER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">TAGS_RECEIVER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;TAGS_RECEIVER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">CALIBRATOR</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;CALIBRATOR&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">TAG_CATCHER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;TAG_CATCHER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">AUTOSCALE_GENERATOR</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;AUTOSCALE_GENERATOR&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">TAG_SAVER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;TAG_SAVER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">INFO_SAVER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;INFO_SAVER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">BLINK_CATCHER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;BLINK_CATCHER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">CONFIGURER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;CONFIGURER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">ETR_ANALYSIS</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ETR_ANALYSIS&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">ETR_AMPLIFIER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ETR_AMPLIFIER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">UGM_ENGINE</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;UGM_ENGINE&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">ETR_SAVER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ETR_SAVER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">OBCI_LAUNCHER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;OBCI_LAUNCHER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">PEER_CONFIG_CONTROL</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;PEER_CONFIG_CONTROL&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">CONFIG_SERVER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;CONFIG_SERVER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">AMPLIFIER_SERVER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;AMPLIFIER_SERVER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">UGM_ENGINE_PEER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;UGM_ENGINE_PEER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">LOGIC_P300_CALIBRATION</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;LOGIC_P300_CALIBRATION&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">LOGIC_SSVEP_CALIBRATION</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;LOGIC_SSVEP_CALIBRATION&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SSVEP_ANALYSIS</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SSVEP_ANALYSIS&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">LOGIC_SSVEP_CSP</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;LOGIC_SSVEP_CSP&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">DRIVER_DISCOVERY</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;DRIVER_DISCOVERY&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">LOGIC_FEEDBACK</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;LOGIC_FEEDBACK&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">P300_ANALYSIS</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;P300_ANALYSIS&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">LOGIC_P300_CSP</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;LOGIC_P300_CSP&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SWITCH_AMPLIFIER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SWITCH_AMPLIFIER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">SWITCH_ANALYSIS</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;SWITCH_ANALYSIS&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">ROBOT_FEEDBACK</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ROBOT_FEEDBACK&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">ROBOT_FEEDBACK_CONTROL</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ROBOT_FEEDBACK_CONTROL&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">WII_BOARD_AMPLIFIER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;WII_BOARD_AMPLIFIER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">WII_BOARD_ANALYSIS</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;WII_BOARD_ANALYSIS&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">LOGIC_WII_BOARD</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;LOGIC_WII_BOARD&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">EXTERNAL_SWITCH_AMPLIFIER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;EXTERNAL_SWITCH_AMPLIFIER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">ETR_P300_ANALYSIS</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ETR_P300_ANALYSIS&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">RESULTS_ANALYSIS</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;RESULTS_ANALYSIS&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">ETR_CALIBRATION</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;ETR_CALIBRATION&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">CLIENT</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;CLIENT&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">OBCI_LOG_COLLECTOR</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;OBCI_LOG_COLLECTOR&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">WII_BOARD_SIGNAL_SAVER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;WII_BOARD_SIGNAL_SAVER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">WII_BOARD_INFO_SAVER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;WII_BOARD_INFO_SAVER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">WII_BOARD_TAG_SAVER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;WII_BOARD_TAG_SAVER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">TOBII_SIGNAL_SAVER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;TOBII_SIGNAL_SAVER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">TOBII_INFO_SAVER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;TOBII_INFO_SAVER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">TOBII_TAG_SAVER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;TOBII_TAG_SAVER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">WII_BOARD_SIGNAL_CATCHER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;WII_BOARD_SIGNAL_CATCHER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">TOBII_SIGNAL_CATCHER</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;TOBII_SIGNAL_CATCHER&#39;</span>
+	<span class="n">idtoname</span><span class="p">[</span><span class="n">HAPTICS_STIMULATOR</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;HAPTICS_STIMULATOR&#39;</span>
+	<span class="k">pass</span></div>
+
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

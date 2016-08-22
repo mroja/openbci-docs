@@ -1,0 +1,363 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.analysis.obci_signal_processing.tests.test_smart_tags_manager &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.analysis.obci_signal_processing.tests.test_smart_tags_manager</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1">#</span>
+<span class="c1"># Author:</span>
+<span class="c1">#     Mateusz Kruszyński &lt;mateusz.kruszynski@gmail.com&gt;</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">&gt;&gt;&gt; import os, os.path</span>
+
+<span class="sd">&gt;&gt;&gt; from obci.analysis.obci_signal_processing import smart_tags_manager as mgr</span>
+
+<span class="sd">&gt;&gt;&gt; from obci.analysis.obci_signal_processing.tags import smart_tag_definition as df</span>
+
+<span class="sd">&gt;&gt;&gt; d = df.SmartTagDurationDefinition(start_tag_name=&#39;trigger&#39;, start_offset=0, end_offset=0, duration=1.0)</span>
+
+<span class="sd">&gt;&gt;&gt; pth = os.path.abspath(mgr.__file__)</span>
+
+<span class="sd">&gt;&gt;&gt; f = {&#39;info&#39;:  os.path.join(pth[:-len(os.path.basename(pth))], &#39;tests&#39;, &#39;data&#39;, &#39;nic.obci.svarog.info&#39;),\</span>
+<span class="sd">&#39;data&#39;:&#39;nic.obci.dat&#39;, &#39;tags&#39;: os.path.join(pth[:-len(os.path.basename(pth))], &#39;tests&#39;, &#39;data&#39;, &#39;nic.obci.svarog.tags&#39;)}</span>
+
+<span class="sd">&gt;&gt;&gt; fabricate_data_file(f[&#39;data&#39;])</span>
+
+<span class="sd">&gt;&gt;&gt; m = mgr.SmartTagsManager(d, f[&#39;info&#39;], f[&#39;data&#39;], f[&#39;tags&#39;])</span>
+
+<span class="sd">&gt;&gt;&gt; print(len(m._smart_tags))</span>
+<span class="sd">51</span>
+
+<span class="sd">&gt;&gt;&gt; tags, num = iter_all_tags(m)</span>
+
+<span class="sd">&gt;&gt;&gt; print(num)</span>
+<span class="sd">51</span>
+
+<span class="sd">&gt;&gt;&gt; abs(tags[0].get_start_timestamp()-0.36085605621337891)&lt;0.0001</span>
+<span class="sd">True</span>
+
+<span class="sd">&gt;&gt;&gt; abs(tags[50].get_end_timestamp()-79.996880054473877)&lt;0.0001</span>
+<span class="sd">True</span>
+
+<span class="sd">&gt;&gt;&gt; abs(tags[2].get_channel_samples(&#39;Fp1&#39;)[0]-19389.0)&lt;0.0001</span>
+<span class="sd">True</span>
+
+<span class="sd">&gt;&gt;&gt; print(tags_len_ok(tags))</span>
+<span class="sd">True</span>
+
+<span class="sd">&gt;&gt;&gt; dd = df.SmartTagEndTagDefinition(start_tag_name=&#39;trigger&#39;, start_offset=0, end_offset=0, end_tags_names=[&#39;trigger&#39;])</span>
+
+<span class="sd">&gt;&gt;&gt; mm = mgr.SmartTagsManager(dd, f[&#39;info&#39;], f[&#39;data&#39;], f[&#39;tags&#39;])</span>
+
+<span class="sd">&gt;&gt;&gt; tags, num = iter_all_tags(mm)</span>
+
+<span class="sd">&gt;&gt;&gt; print(num)</span>
+<span class="sd">50</span>
+
+<span class="sd">&gt;&gt;&gt; print(not_duration_tags_data_len(tags))</span>
+<span class="sd">20131</span>
+
+<span class="sd">&gt;&gt;&gt; print(not_duration_tags_data_sub(tags))</span>
+<span class="sd">True</span>
+
+<span class="sd">&gt;&gt;&gt; # Another test</span>
+
+<span class="sd">&gt;&gt;&gt; from ..tags import tags_file_writer as p</span>
+
+<span class="sd">&gt;&gt;&gt; px = p.TagsFileWriter(&#39;./tescik.obci.tags&#39;)</span>
+
+<span class="sd">&gt;&gt;&gt; px.tag_received({&#39;start_timestamp&#39;:1.0, &#39;end_timestamp&#39;:5.0, &#39;name&#39;: &#39;A&#39;, &#39;channels&#39;:&#39;&#39;,\</span>
+<span class="sd">&#39;desc&#39;: {&#39;x&#39;:123, &#39;y&#39;:456, &#39;z&#39;: 789}})</span>
+
+
+<span class="sd">&gt;&gt;&gt; px.tag_received({&#39;start_timestamp&#39;:6.0, &#39;end_timestamp&#39;:10.0, &#39;name&#39;: &#39;A&#39;, &#39;channels&#39;:&#39;&#39;,\</span>
+<span class="sd">&#39;desc&#39;: {&#39;x&#39;:1234, &#39;y&#39;:4567, &#39;z&#39;: 789}})</span>
+
+<span class="sd">&gt;&gt;&gt; px.tag_received({&#39;start_timestamp&#39;:6.1, &#39;end_timestamp&#39;:6.5, &#39;name&#39;: &#39;B&#39;, &#39;channels&#39;:&#39;&#39;,\</span>
+<span class="sd">&#39;desc&#39;: {&#39;x&#39;:123, &#39;y&#39;:456, &#39;z&#39;: 789}})</span>
+
+<span class="sd">&gt;&gt;&gt; px.tag_received({&#39;start_timestamp&#39;:7.0, &#39;end_timestamp&#39;:7.0, &#39;name&#39;: &#39;B&#39;, &#39;channels&#39;:&#39;&#39;,\</span>
+<span class="sd">&#39;desc&#39;: {&#39;x&#39;:123, &#39;y&#39;:456, &#39;z&#39;: 789}})</span>
+
+<span class="sd">&gt;&gt;&gt; px.tag_received({&#39;start_timestamp&#39;:7.5, &#39;end_timestamp&#39;:8.7, &#39;name&#39;: &#39;B&#39;, &#39;channels&#39;:&#39;&#39;,\</span>
+<span class="sd">&#39;desc&#39;: {&#39;x&#39;:123, &#39;y&#39;:456, &#39;z&#39;: 789}})</span>
+
+
+<span class="sd">&gt;&gt;&gt; px.tag_received({&#39;start_timestamp&#39;:9.0, &#39;end_timestamp&#39;:15.0, &#39;name&#39;: &#39;A&#39;, &#39;channels&#39;:&#39;&#39;,\</span>
+<span class="sd">&#39;desc&#39;: {&#39;x&#39;:12345, &#39;y&#39;:45678, &#39;z&#39;: 789}})</span>
+
+<span class="sd">&gt;&gt;&gt; px.tag_received({&#39;start_timestamp&#39;:10.2, &#39;end_timestamp&#39;:11.0, &#39;name&#39;: &#39;B&#39;, &#39;channels&#39;:&#39;&#39;,\</span>
+<span class="sd">&#39;desc&#39;: {&#39;x&#39;:123, &#39;y&#39;:456, &#39;z&#39;: 789}})</span>
+
+<span class="sd">&gt;&gt;&gt; px.tag_received({&#39;start_timestamp&#39;:12.0, &#39;end_timestamp&#39;:12.5, &#39;name&#39;: &#39;B&#39;, &#39;channels&#39;:&#39;&#39;,\</span>
+<span class="sd">&#39;desc&#39;: {&#39;x&#39;:123, &#39;y&#39;:456, &#39;z&#39;: 789}})</span>
+
+
+<span class="sd">&gt;&gt;&gt; px.tag_received({&#39;start_timestamp&#39;:20.0, &#39;end_timestamp&#39;:25.0, &#39;name&#39;: &#39;A&#39;, &#39;channels&#39;:&#39;&#39;,\</span>
+<span class="sd">&#39;desc&#39;: {&#39;x&#39;:12345, &#39;y&#39;:45678, &#39;z&#39;: 789}})</span>
+
+<span class="sd">&gt;&gt;&gt; px.finish_saving(0.0)</span>
+<span class="sd">&#39;./tescik.obci.tags&#39;</span>
+
+<span class="sd">&gt;&gt;&gt; fabricate_data_file(&#39;./tescik.obci.dat&#39;, 1)</span>
+
+<span class="sd">&gt;&gt;&gt; fabricate_info_file(&#39;./tescik.obci.info&#39;, 1)</span>
+
+<span class="sd">&gt;&gt;&gt; dd = df.SmartTagEndTagDefinition(start_tag_name=&#39;A&#39;, start_offset=0, end_offset=0, end_tags_names=[&#39;A&#39;])</span>
+
+<span class="sd">&gt;&gt;&gt; mm = mgr.SmartTagsManager(dd, &#39;./tescik.obci.info&#39;, &#39;./tescik.obci.dat&#39;, &#39;./tescik.obci.tags&#39;)</span>
+
+<span class="sd">&gt;&gt;&gt; tags = [i for i in mm.iter_smart_tags()]</span>
+
+<span class="sd">&gt;&gt;&gt; len(tags)</span>
+<span class="sd">3</span>
+
+<span class="sd">&gt;&gt;&gt; tags2 = [i for i in mm]</span>
+
+<span class="sd">&gt;&gt;&gt; len(tags2)</span>
+<span class="sd">3</span>
+
+<span class="sd">&gt;&gt;&gt; tags == tags2</span>
+<span class="sd">True</span>
+
+<span class="sd">&gt;&gt;&gt; print(tags[1].get_samples()[0][0])</span>
+<span class="sd">768.0</span>
+
+
+<span class="sd">&gt;&gt;&gt; dd = df.SmartTagDurationDefinition(start_tag_name=&#39;B&#39;, start_offset=0, end_offset=0, duration=1.0)</span>
+
+<span class="sd">&gt;&gt;&gt; mm = mgr.SmartTagsManager(dd, None, None, None, tags[1])</span>
+
+<span class="sd">&gt;&gt;&gt; tss = [i for i in mm.iter_smart_tags()]</span>
+
+<span class="sd">&gt;&gt;&gt; len(tss)</span>
+<span class="sd">3</span>
+
+<span class="sd">&gt;&gt;&gt; tss_tags = [t.get_start_tag() for t in tss]</span>
+
+<span class="sd">&gt;&gt;&gt; tss_tags ==\</span>
+<span class="sd">[{&#39;channels&#39;: &#39;&#39;, &#39;start_timestamp&#39;: 6.0999999999999996, &#39;desc&#39;: {u&#39;y&#39;: u&#39;456&#39;, u&#39;x&#39;: u&#39;123&#39;, u&#39;z&#39;: u&#39;789&#39;},\</span>
+<span class="sd">&#39;name&#39;: u&#39;B&#39;, &#39;end_timestamp&#39;: 6.5}, {&#39;channels&#39;: &#39;&#39;, &#39;start_timestamp&#39;: 7.0,\</span>
+<span class="sd">&#39;desc&#39;: {u&#39;y&#39;: u&#39;456&#39;, u&#39;x&#39;: u&#39;123&#39;, u&#39;z&#39;: u&#39;789&#39;}, &#39;name&#39;: u&#39;B&#39;, &#39;end_timestamp&#39;: 7.0},\</span>
+<span class="sd">{&#39;channels&#39;: &#39;&#39;, &#39;start_timestamp&#39;: 7.5, &#39;desc&#39;: {u&#39;y&#39;: u&#39;456&#39;, u&#39;x&#39;: u&#39;123&#39;, u&#39;z&#39;: u&#39;789&#39;},\</span>
+<span class="sd">&#39;name&#39;: u&#39;B&#39;, &#39;end_timestamp&#39;: 8.6999999999999993}]</span>
+<span class="sd">True</span>
+
+<span class="sd">&gt;&gt;&gt; print(tss[0].get_samples()[0][0])</span>
+<span class="sd">780.0</span>
+
+
+<span class="sd">&gt;&gt;&gt; dd = df.SmartTagDurationDefinition(start_tag_name=&#39;B&#39;, start_offset=0, end_offset=0, duration=1.0)</span>
+
+<span class="sd">&gt;&gt;&gt; mm = mgr.SmartTagsManager(dd, None, None, None, tags[2])</span>
+
+<span class="sd">&gt;&gt;&gt; tss = [i for i in mm.iter_smart_tags()]</span>
+
+<span class="sd">&gt;&gt;&gt; len(tss)</span>
+<span class="sd">2</span>
+
+<span class="sd">&gt;&gt;&gt; tss_tags = [t.get_start_tag() for t in tss]</span>
+
+<span class="sd">&gt;&gt;&gt; tss_tags==\</span>
+<span class="sd">[{&#39;channels&#39;: &#39;&#39;, &#39;start_timestamp&#39;: 10.199999999999999, &#39;desc&#39;: {u&#39;y&#39;: u&#39;456&#39;, u&#39;x&#39;: u&#39;123&#39;, u&#39;z&#39;: u&#39;789&#39;},\</span>
+<span class="sd">&#39;name&#39;: u&#39;B&#39;, &#39;end_timestamp&#39;: 11.0}, {&#39;channels&#39;: &#39;&#39;, &#39;start_timestamp&#39;: 12.0,\</span>
+<span class="sd">&#39;desc&#39;: {u&#39;y&#39;: u&#39;456&#39;, u&#39;x&#39;: u&#39;123&#39;, u&#39;z&#39;: u&#39;789&#39;}, &#39;name&#39;: u&#39;B&#39;, &#39;end_timestamp&#39;: 12.5}]</span>
+<span class="sd">True</span>
+
+<span class="sd">&gt;&gt;&gt; import os</span>
+
+<span class="sd">&gt;&gt;&gt; import glob</span>
+
+<span class="sd">&gt;&gt;&gt; for fl in glob.glob(&#39;tescik*&#39;): os.remove(fl)</span>
+
+<span class="sd">&gt;&gt;&gt; for fl in glob.glob(&#39;nic.obci*&#39;): os.remove(fl)</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="iter_first_tag"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tests.html#obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.iter_first_tag">[docs]</a><span class="k">def</span> <span class="nf">iter_first_tag</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">st</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">iter_smart_tags</span><span class="p">():</span>
+        <span class="nb">print</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">st</span><span class="o">.</span><span class="n">get_samples</span><span class="p">()[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="k">break</span></div>
+
+
+<div class="viewcode-block" id="iter_all_tags"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tests.html#obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.iter_all_tags">[docs]</a><span class="k">def</span> <span class="nf">iter_all_tags</span><span class="p">(</span><span class="n">m</span><span class="p">):</span>
+    <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">sts</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">st</span> <span class="ow">in</span> <span class="n">m</span><span class="o">.</span><span class="n">iter_smart_tags</span><span class="p">():</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="n">count</span> <span class="o">+</span> <span class="mi">1</span>
+        <span class="n">sts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">sts</span><span class="p">,</span> <span class="n">count</span></div>
+
+
+<div class="viewcode-block" id="tags_len_ok"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tests.html#obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.tags_len_ok">[docs]</a><span class="k">def</span> <span class="nf">tags_len_ok</span><span class="p">(</span><span class="n">tags</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">23</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">get_samples</span><span class="p">()[</span><span class="n">i</span><span class="p">])</span> <span class="o">!=</span> <span class="mi">256</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="not_duration_tags_data_len"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tests.html#obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.not_duration_tags_data_len">[docs]</a><span class="k">def</span> <span class="nf">not_duration_tags_data_len</span><span class="p">(</span><span class="n">tags</span><span class="p">):</span>
+    <span class="n">l</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+        <span class="n">l</span> <span class="o">+=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">get_samples</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">l</span></div>
+
+
+<div class="viewcode-block" id="not_duration_tags_data_sub"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tests.html#obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.not_duration_tags_data_sub">[docs]</a><span class="k">def</span> <span class="nf">not_duration_tags_data_sub</span><span class="p">(</span><span class="n">tags</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;True if data in tags are sequential -</span>
+<span class="sd">    they should be, as we have trigger-to-trigger tags</span>
+<span class="sd">    and data in file are sequential.&quot;&quot;&quot;</span>
+    <span class="n">d</span> <span class="o">=</span> <span class="n">tags</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_samples</span><span class="p">()[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mi">1</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+        <span class="n">td_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">tag</span><span class="o">.</span><span class="n">get_samples</span><span class="p">()[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">td_len</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">23</span><span class="p">):</span>
+                <span class="n">td</span> <span class="o">=</span> <span class="n">tag</span><span class="o">.</span><span class="n">get_samples</span><span class="p">()[</span><span class="n">i</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">td</span><span class="p">[</span><span class="n">j</span><span class="p">]</span> <span class="o">!=</span> <span class="n">d</span> <span class="o">+</span> <span class="mi">1</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="n">td</span><span class="p">[</span><span class="n">j</span><span class="p">])</span>
+                    <span class="n">ret</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="n">d</span> <span class="o">=</span> <span class="n">td</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+
+<div class="viewcode-block" id="fabricate_data_file"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tests.html#obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.fabricate_data_file">[docs]</a><span class="k">def</span> <span class="nf">fabricate_data_file</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">ch</span><span class="o">=</span><span class="mi">23</span><span class="p">):</span>
+    <span class="kn">import</span> <span class="nn">struct</span>
+    <span class="n">ch_count</span> <span class="o">=</span> <span class="n">ch</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span> <span class="k">as</span> <span class="n">data_file</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">100000</span> <span class="o">*</span> <span class="n">ch_count</span><span class="p">):</span>
+            <span class="n">data_file</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">struct</span><span class="o">.</span><span class="n">pack</span><span class="p">(</span><span class="s1">&#39;d&#39;</span><span class="p">,</span> <span class="n">i</span><span class="p">))</span></div>
+
+
+<div class="viewcode-block" id="fabricate_info_file"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tests.html#obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.fabricate_info_file">[docs]</a><span class="k">def</span> <span class="nf">fabricate_info_file</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">ch</span><span class="o">=</span><span class="mi">23</span><span class="p">):</span>
+    <span class="kn">from</span> <span class="nn">..signal</span> <span class="k">import</span> <span class="n">info_file_proxy</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">info_file_proxy</span><span class="o">.</span><span class="n">InfoFileWriteProxy</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+    <span class="n">l_signal_params</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">l_freq</span> <span class="o">=</span> <span class="s1">&#39;128.0&#39;</span>
+    <span class="n">l_ch_nums</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ch</span><span class="p">)]</span>
+    <span class="n">l_ch_names</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ch</span><span class="p">)]</span>
+    <span class="n">l_ch_gains</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ch</span><span class="p">)]</span>
+    <span class="n">l_ch_offsets</span> <span class="o">=</span> <span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">ch</span><span class="p">)]</span>
+
+    <span class="n">l_signal_params</span><span class="p">[</span><span class="s1">&#39;number_of_channels&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">l_ch_nums</span><span class="p">)</span>
+    <span class="n">l_signal_params</span><span class="p">[</span><span class="s1">&#39;sampling_frequency&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">l_freq</span>
+    <span class="n">l_signal_params</span><span class="p">[</span><span class="s1">&#39;channels_numbers&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">l_ch_nums</span>
+    <span class="n">l_signal_params</span><span class="p">[</span><span class="s1">&#39;channels_names&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">l_ch_names</span>
+    <span class="n">l_signal_params</span><span class="p">[</span><span class="s1">&#39;channels_gains&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">l_ch_gains</span>
+    <span class="n">l_signal_params</span><span class="p">[</span><span class="s1">&#39;channels_offsets&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">l_ch_offsets</span>
+    <span class="n">l_signal_params</span><span class="p">[</span><span class="s1">&#39;number_of_samples&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mi">100</span>
+    <span class="n">l_signal_params</span><span class="p">[</span><span class="s1">&#39;file&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;tescik.obci.dat&#39;</span>
+    <span class="n">l_signal_params</span><span class="p">[</span><span class="s1">&#39;first_sample_timestamp&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="mf">1.0</span>
+    <span class="n">p</span><span class="o">.</span><span class="n">finish_saving</span><span class="p">(</span><span class="n">l_signal_params</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="run"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tests.html#obci.analysis.obci_signal_processing.tests.test_smart_tags_manager.run">[docs]</a><span class="k">def</span> <span class="nf">run</span><span class="p">():</span>
+    <span class="kn">import</span> <span class="nn">doctest</span>
+    <span class="kn">import</span> <span class="nn">sys</span>
+    <span class="n">doctest</span><span class="o">.</span><span class="n">testmod</span><span class="p">(</span><span class="n">sys</span><span class="o">.</span><span class="n">modules</span><span class="p">[</span><span class="n">__name__</span><span class="p">])</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;All tests succeeded!&quot;</span><span class="p">)</span></div>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">run</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

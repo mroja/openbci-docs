@@ -1,0 +1,70 @@
+obci.control.common package
+===========================
+
+Submodules
+----------
+
+obci.control.common.cfg_messages_pb2 module
+-------------------------------------------
+
+.. automodule:: obci.control.common.cfg_messages_pb2
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.common.config_helpers module
+-----------------------------------------
+
+.. automodule:: obci.control.common.config_helpers
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.common.config_message module
+-----------------------------------------
+
+.. automodule:: obci.control.common.config_message
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.common.graph module
+--------------------------------
+
+.. automodule:: obci.control.common.graph
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.common.message module
+----------------------------------
+
+.. automodule:: obci.control.common.message
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.common.net_tools module
+------------------------------------
+
+.. automodule:: obci.control.common.net_tools
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.common.obci_control_settings module
+------------------------------------------------
+
+.. automodule:: obci.control.common.obci_control_settings
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.control.common
+    :members:
+    :undoc-members:
+    :show-inheritance:

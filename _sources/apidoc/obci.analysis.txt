@@ -1,0 +1,29 @@
+obci.analysis package
+=====================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    obci.analysis.obci_signal_processing
+
+Submodules
+----------
+
+obci.analysis.analysis_logging module
+-------------------------------------
+
+.. automodule:: obci.analysis.analysis_logging
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.analysis
+    :members:
+    :undoc-members:
+    :show-inheritance:

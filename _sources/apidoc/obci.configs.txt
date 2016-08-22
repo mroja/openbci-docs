@@ -1,0 +1,37 @@
+obci.configs package
+====================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    obci.configs.tests
+
+Submodules
+----------
+
+obci.configs.settings module
+----------------------------
+
+.. automodule:: obci.configs.settings
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.configs.variables_pb2 module
+---------------------------------
+
+.. automodule:: obci.configs.variables_pb2
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.configs
+    :members:
+    :undoc-members:
+    :show-inheritance:

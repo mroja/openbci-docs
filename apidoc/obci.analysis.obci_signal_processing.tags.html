@@ -1,0 +1,465 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.analysis.obci_signal_processing.tags package &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../index.html" />
+    <link rel="up" title="obci.analysis.obci_signal_processing package" href="obci.analysis.obci_signal_processing.html" />
+    <link rel="next" title="obci.analysis.obci_signal_processing.tests package" href="obci.analysis.obci_signal_processing.tests.html" />
+    <link rel="prev" title="obci.analysis.obci_signal_processing.signal package" href="obci.analysis.obci_signal_processing.signal.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="obci-analysis-obci-signal-processing-tags-package">
+<h1>obci.analysis.obci_signal_processing.tags package<a class="headerlink" href="#obci-analysis-obci-signal-processing-tags-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.tags.read_tags_source">
+<span id="obci-analysis-obci-signal-processing-tags-read-tags-source-module"></span><h2>obci.analysis.obci_signal_processing.tags.read_tags_source module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.tags.read_tags_source" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.tags.read_tags_source.FileTagsSource">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.tags.read_tags_source.</code><code class="descname">FileTagsSource</code><span class="sig-paren">(</span><em>p_file_path</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/read_tags_source.html#FileTagsSource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.read_tags_source.FileTagsSource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.analysis.obci_signal_processing.tags.read_tags_source.TagsSource" title="obci.analysis.obci_signal_processing.tags.read_tags_source.TagsSource"><code class="xref py py-class docutils literal"><span class="pre">obci.analysis.obci_signal_processing.tags.read_tags_source.TagsSource</span></code></a></p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.read_tags_source.FileTagsSource.get_tags">
+<code class="descname">get_tags</code><span class="sig-paren">(</span><em>p_tag_type=None</em>, <em>p_from=None</em>, <em>p_len=None</em>, <em>p_func=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/read_tags_source.html#FileTagsSource.get_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.read_tags_source.FileTagsSource.get_tags" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.read_tags_source.FileTagsSource.set_tags">
+<code class="descname">set_tags</code><span class="sig-paren">(</span><em>p_tags</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/read_tags_source.html#FileTagsSource.set_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.read_tags_source.FileTagsSource.set_tags" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.tags.read_tags_source.MemoryTagsSource">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.tags.read_tags_source.</code><code class="descname">MemoryTagsSource</code><span class="sig-paren">(</span><em>p_tags=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/read_tags_source.html#MemoryTagsSource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.read_tags_source.MemoryTagsSource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.analysis.obci_signal_processing.tags.read_tags_source.TagsSource" title="obci.analysis.obci_signal_processing.tags.read_tags_source.TagsSource"><code class="xref py py-class docutils literal"><span class="pre">obci.analysis.obci_signal_processing.tags.read_tags_source.TagsSource</span></code></a></p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.read_tags_source.MemoryTagsSource.get_tags">
+<code class="descname">get_tags</code><span class="sig-paren">(</span><em>p_tag_type=None</em>, <em>p_from=None</em>, <em>p_len=None</em>, <em>p_func=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/read_tags_source.html#MemoryTagsSource.get_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.read_tags_source.MemoryTagsSource.get_tags" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.read_tags_source.MemoryTagsSource.set_tags">
+<code class="descname">set_tags</code><span class="sig-paren">(</span><em>p_tags</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/read_tags_source.html#MemoryTagsSource.set_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.read_tags_source.MemoryTagsSource.set_tags" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.tags.read_tags_source.TagsSource">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.tags.read_tags_source.</code><code class="descname">TagsSource</code><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/read_tags_source.html#TagsSource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.read_tags_source.TagsSource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.read_tags_source.TagsSource.get_tags">
+<code class="descname">get_tags</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/read_tags_source.html#TagsSource.get_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.read_tags_source.TagsSource.get_tags" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.tags.smart_tag">
+<span id="obci-analysis-obci-signal-processing-tags-smart-tag-module"></span><h2>obci.analysis.obci_signal_processing.tags.smart_tag module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.tags.smart_tag" title="Permalink to this headline">¶</a></h2>
+<p>Implement Smart tags classes: SmartTagEndTag, SmartTagDuration.</p>
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.tags.smart_tag.SmartTag">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.tags.smart_tag.</code><code class="descname">SmartTag</code><span class="sig-paren">(</span><em>p_tag_def</em>, <em>p_start_tag</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/smart_tag.html#SmartTag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.smart_tag.SmartTag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.read_manager.ReadManager" title="obci.analysis.obci_signal_processing.read_manager.ReadManager"><code class="xref py py-class docutils literal"><span class="pre">obci.analysis.obci_signal_processing.read_manager.ReadManager</span></code></a></p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.smart_tag.SmartTag.get_end_timestamp">
+<code class="descname">get_end_timestamp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/smart_tag.html#SmartTag.get_end_timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.smart_tag.SmartTag.get_end_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd><p>To be subclassed.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.smart_tag.SmartTag.get_start_tag">
+<code class="descname">get_start_tag</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/smart_tag.html#SmartTag.get_start_tag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.smart_tag.SmartTag.get_start_tag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.smart_tag.SmartTag.get_start_timestamp">
+<code class="descname">get_start_timestamp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/smart_tag.html#SmartTag.get_start_timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.smart_tag.SmartTag.get_start_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.smart_tag.SmartTag.is_initialised">
+<code class="descname">is_initialised</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/smart_tag.html#SmartTag.is_initialised"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.smart_tag.SmartTag.is_initialised" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.smart_tag.SmartTag.set_initialised">
+<code class="descname">set_initialised</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/smart_tag.html#SmartTag.set_initialised"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.smart_tag.SmartTag.set_initialised" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.tags.smart_tag.SmartTagDuration">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.tags.smart_tag.</code><code class="descname">SmartTagDuration</code><span class="sig-paren">(</span><em>p_tag_def</em>, <em>p_start_tag</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/smart_tag.html#SmartTagDuration"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.smart_tag.SmartTagDuration" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.analysis.obci_signal_processing.tags.smart_tag.SmartTag" title="obci.analysis.obci_signal_processing.tags.smart_tag.SmartTag"><code class="xref py py-class docutils literal"><span class="pre">obci.analysis.obci_signal_processing.tags.smart_tag.SmartTag</span></code></a></p>
+<p>Public interface:
+- get_data() &lt;- this is the only method to be really used outside
+-
+- __init__(tag_def, start_tag)
+- get_start_timestamp()
+- get_end_timestamp()
+- get_data_for(channel)
+- get_start_tag()
+- set_data()
+- set_end_tag()</p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.smart_tag.SmartTagDuration.get_end_timestamp">
+<code class="descname">get_end_timestamp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/smart_tag.html#SmartTagDuration.get_end_timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.smart_tag.SmartTagDuration.get_end_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.tags.smart_tag.SmartTagEndTag">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.tags.smart_tag.</code><code class="descname">SmartTagEndTag</code><span class="sig-paren">(</span><em>p_tag_def</em>, <em>p_start_tag</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/smart_tag.html#SmartTagEndTag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.smart_tag.SmartTagEndTag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.analysis.obci_signal_processing.tags.smart_tag.SmartTag" title="obci.analysis.obci_signal_processing.tags.smart_tag.SmartTag"><code class="xref py py-class docutils literal"><span class="pre">obci.analysis.obci_signal_processing.tags.smart_tag.SmartTag</span></code></a></p>
+<p>Public interface:
+- get_data() &lt;- this is the only method to be really used outside
+-
+- __init__(tag_def, start_tag)
+- get_start_timestamp()
+- get_end_timestamp()
+- get_data_for(channel)
+- get_start_tag()
+- get_end_tag()
+- set_data()
+- set_end_tag()</p>
+<ul class="simple">
+<li>p_tag_def - must be an instance of SmartTagEndTagDefinition.</li>
+<li>p_start_tag - must be a dictionary representaion of existing tag.</li>
+</ul>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.smart_tag.SmartTagEndTag.get_end_tag">
+<code class="descname">get_end_tag</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/smart_tag.html#SmartTagEndTag.get_end_tag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.smart_tag.SmartTagEndTag.get_end_tag" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.smart_tag.SmartTagEndTag.get_end_timestamp">
+<code class="descname">get_end_timestamp</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/smart_tag.html#SmartTagEndTag.get_end_timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.smart_tag.SmartTagEndTag.get_end_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.smart_tag.SmartTagEndTag.set_end_tag">
+<code class="descname">set_end_tag</code><span class="sig-paren">(</span><em>p_tag</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/smart_tag.html#SmartTagEndTag.set_end_tag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.smart_tag.SmartTagEndTag.set_end_tag" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method must be fired only and only once, to set
+smart tag`s ending tag.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.tags.smart_tag_definition">
+<span id="obci-analysis-obci-signal-processing-tags-smart-tag-definition-module"></span><h2>obci.analysis.obci_signal_processing.tags.smart_tag_definition module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.tags.smart_tag_definition" title="Permalink to this headline">¶</a></h2>
+<p>Module defines classes representing smart tag definition.
+Smart tag definition is a data structure defining what kind of bunches of
+samples smart tag is to provide.
+By now we have a general, abstract class SmartTagDefinition.</p>
+<p>Concrete classes are:
+SmartTagEndTagDefinition</p>
+<p>SmartTagDurationDefinition</p>
+<p>see concrete classes definitions to learn how to use them.</p>
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagDefinition">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.tags.smart_tag_definition.</code><code class="descname">SmartTagDefinition</code><span class="sig-paren">(</span><em>**p_params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/smart_tag_definition.html#SmartTagDefinition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagDefinition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>An abstract class storing general info. See subclasses defs.</p>
+<p>Se subclasses defs.</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagDurationDefinition">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.tags.smart_tag_definition.</code><code class="descname">SmartTagDurationDefinition</code><span class="sig-paren">(</span><em>**p_params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/smart_tag_definition.html#SmartTagDurationDefinition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagDurationDefinition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagDefinition" title="obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagDefinition"><code class="xref py py-class docutils literal"><span class="pre">obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagDefinition</span></code></a></p>
+<p>The class is to be used for following requirement:
+&#8216;We want to extract bunches of samples starting from some particular
+tag type and lasting x miliseconds.
+It is a constructor parameter for SmartTagsManager.
+Constructor`s parameters and (at the same time) public slots:
+- start_tag_name - string
+- start_offset - float (default 0)
+- end_offset - float (default 0)
+- duration - float</p>
+<dl class="docutils">
+<dt>x = SmartTagDuration(start_tag_name=&#8217;ugm_config&#8217;,</dt>
+<dd>start_offset=-10.0,
+end_offset=20.0,
+duration=100.0)</dd>
+</dl>
+<p>Consider samples file f, and tag scattered on the timeline like that:
+&#8212;100ms&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;300ms&#8212;&#8212;&#8212;&#8211;400ms&#8212;&#8212;&#8212;500ms&#8212;&#8212;&#8212;&#8212;-
+ugm_config             ugm_config       ugm_break  ugm_config</p>
+<p>Using x definition means:
+Generate following samples bunches:
+- 90ms;220ms
+- 290ms;420ms
+- 490ms;620ms</p>
+<p>See class description.</p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagDurationDefinition.is_type">
+<code class="descname">is_type</code><span class="sig-paren">(</span><em>p_type</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/smart_tag_definition.html#SmartTagDurationDefinition.is_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagDurationDefinition.is_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type check - return true if p_type is end_tag.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagEndTagDefinition">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.tags.smart_tag_definition.</code><code class="descname">SmartTagEndTagDefinition</code><span class="sig-paren">(</span><em>**p_params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/smart_tag_definition.html#SmartTagEndTagDefinition"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagEndTagDefinition" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagDefinition" title="obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagDefinition"><code class="xref py py-class docutils literal"><span class="pre">obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagDefinition</span></code></a></p>
+<p>The class is to be used for following requirement:
+&#8216;We want to extract bunches of samples starting from some particular
+tag type and ending with some particular tag type.&#8217;
+It is a constructor parameter for SmartTagsManager.
+Constructor`s parameters and (at the same time) public slots:
+- start_tag_name - string
+- start_offset - float (default 0)
+- end_offset - float (default 0)
+- end_tags_names - list of strings.</p>
+<dl class="docutils">
+<dt>x = SmartTagEndTagDefinition(start_tag_name=&#8217;ugm_config&#8217;,</dt>
+<dd>start_offset=-10.0,
+end_offset=20.0,
+end_tags_names=[&#8216;ugm_config&#8217;, &#8216;ugm_break&#8217;])</dd>
+</dl>
+<p>Consider samples file f, and tag scattered on the timeline like that:
+&#8212;100ms&#8212;&#8212;&#8212;&#8212;&#8212;&#8212;300ms&#8212;&#8212;&#8212;&#8211;400ms&#8212;&#8212;&#8212;500ms&#8212;&#8212;&#8212;-700ms
+ugm_config             ugm_config       ugm_break  ugm_config</p>
+<p>Using x definition means:
+Generate following samples bunches:
+- 90ms;320ms
+- 290ms;420ms</p>
+<p>See class description.</p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagEndTagDefinition.is_type">
+<code class="descname">is_type</code><span class="sig-paren">(</span><em>p_type</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/smart_tag_definition.html#SmartTagEndTagDefinition.is_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.smart_tag_definition.SmartTagEndTagDefinition.is_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Type check - return true if p_type is end_tag.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.tags.tag_utils">
+<span id="obci-analysis-obci-signal-processing-tags-tag-utils-module"></span><h2>obci.analysis.obci_signal_processing.tags.tag_utils module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.tags.tag_utils" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.tags.tag_utils.pack_tag_to_dict">
+<code class="descclassname">obci.analysis.obci_signal_processing.tags.tag_utils.</code><code class="descname">pack_tag_to_dict</code><span class="sig-paren">(</span><em>p_start_timestamp</em>, <em>p_end_timestamp</em>, <em>p_tag_name</em>, <em>p_tag_desc={}</em>, <em>p_tag_channels=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/tag_utils.html#pack_tag_to_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.tag_utils.pack_tag_to_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>For given tag parameters return a dictionary representing
+tag with those parameters.
+Parameters:
+- p_start_timestamp - float
+- p_end_timestamp - float
+- p_tag_name - string
+- p_tag_desc - dictionary
+- p_tag_channels - string like &#8220;0 6 7&#8221; - numbers of channels</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.tags.tag_utils.unpack_tag_from_dict">
+<code class="descclassname">obci.analysis.obci_signal_processing.tags.tag_utils.</code><code class="descname">unpack_tag_from_dict</code><span class="sig-paren">(</span><em>p_dict</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/tag_utils.html#unpack_tag_from_dict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.tag_utils.unpack_tag_from_dict" title="Permalink to this definition">¶</a></dt>
+<dd><p>For given dictinary describing tag in strings, return dictionary
+where numeric values are numbers, not strings.
+The method is fired by file tags reader, while parsing xml tags file.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.tags.tags_file_reader">
+<span id="obci-analysis-obci-signal-processing-tags-tags-file-reader-module"></span><h2>obci.analysis.obci_signal_processing.tags.tags_file_reader module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.tags.tags_file_reader" title="Permalink to this headline">¶</a></h2>
+<p>Module provides a simple class that is able to read tags xml file and
+give on demand subsequential tags.</p>
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.tags.tags_file_reader.TagsFileReader">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.tags.tags_file_reader.</code><code class="descname">TagsFileReader</code><span class="sig-paren">(</span><em>p_tags_file_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/tags_file_reader.html#TagsFileReader"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.tags_file_reader.TagsFileReader" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>A simple class that is able to read tags xml file and
+give on demand subsequential tags.</p>
+<p>Init tags file path.</p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.tags_file_reader.TagsFileReader.get_tags">
+<code class="descname">get_tags</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/tags_file_reader.html#TagsFileReader.get_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.tags_file_reader.TagsFileReader.get_tags" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return next tag or None if all tags were alredy returned by
+this method.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.tags_file_reader.TagsFileReader.start_tags_reading">
+<code class="descname">start_tags_reading</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/tags_file_reader.html#TagsFileReader.start_tags_reading"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.tags_file_reader.TagsFileReader.start_tags_reading" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read tags file, store data in memory.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.tags.tags_file_writer">
+<span id="obci-analysis-obci-signal-processing-tags-tags-file-writer-module"></span><h2>obci.analysis.obci_signal_processing.tags.tags_file_writer module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.tags.tags_file_writer" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.tags.tags_file_writer.TagsFileWriter">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.tags.tags_file_writer.</code><code class="descname">TagsFileWriter</code><span class="sig-paren">(</span><em>p_file_path</em>, <em>p_defs=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/tags_file_writer.html#TagsFileWriter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.tags_file_writer.TagsFileWriter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>A proxy for openbci tags file, that writes every next tag to file.
+public interface:
+- tag_received(tag_dict)
+- finish_saving()</p>
+<p>Prepare data structure for storing in-memory xml file.</p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.tags_file_writer.TagsFileWriter.finish_saving">
+<code class="descname">finish_saving</code><span class="sig-paren">(</span><em>p_first_sample_ts</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/tags_file_writer.html#TagsFileWriter.finish_saving"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.tags_file_writer.TagsFileWriter.finish_saving" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write xml tags to the file, return the file`s path.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.tags.tags_file_writer.TagsFileWriter.tag_received">
+<code class="descname">tag_received</code><span class="sig-paren">(</span><em>p_tag_dict</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/tags_file_writer.html#TagsFileWriter.tag_received"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.tags_file_writer.TagsFileWriter.tag_received" title="Permalink to this definition">¶</a></dt>
+<dd><p>For give dictionary with pirs key -&gt; value create an xml element.
+An exception is with key &#8216;desc&#8217; where xml elements are created for
+every element of p_tag_dict[&#8216;desc&#8217;] value which is a dictionary.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.tags.tags_logging">
+<span id="obci-analysis-obci-signal-processing-tags-tags-logging-module"></span><h2>obci.analysis.obci_signal_processing.tags.tags_logging module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.tags.tags_logging" title="Permalink to this headline">¶</a></h2>
+<p>Module defines a single method get_logger that returns logger with
+set logging level. Change loggin.INFO lines to change logging level.</p>
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.tags.tags_logging.get_logger">
+<code class="descclassname">obci.analysis.obci_signal_processing.tags.tags_logging.</code><code class="descname">get_logger</code><span class="sig-paren">(</span><em>p_name</em>, <em>p_level='error'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/tags/tags_logging.html#get_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.tags.tags_logging.get_logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return logger with p_name as name. And logging level p_level.
+p_level should be in (starting with the most talkactive):
+&#8216;debug&#8217;, &#8216;info&#8217;, &#8216;warning&#8217;, &#8216;error&#8217;, &#8216;critical&#8217;.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.tags">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.tags" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">obci</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="obci.html">obci package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="obci.acquisition.html">obci.acquisition package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="obci.analysis.html">obci.analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.benchmark.html">obci.benchmark package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.cmd.html">obci.cmd package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.configs.html">obci.configs package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.control.html">obci.control package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.core.html">obci.core package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.drivers.html">obci.drivers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.gui.html">obci.gui package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.mx_legacy.html">obci.mx_legacy package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.peers.html">obci.peers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.scenarios.html">obci.scenarios package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.utils.html">obci.utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">obci</a><ul>
+  <li><a href="obci.html">obci package</a><ul>
+  <li><a href="obci.analysis.html">obci.analysis package</a><ul>
+  <li><a href="obci.analysis.obci_signal_processing.html">obci.analysis.obci_signal_processing package</a><ul>
+      <li>Previous: <a href="obci.analysis.obci_signal_processing.signal.html" title="previous chapter">obci.analysis.obci_signal_processing.signal package</a></li>
+      <li>Next: <a href="obci.analysis.obci_signal_processing.tests.html" title="next chapter">obci.analysis.obci_signal_processing.tests package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/apidoc/obci.analysis.obci_signal_processing.tags.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

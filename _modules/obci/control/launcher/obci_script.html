@@ -1,0 +1,455 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.launcher.obci_script &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.launcher.obci_script</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.launcher.obci_script_utils</span> <span class="k">import</span> <span class="p">(</span><span class="n">server_process_running</span><span class="p">,</span>
+                                                     <span class="n">client_server_prep</span><span class="p">,</span>
+                                                     <span class="n">disp</span><span class="p">)</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.launcher</span> <span class="k">import</span> <span class="n">obci_server</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.peer.peer_cmd</span> <span class="k">import</span> <span class="n">PeerCmd</span>
+<span class="kn">import</span> <span class="nn">obci.control.peer.peer_cmd</span> <span class="k">as</span> <span class="nn">peer_cmd</span>
+
+
+<div class="viewcode-block" id="cmd_srv"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.cmd_srv">[docs]</a><span class="k">def</span> <span class="nf">cmd_srv</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">client_server_prep</span><span class="p">(</span><span class="n">args</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="cmd_srv_kill"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.cmd_srv_kill">[docs]</a><span class="k">def</span> <span class="nf">cmd_srv_kill</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">running</span> <span class="o">=</span> <span class="n">server_process_running</span><span class="p">(</span><span class="n">expected_dead</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">running</span><span class="p">:</span>
+        <span class="n">disp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="s2">&quot;Server was not running...&quot;</span><span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="n">client</span> <span class="o">=</span> <span class="n">client_server_prep</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">client</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;srv_kill unsuccessful (client creation error)&quot;</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">client</span><span class="o">.</span><span class="n">srv_kill</span><span class="p">()</span>
+
+    <span class="k">if</span> <span class="n">server_process_running</span><span class="p">(</span><span class="n">expected_dead</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">disp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="s1">&#39;obci server kill signal unsuccesful, try killing the process&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">disp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="s2">&quot;Server process terminated.&quot;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="cmd_launch"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.cmd_launch">[docs]</a><span class="k">def</span> <span class="nf">cmd_launch</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">launch_f</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">launch_file</span><span class="p">)</span>
+    <span class="n">overwrites</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">ovr</span>
+    <span class="k">if</span> <span class="n">overwrites</span><span class="p">:</span>
+        <span class="n">pack</span> <span class="o">=</span> <span class="n">peer_cmd</span><span class="o">.</span><span class="n">peer_overwrites_pack</span><span class="p">(</span><span class="n">overwrites</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">pack</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pack</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">client</span> <span class="o">=</span> <span class="n">client_server_prep</span><span class="p">(</span><span class="n">start_srv</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">client</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">launch_f</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">sandbox_dir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">pack</span><span class="p">)</span>
+    <span class="n">disp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="cmd_morph"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.cmd_morph">[docs]</a><span class="k">def</span> <span class="nf">cmd_morph</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">launch_f</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">launch_file</span><span class="p">)</span>
+    <span class="n">overwrites</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">ovr</span>
+    <span class="k">if</span> <span class="n">overwrites</span><span class="p">:</span>
+        <span class="n">pack</span> <span class="o">=</span> <span class="n">peer_cmd</span><span class="o">.</span><span class="n">peer_overwrites_pack</span><span class="p">(</span><span class="n">overwrites</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">pack</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">pack</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="n">client</span> <span class="o">=</span> <span class="n">client_server_prep</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">client</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">leave_on</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">morph</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">experiment</span><span class="p">,</span> <span class="n">launch_f</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">pack</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">leave_on</span><span class="p">)</span>
+    <span class="n">disp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="cmd_new"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.cmd_new">[docs]</a><span class="k">def</span> <span class="nf">cmd_new</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">launch_file</span><span class="p">:</span>
+        <span class="n">launch_f</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">launch_file</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">launch_f</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">client_server_prep</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">client</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">send_create_experiment</span><span class="p">(</span><span class="n">launch_f</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">sandbox_dir</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">disp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="cmd_start"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.cmd_start">[docs]</a><span class="k">def</span> <span class="nf">cmd_start</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">client_server_prep</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">client</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">start_chosen_experiment</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">experiment</span><span class="p">)</span>
+    <span class="n">disp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="cmd_join"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.cmd_join">[docs]</a><span class="k">def</span> <span class="nf">cmd_join</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">client_server_prep</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">client</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">join_experiment</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">peer_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;rq_ok&#39;</span><span class="p">:</span>
+        <span class="k">pass</span>
+    <span class="n">disp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="cmd_kill"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.cmd_kill">[docs]</a><span class="k">def</span> <span class="nf">cmd_kill</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">client_server_prep</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">client</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">kill_exp</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+    <span class="n">disp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="cmd_killall"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.cmd_killall">[docs]</a><span class="k">def</span> <span class="nf">cmd_killall</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="cmd_add"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.cmd_add">[docs]</a><span class="k">def</span> <span class="nf">cmd_add</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="cmd_save"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.cmd_save">[docs]</a><span class="k">def</span> <span class="nf">cmd_save</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="cmd_log"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.cmd_log">[docs]</a><span class="k">def</span> <span class="nf">cmd_log</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="cmd_config"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.cmd_config">[docs]</a><span class="k">def</span> <span class="nf">cmd_config</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">client_server_prep</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">client</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="n">ovr</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">local_params</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">local_params</span><span class="p">,</span>
+               <span class="n">external_params</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">external_params</span><span class="p">,</span>
+               <span class="n">launch_dependencies</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">launch_dependencies</span><span class="p">,</span>
+               <span class="n">config_sources</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">config_sources</span><span class="p">)</span>
+
+    <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">configure_peer</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">experiment</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">ovr</span><span class="p">,</span>
+                                     <span class="n">args</span><span class="o">.</span><span class="n">config_file</span><span class="p">)</span>
+    <span class="n">disp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="cmd_info"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.cmd_info">[docs]</a><span class="k">def</span> <span class="nf">cmd_info</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">client_server_prep</span><span class="p">(</span><span class="n">start_srv</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">client</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">experiment</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">send_list_experiments</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_experiment_details</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">experiment</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">peer_id</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">response</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="s2">&quot;whyyyy&quot;</span>
+    <span class="n">disp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="cmd_tail"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.cmd_tail">[docs]</a><span class="k">def</span> <span class="nf">cmd_tail</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">client_server_prep</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">client</span><span class="p">:</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">e</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">send_list_experiments</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="ow">not</span> <span class="n">args</span><span class="o">.</span><span class="n">p</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_experiment_details</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">p</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">get_tail</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">e</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">p</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">l</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">response</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="s2">&quot;whyyyy&quot;</span>
+    <span class="n">disp</span><span class="o">.</span><span class="n">view</span><span class="p">(</span><span class="n">response</span><span class="p">)</span></div>
+
+<span class="c1">#</span>
+
+
+<div class="viewcode-block" id="setup_srv"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.setup_srv">[docs]</a><span class="k">def</span> <span class="nf">setup_srv</span><span class="p">(</span><span class="n">parser_srv</span><span class="p">):</span>
+    <span class="n">parser_srv</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">cmd_srv</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="setup_srv_kill"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.setup_srv_kill">[docs]</a><span class="k">def</span> <span class="nf">setup_srv_kill</span><span class="p">(</span><span class="n">parser_srv_kill</span><span class="p">):</span>
+    <span class="n">parser_srv_kill</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">cmd_srv_kill</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="setup_launch"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.setup_launch">[docs]</a><span class="k">def</span> <span class="nf">setup_launch</span><span class="p">(</span><span class="n">parser_launch</span><span class="p">):</span>
+    <span class="n">parser_launch</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;launch_file&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">path_to_file</span><span class="p">,</span>
+                               <span class="n">help</span><span class="o">=</span><span class="s2">&quot;OpenBCI launch configuration (experiment configuration).&quot;</span><span class="p">)</span>
+    <span class="n">parser_launch</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--sandbox_dir&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">path_to_file</span><span class="p">,</span>
+                               <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Directory for log file and various temp files storeage.&quot;</span><span class="p">)</span>
+    <span class="n">parser_launch</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--name&#39;</span><span class="p">,</span>
+                               <span class="n">help</span><span class="o">=</span><span class="s2">&quot;A name for experiment&quot;</span><span class="p">)</span>
+    <span class="n">parser_launch</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--ovr&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">REMAINDER</span><span class="p">)</span>  <span class="c1"># , type=peer_args)</span>
+    <span class="n">parser_launch</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">cmd_launch</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="setup_morph"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.setup_morph">[docs]</a><span class="k">def</span> <span class="nf">setup_morph</span><span class="p">(</span><span class="n">parser_morph</span><span class="p">):</span>
+    <span class="n">parser_morph</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;experiment&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Something that identifies experiment: </span><span class="se">\</span>
+<span class="s1">a few first letters of its UUID or of its name </span><span class="se">\</span>
+<span class="s1">(usually derived form launch file name)&#39;</span><span class="p">)</span>
+    <span class="n">parser_morph</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;launch_file&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">path_to_file</span><span class="p">,</span>
+                              <span class="n">help</span><span class="o">=</span><span class="s2">&quot;OpenBCI launch configuration (experiment configuration).&quot;</span><span class="p">)</span>
+    <span class="n">parser_morph</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--name&#39;</span><span class="p">,</span>
+                              <span class="n">help</span><span class="o">=</span><span class="s2">&quot;A name for experiment&quot;</span><span class="p">)</span>
+    <span class="n">parser_morph</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--leave_on&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;*&#39;</span><span class="p">,</span>  <span class="c1"># action=&#39;append&#39;,</span>
+                              <span class="n">help</span><span class="o">=</span><span class="s2">&quot;A name for experiment&quot;</span><span class="p">)</span>
+    <span class="n">parser_morph</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--ovr&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">REMAINDER</span><span class="p">)</span>
+    <span class="n">parser_morph</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">cmd_morph</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="setup_kill"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.setup_kill">[docs]</a><span class="k">def</span> <span class="nf">setup_kill</span><span class="p">(</span><span class="n">parser_kill</span><span class="p">):</span>
+    <span class="n">parser_kill</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Something that identifies experiment: </span><span class="se">\</span>
+<span class="s1">a few first letters of its UUID or of its name </span><span class="se">\</span>
+<span class="s1">(usually derived form launch file name)&#39;</span><span class="p">)</span>
+    <span class="n">parser_kill</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--brutal&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Just kill the specified experiment manager, </span><span class="se">\</span>
+<span class="s1">do not send a &quot;kill&quot; message&#39;</span><span class="p">)</span>
+    <span class="n">parser_kill</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">cmd_kill</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="setup_info"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.setup_info">[docs]</a><span class="k">def</span> <span class="nf">setup_info</span><span class="p">(</span><span class="n">parser_info</span><span class="p">):</span>
+    <span class="n">parser_info</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;experiment&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Something that identifies experiment: </span><span class="se">\</span>
+<span class="s1">a few first letters of its UUID or of its name </span><span class="se">\</span>
+<span class="s1">(usually derived form launch file name)&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+<span class="c1">#     parser_info.add_argument(&#39;-e&#39;, help=&#39;Something that identifies experiment: \</span>
+<span class="c1"># a few first letters of its UUID or of its name \</span>
+<span class="c1"># (usually derived form launch file name)&#39;)</span>
+    <span class="c1"># parser_info.add_argument(&#39;-p&#39;, help=&#39;Peer ID in the specified experiment.&#39;)</span>
+    <span class="n">parser_info</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;peer_id&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Peer ID in the specified experiment.&#39;</span><span class="p">,</span>
+                             <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;?&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">parser_info</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">cmd_info</span><span class="p">)</span></div>
+
+
+<span class="c1"># temporarily unsupported commands ########################</span>
+
+<div class="viewcode-block" id="setup_add"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.setup_add">[docs]</a><span class="k">def</span> <span class="nf">setup_add</span><span class="p">(</span><span class="n">parser_add</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="setup_new"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.setup_new">[docs]</a><span class="k">def</span> <span class="nf">setup_new</span><span class="p">(</span><span class="n">parser_new</span><span class="p">):</span>
+    <span class="n">parser_new</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--launch_file&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">path_to_file</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;OpenBCI launch configuration (experiment configuration).&quot;</span><span class="p">)</span>
+    <span class="n">parser_new</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--sandbox_dir&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">path_to_file</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Directory for log file and various temp files storeage.&quot;</span><span class="p">)</span>
+    <span class="n">parser_new</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--name&#39;</span><span class="p">,</span>
+                            <span class="n">help</span><span class="o">=</span><span class="s2">&quot;A name for experiment&quot;</span><span class="p">)</span>
+    <span class="n">parser_new</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">cmd_new</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="setup_start"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.setup_start">[docs]</a><span class="k">def</span> <span class="nf">setup_start</span><span class="p">(</span><span class="n">parser_start</span><span class="p">):</span>
+    <span class="n">parser_start</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;experiment&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Something that identifies experiment: </span><span class="se">\</span>
+<span class="s1">a few first letters of its UUID or of its name </span><span class="se">\</span>
+<span class="s1">(usually derived form launch file name)&#39;</span><span class="p">)</span>
+    <span class="n">parser_start</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">cmd_start</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="setup_killall"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.setup_killall">[docs]</a><span class="k">def</span> <span class="nf">setup_killall</span><span class="p">(</span><span class="n">parser_killall</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="setup_join"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.setup_join">[docs]</a><span class="k">def</span> <span class="nf">setup_join</span><span class="p">(</span><span class="n">parser_join</span><span class="p">):</span>
+    <span class="n">parser_join</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Something that identifies experiment: </span><span class="se">\</span>
+<span class="s1">a few first letters of its UUID or of its name </span><span class="se">\</span>
+<span class="s1">(usually derived form launch file name)&#39;</span><span class="p">)</span>
+    <span class="n">parser_join</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;peer_id&#39;</span><span class="p">,</span>
+                             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Unique name for this peer&quot;</span><span class="p">)</span>
+    <span class="n">parser_join</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;peer_path&#39;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">path_to_file</span><span class="p">,</span>
+                             <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Path to an executable file.&quot;</span><span class="p">)</span>
+    <span class="n">parser_join</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">cmd_join</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="setup_save"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.setup_save">[docs]</a><span class="k">def</span> <span class="nf">setup_save</span><span class="p">(</span><span class="n">parser_save</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="setup_config"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.setup_config">[docs]</a><span class="k">def</span> <span class="nf">setup_config</span><span class="p">(</span><span class="n">parser_config</span><span class="p">):</span>
+    <span class="n">parser_config</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;experiment&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Something that identifies experiment: </span><span class="se">\</span>
+<span class="s1">a few first letters of its UUID or of its name </span><span class="se">\</span>
+<span class="s1">(usually derived form launch file name)&#39;</span><span class="p">)</span>
+    <span class="n">parser_config</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;peer_id&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Peer ID in the specified experiment.&#39;</span><span class="p">)</span>
+    <span class="n">parser_config</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">cmd_config</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="setup_tail"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.setup_tail">[docs]</a><span class="k">def</span> <span class="nf">setup_tail</span><span class="p">(</span><span class="n">parser_tail</span><span class="p">):</span>
+    <span class="n">parser_tail</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-e&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Something that identifies experiment: </span><span class="se">\</span>
+<span class="s1">a few first letters of its UUID or of its name </span><span class="se">\</span>
+<span class="s1">(usually derived form launch file name)&#39;</span><span class="p">)</span>
+    <span class="n">parser_tail</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Peer ID in the specified experiment.&#39;</span><span class="p">)</span>
+    <span class="n">parser_tail</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;-l&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Number of lines to get&#39;</span><span class="p">)</span>
+    <span class="n">parser_tail</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">cmd_tail</span><span class="p">)</span></div>
+
+<span class="c1"># end of unsupported commands ###########################</span>
+
+
+<div class="viewcode-block" id="OBCIArgParser"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.OBCIArgParser">[docs]</a><span class="k">class</span> <span class="nc">OBCIArgParser</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">defined_commands</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;launch&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s2">&quot;Launch an OpenBCI system with configuration </span><span class="se">\</span>
+<span class="s2">specified in a launch file or in a newly created Experiment&quot;</span><span class="p">,</span>
+                       <span class="n">setup_func</span><span class="o">=</span><span class="n">setup_launch</span><span class="p">),</span>
+        <span class="s2">&quot;srv&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">parser_parents</span><span class="o">=</span><span class="p">[</span><span class="n">obci_server</span><span class="o">.</span><span class="n">server_arg_parser</span><span class="p">(</span><span class="n">add_help</span><span class="o">=</span><span class="kc">False</span><span class="p">)],</span>
+                    <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Start OBCIServer&quot;</span><span class="p">,</span>
+                    <span class="n">setup_func</span><span class="o">=</span><span class="n">setup_srv</span><span class="p">),</span>
+        <span class="s2">&quot;srv_kill&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">parser_parents</span><span class="o">=</span><span class="p">[</span><span class="n">obci_server</span><span class="o">.</span><span class="n">server_arg_parser</span><span class="p">(</span><span class="n">add_help</span><span class="o">=</span><span class="kc">False</span><span class="p">)],</span>
+                         <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Kill OBCIServer&quot;</span><span class="p">,</span>
+                         <span class="n">setup_func</span><span class="o">=</span><span class="n">setup_srv_kill</span><span class="p">),</span>
+        <span class="s2">&quot;morph&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s1">&#39;Transform chosen running scenario into another.</span><span class="se">\</span>
+<span class="s1">Optionally leave some peers running instead of restarting them&#39;</span><span class="p">,</span>
+                      <span class="n">setup_func</span><span class="o">=</span><span class="n">setup_morph</span><span class="p">),</span>
+        <span class="s2">&quot;info&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s2">&quot;Get information about controlled OpenBCI experiments</span><span class="se">\</span>
+<span class="s2">                        and peers&quot;</span><span class="p">,</span>
+                     <span class="n">setup_func</span><span class="o">=</span><span class="n">setup_info</span><span class="p">),</span>
+        <span class="s2">&quot;kill&quot;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">help</span><span class="o">=</span><span class="s2">&quot;Kill an OpenBCI experiment&quot;</span><span class="p">,</span>
+                     <span class="n">setup_func</span><span class="o">=</span><span class="n">setup_kill</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span>
+                 <span class="n">description</span><span class="o">=</span><span class="s2">&quot;Launch and manage OBCI experiments,their state and configuration&quot;</span><span class="p">,</span>
+                 <span class="n">epilog</span><span class="o">=</span><span class="s2">&quot;(c) 2011-2016, Warsaw University&quot;</span><span class="p">,</span>
+                 <span class="n">prog</span><span class="o">=</span><span class="s1">&#39;obci&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">description</span><span class="o">=</span><span class="n">description</span><span class="p">,</span>
+                                              <span class="n">epilog</span><span class="o">=</span><span class="n">epilog</span><span class="p">,</span>
+                                              <span class="n">prog</span><span class="o">=</span><span class="n">prog</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subparsers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">add_subparsers</span><span class="p">(</span>
+            <span class="n">title</span><span class="o">=</span><span class="s1">&#39;available commands&#39;</span><span class="p">,</span>
+            <span class="n">description</span><span class="o">=</span><span class="s1">&#39;(use </span><span class="si">%(prog)s</span><span class="s1"> *command* -h for help on a specific command)&#39;</span><span class="p">,</span>
+            <span class="n">dest</span><span class="o">=</span><span class="s1">&#39;command_name&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conf_parser</span> <span class="o">=</span> <span class="n">PeerCmd</span><span class="p">()</span><span class="o">.</span><span class="n">conf_parser</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commands</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">_create_command_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">help_text</span><span class="p">,</span> <span class="n">parser_parents</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">parents</span> <span class="o">=</span> <span class="n">parser_parents</span> <span class="k">if</span> <span class="n">parser_parents</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="p">[]</span>
+        <span class="n">new_parser</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subparsers</span><span class="o">.</span><span class="n">add_parser</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="n">help_text</span><span class="p">,</span> <span class="n">parents</span><span class="o">=</span><span class="n">parents</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_commands</span><span class="p">[</span><span class="n">name</span><span class="p">]</span> <span class="o">=</span> <span class="n">new_parser</span>
+        <span class="k">return</span> <span class="n">new_parser</span>
+
+    <span class="k">def</span> <span class="nf">_setup_command_parser</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">setup_func</span><span class="p">):</span>
+        <span class="n">setup_func</span><span class="p">(</span><span class="n">parser</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OBCIArgParser.add_command"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.OBCIArgParser.add_command">[docs]</a>    <span class="k">def</span> <span class="nf">add_command</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">help</span><span class="p">,</span> <span class="n">setup_func</span><span class="p">,</span> <span class="n">parser_parents</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_command_parser</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">help</span><span class="p">,</span> <span class="n">parser_parents</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_setup_command_parser</span><span class="p">(</span><span class="n">parser</span><span class="p">,</span> <span class="n">setup_func</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OBCIArgParser.setup_commands"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.OBCIArgParser.setup_commands">[docs]</a>    <span class="k">def</span> <span class="nf">setup_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">cmd_defs</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="k">for</span> <span class="n">defs</span> <span class="ow">in</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">defined_commands</span><span class="p">,</span> <span class="n">cmd_defs</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_setup_commands</span><span class="p">(</span><span class="n">defs</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_setup_commands</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command_defs</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">command_defs</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">add_command</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="o">**</span><span class="n">command_defs</span><span class="p">[</span><span class="n">name</span><span class="p">])</span></div>
+
+
+<span class="c1">#</span>
+<span class="c1">#</span>
+
+
+<div class="viewcode-block" id="path_to_file"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_script.path_to_file">[docs]</a><span class="k">def</span> <span class="nf">path_to_file</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">string</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> -- path not found!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">string</span><span class="p">))</span>
+    <span class="k">return</span> <span class="n">string</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

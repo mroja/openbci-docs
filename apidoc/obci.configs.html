@@ -1,0 +1,207 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.configs package &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../index.html" />
+    <link rel="up" title="obci package" href="obci.html" />
+    <link rel="next" title="obci.configs.tests package" href="obci.configs.tests.html" />
+    <link rel="prev" title="obci.cmd package" href="obci.cmd.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="obci-configs-package">
+<h1>obci.configs package<a class="headerlink" href="#obci-configs-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="obci.configs.tests.html">obci.configs.tests package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="obci.configs.tests.html#subpackages">Subpackages</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="obci.configs.tests.protobuf.html">obci.configs.tests.protobuf package</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="obci.configs.tests.protobuf.html#submodules">Submodules</a></li>
+<li class="toctree-l4"><a class="reference internal" href="obci.configs.tests.protobuf.html#module-obci.configs.tests.protobuf.protobuf_test">obci.configs.tests.protobuf.protobuf_test module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="obci.configs.tests.protobuf.html#module-obci.configs.tests.protobuf.sample_logger">obci.configs.tests.protobuf.sample_logger module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="obci.configs.tests.protobuf.html#module-obci.configs.tests.protobuf.variables_pb2">obci.configs.tests.protobuf.variables_pb2 module</a></li>
+<li class="toctree-l4"><a class="reference internal" href="obci.configs.tests.protobuf.html#module-obci.configs.tests.protobuf">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="obci.configs.tests.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.configs.tests.html#module-obci.configs.tests.signal_compare">obci.configs.tests.signal_compare module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.configs.tests.html#module-obci.configs.tests">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-obci.configs.settings">
+<span id="obci-configs-settings-module"></span><h2>obci.configs.settings module<a class="headerlink" href="#module-obci.configs.settings" title="Permalink to this headline">¶</a></h2>
+<dl class="data">
+<dt id="obci.configs.settings.MULTIPLEXER_ADDRESSES">
+<code class="descclassname">obci.configs.settings.</code><code class="descname">MULTIPLEXER_ADDRESSES</code><em class="property"> = [('0.0.0.0', 31889)]</em><a class="headerlink" href="#obci.configs.settings.MULTIPLEXER_ADDRESSES" title="Permalink to this definition">¶</a></dt>
+<dd><p>MAIN DIR is a path to openbci main directory.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="obci.configs.settings.current_appliance">
+<code class="descclassname">obci.configs.settings.</code><code class="descname">current_appliance</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/configs/settings.html#current_appliance"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.configs.settings.current_appliance" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return string defining current bci-ssvep appliance.
+Correct values: dummy, appliance1, appliance2
+app = &#8216;dummy&#8217;</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="obci.configs.settings.executable_abs_path">
+<code class="descclassname">obci.configs.settings.</code><code class="descname">executable_abs_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/configs/settings.html#executable_abs_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.configs.settings.executable_abs_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method returns absolute path to directory containing a script
+that excecuted python interpreter.
+Eg. having module /x/y/z/ugm/ugm.py with:
+ugm.py:
+import settings
+print(settings.executable_abs_path())</p>
+<p>firing python z/ugm/ugm.py while being in y dir, will print out /x/y/ path.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="obci.configs.settings.module_abs_path">
+<code class="descclassname">obci.configs.settings.</code><code class="descname">module_abs_path</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/configs/settings.html#module_abs_path"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.configs.settings.module_abs_path" title="Permalink to this definition">¶</a></dt>
+<dd><p>This method returns absolute path to directory containing a module
+that imported and fired the method.
+Eg. having module /x/y/z/ugm/ugm.py with:
+ugm.py:
+import settings
+print(settings.module_abs_path())</p>
+<p>firing python z/ugm/ugm.py while being in y dir, will print out
+/x/y/z/ugm/ path.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.configs.variables_pb2">
+<span id="obci-configs-variables-pb2-module"></span><h2>obci.configs.variables_pb2 module<a class="headerlink" href="#module-obci.configs.variables_pb2" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-obci.configs">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-obci.configs" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">obci</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="obci.html">obci package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="obci.acquisition.html">obci.acquisition package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.analysis.html">obci.analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.benchmark.html">obci.benchmark package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.cmd.html">obci.cmd package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">obci.configs package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.control.html">obci.control package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.core.html">obci.core package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.drivers.html">obci.drivers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.gui.html">obci.gui package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.mx_legacy.html">obci.mx_legacy package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.peers.html">obci.peers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.scenarios.html">obci.scenarios package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.utils.html">obci.utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">obci</a><ul>
+  <li><a href="obci.html">obci package</a><ul>
+      <li>Previous: <a href="obci.cmd.html" title="previous chapter">obci.cmd package</a></li>
+      <li>Next: <a href="obci.configs.tests.html" title="next chapter">obci.configs.tests package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/apidoc/obci.configs.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

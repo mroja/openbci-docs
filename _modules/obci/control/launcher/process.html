@@ -1,0 +1,323 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.launcher.process &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.launcher.process</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">zmq</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.common.message</span> <span class="k">import</span> <span class="n">OBCIMessageTool</span><span class="p">,</span> <span class="n">PollingObject</span><span class="p">,</span> <span class="n">send_msg</span>
+<span class="kn">from</span> <span class="nn">obci.control.launcher.launcher_messages</span> <span class="k">import</span> <span class="n">message_templates</span>
+<span class="kn">import</span> <span class="nn">obci.control.common.net_tools</span> <span class="k">as</span> <span class="nn">net</span>
+
+<span class="kn">from</span> <span class="nn">obci.utils.openbci_logging</span> <span class="k">import</span> <span class="n">get_logger</span>
+
+<span class="n">UNKNOWN</span> <span class="o">=</span> <span class="s1">&#39;unknown&#39;</span>
+<span class="n">RUNNING</span> <span class="o">=</span> <span class="s1">&#39;running&#39;</span>
+<span class="n">FAILED</span> <span class="o">=</span> <span class="s1">&#39;failed&#39;</span>
+<span class="n">FINISHED</span> <span class="o">=</span> <span class="s1">&#39;finished&#39;</span>
+<span class="n">TERMINATED</span> <span class="o">=</span> <span class="s1">&#39;terminated&#39;</span>
+<span class="n">NON_RESPONSIVE</span> <span class="o">=</span> <span class="s1">&#39;non_responsive&#39;</span>
+
+<span class="n">PROCESS_STATUS</span> <span class="o">=</span> <span class="p">[</span><span class="n">UNKNOWN</span><span class="p">,</span> <span class="n">RUNNING</span><span class="p">,</span> <span class="n">FAILED</span><span class="p">,</span> <span class="n">FINISHED</span><span class="p">,</span> <span class="n">TERMINATED</span><span class="p">,</span> <span class="n">NON_RESPONSIVE</span><span class="p">]</span>
+
+<span class="n">PING</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">RETURNCODE</span> <span class="o">=</span> <span class="mi">4</span>
+
+<span class="n">MONITORING_OPTIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">PING</span><span class="p">,</span> <span class="n">RETURNCODE</span><span class="p">]</span>
+
+
+<span class="n">REG_TIMER</span> <span class="o">=</span> <span class="mi">0</span>
+
+
+<div class="viewcode-block" id="Process"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process.Process">[docs]</a><span class="k">class</span> <span class="nc">Process</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proc_description</span><span class="p">,</span>
+                 <span class="n">reg_timeout_desc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">monitoring_optflags</span><span class="o">=</span><span class="n">PING</span><span class="p">,</span>
+                 <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">desc</span> <span class="o">=</span> <span class="n">proc_description</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">must_register</span> <span class="o">=</span> <span class="n">reg_timeout_desc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">UNKNOWN</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">must_register</span> <span class="k">else</span> <span class="n">RUNNING</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_status_details</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ping_it</span> <span class="o">=</span> <span class="n">monitoring_optflags</span> <span class="o">&amp;</span> <span class="n">PING</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">check_returncode</span> <span class="o">=</span> <span class="n">monitoring_optflags</span> <span class="o">&amp;</span> <span class="n">RETURNCODE</span> <span class="k">if</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">desc</span><span class="o">.</span><span class="n">pid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span> <span class="ow">or</span> <span class="n">get_logger</span><span class="p">(</span>
+            <span class="s1">&#39;subprocess_monitor&#39;</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">desc</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s1">&#39;-&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">desc</span><span class="o">.</span><span class="n">pid</span><span class="p">),</span>
+            <span class="n">stream_level</span><span class="o">=</span><span class="s1">&#39;info&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_registration_timeout_handler</span><span class="p">(</span><span class="n">reg_timeout_desc</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">registration_data</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_monitoring</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ping_thread</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ping_retries</span> <span class="o">=</span> <span class="mi">8</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_returncode_thread</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mtool</span> <span class="o">=</span> <span class="n">OBCIMessageTool</span><span class="p">(</span><span class="n">message_templates</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rq_sock</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_poller</span> <span class="o">=</span> <span class="n">PollingObject</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">delete</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">machine_ip</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">desc</span><span class="o">.</span><span class="n">machine_ip</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">pid</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">desc</span><span class="o">.</span><span class="n">pid</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">desc</span><span class="o">.</span><span class="n">path</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">proc_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">desc</span><span class="o">.</span><span class="n">proc_type</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">name</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">desc</span><span class="o">.</span><span class="n">name</span>
+
+<div class="viewcode-block" id="Process.status"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process.Process.status">[docs]</a>    <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status_lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status_details</span></div>
+
+<div class="viewcode-block" id="Process.set_registration_timeout_handler"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process.Process.set_registration_timeout_handler">[docs]</a>    <span class="k">def</span> <span class="nf">set_registration_timeout_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reg_timeout_desc</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status_lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">UNKNOWN</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_status_details</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">must_register</span> <span class="o">=</span> <span class="n">reg_timeout_desc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reg_timeout_desc</span> <span class="o">=</span> <span class="n">reg_timeout_desc</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">reg_timer</span> <span class="o">=</span> <span class="kc">None</span> <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">must_register</span> <span class="k">else</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">new_timer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">reg_timeout_desc</span><span class="p">,</span> <span class="n">REG_TIMER</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">must_register</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reg_timer</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Process.is_local"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process.Process.is_local">[docs]</a>    <span class="k">def</span> <span class="nf">is_local</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Process.timeout_handler"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process.Process.timeout_handler">[docs]</a>    <span class="k">def</span> <span class="nf">timeout_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">custom_method</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">type_</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_handle_timeout</span><span class="p">(</span><span class="n">type_</span><span class="p">)</span>
+        <span class="n">custom_method</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_do_handle_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+<div class="viewcode-block" id="Process.new_timer"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process.Process.new_timer">[docs]</a>    <span class="k">def</span> <span class="nf">new_timer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tim_desc</span><span class="p">,</span> <span class="n">type_</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">threading</span><span class="o">.</span><span class="n">Timer</span><span class="p">(</span><span class="n">tim_desc</span><span class="o">.</span><span class="n">timeout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout_handler</span><span class="p">,</span>
+                               <span class="p">[</span><span class="n">tim_desc</span><span class="o">.</span><span class="n">timeout_method</span><span class="p">,</span> <span class="n">tim_desc</span><span class="o">.</span><span class="n">timeout_args</span><span class="p">,</span> <span class="n">type_</span><span class="p">])</span></div>
+
+<div class="viewcode-block" id="Process.registered"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process.Process.registered">[docs]</a>    <span class="k">def</span> <span class="nf">registered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">reg_data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reg_timer</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reg_timer</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> [</span><span class="si">{1}</span><span class="s2">]  REGISTERED!!! </span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">proc_type</span><span class="p">,</span> <span class="n">reg_data</span><span class="o">.</span><span class="n">machine_ip</span><span class="p">))</span>
+        <span class="c1"># print &quot;ping:&quot;, self.ping_it, &quot;ret:&quot;, self.check_returncode</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status_lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">RUNNING</span>
+        <span class="c1"># TODO validate registration data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">registration_data</span> <span class="o">=</span> <span class="n">reg_data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;reg_data&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">vars</span><span class="p">(</span><span class="n">reg_data</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ping_it</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rq_sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REQ</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">addr</span> <span class="ow">in</span> <span class="n">reg_data</span><span class="o">.</span><span class="n">rep_addrs</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">reg_data</span><span class="o">.</span><span class="n">machine_ip</span> <span class="o">!=</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span> <span class="ow">and</span>\
+                        <span class="n">net</span><span class="o">.</span><span class="n">addr_is_local</span><span class="p">(</span><span class="n">addr</span><span class="p">):</span>
+                    <span class="k">continue</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span> <span class="s2">&quot;connecting to &quot;</span> <span class="o">+</span> <span class="n">addr</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rq_sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Process.stop_monitoring"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process.Process.stop_monitoring">[docs]</a>    <span class="k">def</span> <span class="nf">stop_monitoring</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">reg_timer</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reg_timer</span><span class="o">.</span><span class="n">cancel</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reg_timer</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_monitoring</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ping_thread</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">proc_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;Joining ping thread&quot;</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ping_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_returncode_thread</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2">  </span><span class="si">%s</span><span class="s2">  </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">proc_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;joining returncode thread&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_returncode_thread</span><span class="o">.</span><span class="n">join</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;monitor for: </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">proc_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;  ...monitoring threads stopped.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Process.finished"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process.Process.finished">[docs]</a>    <span class="k">def</span> <span class="nf">finished</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">finished</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ping_thread</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">finished</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ping_thread</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_returncode_thread</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">finished</span> <span class="o">=</span> <span class="n">finished</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_returncode_thread</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">finished</span></div>
+
+<div class="viewcode-block" id="Process.process_is_running"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process.Process.process_is_running">[docs]</a>    <span class="k">def</span> <span class="nf">process_is_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">running</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ping_thread</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">running</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ping_thread</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_returncode_thread</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">running</span> <span class="o">=</span> <span class="n">running</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_returncode_thread</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">running</span></div>
+
+<div class="viewcode-block" id="Process.start_monitoring"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process.Process.start_monitoring">[docs]</a>    <span class="k">def</span> <span class="nf">start_monitoring</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">ping_it</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ping_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ping_monitor</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ping_thread</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_ping_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">check_returncode</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_returncode_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">returncode_monitor</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_returncode_thread</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_returncode_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Process.ping_monitor"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process.Process.ping_monitor">[docs]</a>    <span class="k">def</span> <span class="nf">ping_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">is_alive</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_monitoring</span> <span class="ow">and</span> <span class="n">is_alive</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rq_sock</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rq_sock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s1">&#39;ping&#39;</span><span class="p">))</span>
+                    <span class="n">result</span> <span class="o">=</span> <span class="kc">None</span>
+                    <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ping_retries</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">result</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_monitoring</span><span class="p">:</span>
+                        <span class="n">result</span><span class="p">,</span> <span class="n">det</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_poller</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">socket</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">rq_sock</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">1500</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_monitoring</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                                         <span class="bp">self</span><span class="o">.</span><span class="n">proc_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="s2">&quot;NO RESPONSE TO PING!&quot;</span><span class="p">)</span>
+                        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status_lock</span><span class="p">:</span>
+                            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">FAILED</span><span class="p">,</span> <span class="n">FINISHED</span><span class="p">]:</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">NON_RESPONSIVE</span>
+                                <span class="bp">self</span><span class="o">.</span><span class="n">_status_details</span> <span class="o">=</span> <span class="s1">&#39;ping response timeout&#39;</span>
+                            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;status:&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span><span class="p">)</span>
+                            <span class="n">is_alive</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rq_sock</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">rq_sock</span><span class="o">.</span><span class="n">close</span><span class="p">(</span><span class="n">linger</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="Process.returncode_monitor"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process.Process.returncode_monitor">[docs]</a>    <span class="k">def</span> <span class="nf">returncode_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Process.kill"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process.Process.kill">[docs]</a>    <span class="k">def</span> <span class="nf">kill</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="Process.mark_delete"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process.Process.mark_delete">[docs]</a>    <span class="k">def</span> <span class="nf">mark_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status_lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">delete</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="Process.marked_delete"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process.Process.marked_delete">[docs]</a>    <span class="k">def</span> <span class="nf">marked_delete</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status_lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">delete</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

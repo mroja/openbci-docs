@@ -1,0 +1,29 @@
+obci.configs.tests package
+==========================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    obci.configs.tests.protobuf
+
+Submodules
+----------
+
+obci.configs.tests.signal_compare module
+----------------------------------------
+
+.. automodule:: obci.configs.tests.signal_compare
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.configs.tests
+    :members:
+    :undoc-members:
+    :show-inheritance:

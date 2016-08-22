@@ -1,0 +1,426 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.launcher.subprocess_monitor &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.launcher.subprocess_monitor</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+
+<span class="kn">import</span> <span class="nn">zmq</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.common.message</span> <span class="k">import</span> <span class="n">OBCIMessageTool</span><span class="p">,</span> <span class="n">PollingObject</span><span class="p">,</span> <span class="n">send_msg</span>
+<span class="kn">from</span> <span class="nn">obci.control.launcher.launcher_messages</span> <span class="k">import</span> <span class="n">message_templates</span>
+
+<span class="kn">from</span> <span class="nn">obci.utils.openbci_logging</span> <span class="k">import</span> <span class="n">get_logger</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.launcher.process_io_handler</span> <span class="k">import</span> <span class="n">start_stdio_handler</span>
+<span class="kn">from</span> <span class="nn">obci.control.launcher.local_process</span> <span class="k">import</span> <span class="n">LocalProcess</span>
+<span class="kn">from</span> <span class="nn">obci.control.launcher.remote_process</span> <span class="k">import</span> <span class="n">RemoteProcess</span>
+<span class="kn">from</span> <span class="nn">obci.control.launcher.process</span> <span class="k">import</span> <span class="p">(</span><span class="n">FAILED</span><span class="p">,</span> <span class="n">FINISHED</span><span class="p">,</span> <span class="n">TERMINATED</span><span class="p">,</span> <span class="n">UNKNOWN</span><span class="p">,</span>
+                                           <span class="n">PING</span><span class="p">,</span> <span class="n">RETURNCODE</span><span class="p">)</span>
+
+
+<span class="n">NO_STDIO</span> <span class="o">=</span> <span class="mi">0</span>
+<span class="n">STDOUT</span> <span class="o">=</span> <span class="mi">1</span>
+<span class="n">STDERR</span> <span class="o">=</span> <span class="mi">2</span>
+<span class="n">STDIN</span> <span class="o">=</span> <span class="mi">4</span>
+
+<span class="n">STDIO</span> <span class="o">=</span> <span class="p">[</span><span class="n">NO_STDIO</span><span class="p">,</span> <span class="n">STDOUT</span><span class="p">,</span> <span class="n">STDERR</span><span class="p">,</span> <span class="n">STDIN</span><span class="p">]</span>
+
+<span class="n">PYTHON_CALL</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;obci_run_peer&#39;</span><span class="p">]</span>
+
+<span class="n">REGISTER_TIMEOUT</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="n">_DEFAULT_TIMEOUT</span> <span class="o">=</span> <span class="mi">20</span>
+<span class="n">_DEFAULT_TIMEOUT_MS</span> <span class="o">=</span> <span class="mi">6000</span>
+
+
+<div class="viewcode-block" id="SubprocessMonitor"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.subprocess_monitor.SubprocessMonitor">[docs]</a><span class="k">class</span> <span class="nc">SubprocessMonitor</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">zmq_ctx</span><span class="p">,</span> <span class="n">uuid</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">obci_dns</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span> <span class="o">=</span> <span class="n">zmq_ctx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span> <span class="o">=</span> <span class="n">uuid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span> <span class="ow">or</span> <span class="n">get_logger</span><span class="p">(</span><span class="s1">&#39;subprocess_monitor&#39;</span><span class="p">,</span>
+                                           <span class="n">stream_level</span><span class="o">=</span><span class="s1">&#39;warning&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obci_dns</span> <span class="o">=</span> <span class="n">obci_dns</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mtool</span> <span class="o">=</span> <span class="n">OBCIMessageTool</span><span class="p">(</span><span class="n">message_templates</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">poller</span> <span class="o">=</span> <span class="n">PollingObject</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_proc_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
+
+<div class="viewcode-block" id="SubprocessMonitor.not_running_processes"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.subprocess_monitor.SubprocessMonitor.not_running_processes">[docs]</a>    <span class="k">def</span> <span class="nf">not_running_processes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">status</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proc_lock</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">proc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">st</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">status</span><span class="p">()</span>
+                <span class="k">if</span> <span class="n">st</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">in</span> <span class="p">[</span><span class="n">FINISHED</span><span class="p">,</span> <span class="n">FAILED</span><span class="p">,</span> <span class="n">TERMINATED</span><span class="p">]</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">proc</span><span class="o">.</span><span class="n">marked_delete</span><span class="p">():</span>
+                    <span class="n">status</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="n">st</span>
+
+        <span class="k">return</span> <span class="n">status</span></div>
+
+<div class="viewcode-block" id="SubprocessMonitor.unknown_status_processes"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.subprocess_monitor.SubprocessMonitor.unknown_status_processes">[docs]</a>    <span class="k">def</span> <span class="nf">unknown_status_processes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proc_lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[</span><span class="n">proc</span> <span class="k">for</span> <span class="n">proc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="o">.</span><span class="n">values</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">proc</span><span class="o">.</span><span class="n">status</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">UNKNOWN</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="SubprocessMonitor.process"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.subprocess_monitor.SubprocessMonitor.process">[docs]</a>    <span class="k">def</span> <span class="nf">process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine_ip</span><span class="p">,</span> <span class="n">pid</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proc_lock</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">machine_ip</span><span class="p">,</span> <span class="n">pid</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SubprocessMonitor.killall"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.subprocess_monitor.SubprocessMonitor.killall">[docs]</a>    <span class="k">def</span> <span class="nf">killall</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proc_lock</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">proc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">kill_method</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">kill</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">force</span> <span class="k">else</span> <span class="n">proc</span><span class="o">.</span><span class="n">kill_with_force</span>
+                <span class="k">if</span> <span class="n">proc</span><span class="o">.</span><span class="n">status</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">not</span> <span class="ow">in</span> <span class="p">[</span><span class="n">FINISHED</span><span class="p">,</span> <span class="n">FAILED</span><span class="p">,</span> <span class="n">TERMINATED</span><span class="p">]:</span>
+                    <span class="n">kill_method</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="SubprocessMonitor.delete"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.subprocess_monitor.SubprocessMonitor.delete">[docs]</a>    <span class="k">def</span> <span class="nf">delete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">pid</span><span class="p">):</span>
+        <span class="n">proc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="o">.</span><span class="n">get</span><span class="p">((</span><span class="n">machine</span><span class="p">,</span> <span class="n">pid</span><span class="p">),</span> <span class="kc">None</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">proc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Process not found: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="n">machine</span><span class="p">,</span> <span class="n">pid</span><span class="p">)))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">proc</span><span class="o">.</span><span class="n">running</span><span class="p">():</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="p">[(</span><span class="n">machine</span><span class="p">,</span> <span class="n">pid</span><span class="p">)]</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Process is running, will not delete! &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">((</span><span class="n">machine</span><span class="p">,</span> <span class="n">pid</span><span class="p">)))</span>
+            <span class="k">return</span> <span class="kc">False</span></div>
+
+<div class="viewcode-block" id="SubprocessMonitor.delete_all"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.subprocess_monitor.SubprocessMonitor.delete_all">[docs]</a>    <span class="k">def</span> <span class="nf">delete_all</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proc_lock</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">proc</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+                <span class="k">del</span> <span class="n">proc</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span> <span class="o">=</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="SubprocessMonitor.stop_monitoring"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.subprocess_monitor.SubprocessMonitor.stop_monitoring">[docs]</a>    <span class="k">def</span> <span class="nf">stop_monitoring</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proc_lock</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">proc</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+                <span class="n">proc</span><span class="o">.</span><span class="n">stop_monitoring</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_launch_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">args</span><span class="p">):</span>
+        <span class="c1"># TODO fix interpreter calls // only python is supported</span>
+        <span class="k">if</span> <span class="n">path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s1">&#39;.py&#39;</span><span class="p">):</span>
+            <span class="n">launch_args</span> <span class="o">=</span> <span class="n">PYTHON_CALL</span> <span class="o">+</span> <span class="p">[</span><span class="n">path</span><span class="p">]</span> <span class="o">+</span> <span class="n">args</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">launch_args</span> <span class="o">=</span> <span class="p">[</span><span class="n">path</span><span class="p">]</span> <span class="o">+</span> <span class="n">args</span>
+        <span class="k">return</span> <span class="n">launch_args</span>
+
+    <span class="k">def</span> <span class="nf">_stdio_actions</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">io_flags</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span> <span class="k">if</span> <span class="n">io_flags</span> <span class="o">&amp;</span> <span class="n">STDOUT</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">io_flags</span> <span class="o">&amp;</span> <span class="n">STDERR</span><span class="p">:</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span>
+        <span class="k">elif</span> <span class="n">out</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="n">stdin</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span> <span class="k">if</span> <span class="n">io_flags</span> <span class="o">&amp;</span> <span class="n">STDIN</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">stdin</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_local_launch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">launch_args</span><span class="p">,</span> <span class="n">stdio_actions</span><span class="p">,</span> <span class="n">env</span><span class="p">):</span>
+        <span class="n">ON_POSIX</span> <span class="o">=</span> <span class="s1">&#39;posix&#39;</span> <span class="ow">in</span> <span class="n">sys</span><span class="o">.</span><span class="n">builtin_module_names</span>
+        <span class="n">out</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">stdin</span> <span class="o">=</span> <span class="n">stdio_actions</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span><span class="p">:</span>
+                <span class="n">crflags</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CREATE_NEW_PROCESS_GROUP</span>
+                <span class="n">popen_obj</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">launch_args</span><span class="p">,</span>
+                                             <span class="n">stdout</span><span class="o">=</span><span class="n">out</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">err</span><span class="p">,</span> <span class="n">stdin</span><span class="o">=</span><span class="n">stdin</span><span class="p">,</span>
+                                             <span class="n">bufsize</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">close_fds</span><span class="o">=</span><span class="n">ON_POSIX</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">,</span>
+                                             <span class="n">creationflags</span><span class="o">=</span><span class="n">crflags</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">popen_obj</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span><span class="n">launch_args</span><span class="p">,</span>
+                                             <span class="n">stdout</span><span class="o">=</span><span class="n">out</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">err</span><span class="p">,</span> <span class="n">stdin</span><span class="o">=</span><span class="n">stdin</span><span class="p">,</span>
+                                             <span class="n">bufsize</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">close_fds</span><span class="o">=</span><span class="n">ON_POSIX</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
+
+            <span class="n">details</span> <span class="o">=</span> <span class="s2">&quot;Popen constructor finished for &quot;</span> <span class="o">+</span>\
+                <span class="nb">str</span><span class="p">(</span><span class="n">launch_args</span><span class="p">[:</span><span class="mi">3</span><span class="p">])</span> <span class="o">+</span> <span class="s2">&quot;(...)&quot;</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">details</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">popen_obj</span><span class="p">,</span> <span class="n">details</span>
+        <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">details</span> <span class="o">=</span> <span class="s2">&quot;Unable to spawn process </span><span class="si">{0}</span><span class="s2"> [</span><span class="si">{1}</span><span class="s2">]&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">launch_args</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">details</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">details</span>
+        <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">details</span> <span class="o">=</span> <span class="s2">&quot;Unable to spawn process (bad arguments) </span><span class="si">{0}</span><span class="s2"> [</span><span class="si">{1}</span><span class="s2">]&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">launch_args</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">details</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">details</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">details</span> <span class="o">=</span> <span class="s2">&quot;Process launch Error: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">vars</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">details</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">details</span>
+
+<div class="viewcode-block" id="SubprocessMonitor.new_local_process"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.subprocess_monitor.SubprocessMonitor.new_local_process">[docs]</a>    <span class="k">def</span> <span class="nf">new_local_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">proc_type</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                          <span class="n">capture_io</span><span class="o">=</span><span class="n">STDOUT</span> <span class="o">|</span> <span class="n">STDIN</span><span class="p">,</span>
+                          <span class="n">stdout_log</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">stderr_log</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">register_timeout_desc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">monitoring_optflags</span><span class="o">=</span><span class="n">RETURNCODE</span> <span class="o">|</span> <span class="n">PING</span><span class="p">,</span>
+                          <span class="n">machine_ip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                          <span class="n">env</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="n">launch_args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_launch_args</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="n">proc_type</span> <span class="o">+</span> <span class="s2">&quot; local path:  &quot;</span> <span class="o">+</span> <span class="n">path</span><span class="p">)</span>
+        <span class="n">machine</span> <span class="o">=</span> <span class="n">machine_ip</span> <span class="k">if</span> <span class="n">machine_ip</span> <span class="k">else</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span>
+        <span class="n">std_actions</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stdio_actions</span><span class="p">(</span><span class="n">capture_io</span><span class="p">)</span>
+        <span class="n">timeout_desc</span> <span class="o">=</span> <span class="n">register_timeout_desc</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s1">&#39;process launch arg list:  </span><span class="si">%s</span><span class="s1">&#39;</span><span class="p">,</span> <span class="n">launch_args</span><span class="p">)</span>
+        <span class="n">popen_obj</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_local_launch</span><span class="p">(</span><span class="n">launch_args</span><span class="p">,</span> <span class="n">std_actions</span><span class="p">,</span> <span class="n">env</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">popen_obj</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">details</span>
+
+        <span class="k">if</span> <span class="n">popen_obj</span><span class="o">.</span><span class="n">returncode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">det</span> <span class="o">=</span> <span class="s2">&quot;opened process already terminated&quot;</span> <span class="o">+</span> <span class="n">popen_obj</span><span class="o">.</span><span class="n">communicate</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="n">det</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span><span class="p">:</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+        <span class="n">process_desc</span> <span class="o">=</span> <span class="n">ProcessDescription</span><span class="p">(</span><span class="n">proc_type</span><span class="o">=</span><span class="n">proc_type</span><span class="p">,</span>
+                                          <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                          <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
+                                          <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
+                                          <span class="n">machine_ip</span><span class="o">=</span><span class="n">machine</span><span class="p">,</span>
+                                          <span class="n">pid</span><span class="o">=</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span>
+
+        <span class="c1"># io_handler will be None if no stdio is captured</span>
+        <span class="n">io_handler</span> <span class="o">=</span> <span class="n">start_stdio_handler</span><span class="p">(</span><span class="n">popen_obj</span><span class="p">,</span> <span class="n">std_actions</span><span class="p">,</span>
+                                         <span class="s1">&#39;:&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">machine</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">name</span><span class="p">]),</span>
+                                         <span class="n">stdout_log</span><span class="p">,</span> <span class="n">stderr_log</span><span class="p">)</span>
+
+        <span class="n">new_proc</span> <span class="o">=</span> <span class="n">LocalProcess</span><span class="p">(</span><span class="n">process_desc</span><span class="p">,</span> <span class="n">popen_obj</span><span class="p">,</span> <span class="n">io_handler</span><span class="o">=</span><span class="n">io_handler</span><span class="p">,</span>
+                                <span class="n">reg_timeout_desc</span><span class="o">=</span><span class="n">timeout_desc</span><span class="p">,</span>
+                                <span class="n">monitoring_optflags</span><span class="o">=</span><span class="n">monitoring_optflags</span><span class="p">,</span>
+                                <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">monitoring_optflags</span> <span class="o">&amp;</span> <span class="n">PING</span><span class="p">:</span>
+            <span class="n">new_proc</span><span class="o">.</span><span class="n">_ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span>
+
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proc_lock</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="p">[(</span><span class="n">machine</span><span class="p">,</span> <span class="n">popen_obj</span><span class="o">.</span><span class="n">pid</span><span class="p">)]</span> <span class="o">=</span> <span class="n">new_proc</span>
+
+        <span class="n">new_proc</span><span class="o">.</span><span class="n">start_monitoring</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">new_proc</span><span class="p">,</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="SubprocessMonitor.new_remote_process"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.subprocess_monitor.SubprocessMonitor.new_remote_process">[docs]</a>    <span class="k">def</span> <span class="nf">new_remote_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">proc_type</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span>
+                           <span class="n">machine_ip</span><span class="p">,</span> <span class="n">conn_addr</span><span class="p">,</span>
+                           <span class="n">capture_io</span><span class="o">=</span><span class="n">STDOUT</span> <span class="o">|</span> <span class="n">STDIN</span><span class="p">,</span>
+                           <span class="n">stdout_log</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">stderr_log</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">register_timeout_desc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                           <span class="n">monitoring_optflags</span><span class="o">=</span><span class="n">PING</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Send a request to conn_addr for a process launch. By default</span>
+<span class="sd">        the process will be monitored with ping requests and locally by the</span>
+<span class="sd">        remote peer.&quot;&quot;&quot;</span>
+
+        <span class="n">timeout_desc</span> <span class="o">=</span> <span class="n">register_timeout_desc</span>
+
+        <span class="n">rq_message</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s1">&#39;launch_process&#39;</span><span class="p">,</span>
+                                          <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
+                                          <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">proc_type</span><span class="o">=</span><span class="n">proc_type</span><span class="p">,</span>
+                                          <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                          <span class="n">machine_ip</span><span class="o">=</span><span class="n">machine_ip</span><span class="p">,</span>
+                                          <span class="n">capture_io</span><span class="o">=</span><span class="n">capture_io</span><span class="p">,</span>
+                                          <span class="n">stdout_log</span><span class="o">=</span><span class="n">stdout_log</span><span class="p">,</span>
+                                          <span class="n">stderr_log</span><span class="o">=</span><span class="n">stderr_log</span><span class="p">)</span>
+
+        <span class="n">rq_sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REQ</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">rq_sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">conn_addr</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">zmq</span><span class="o">.</span><span class="n">ZMQError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">det</span> <span class="o">=</span> <span class="s2">&quot;Could not connect to </span><span class="si">{0}</span><span class="s2">, err: </span><span class="si">{1}</span><span class="s2">, </span><span class="si">{2}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">conn_addr</span><span class="p">,</span> <span class="n">e</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">det</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">det</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;SENDING LAUNCH REQUEST  </span><span class="si">{0}</span><span class="s2">  </span><span class="si">{1}</span><span class="s2">  </span><span class="si">{2}</span><span class="s2"> </span><span class="si">{3}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+            <span class="n">machine_ip</span><span class="p">,</span> <span class="n">_DEFAULT_TIMEOUT_MS</span><span class="p">,</span> <span class="s1">&#39;ms&#39;</span><span class="p">,</span> <span class="n">conn_addr</span><span class="p">))</span>
+
+        <span class="n">send_msg</span><span class="p">(</span><span class="n">rq_sock</span><span class="p">,</span> <span class="n">rq_message</span><span class="p">)</span>
+        <span class="n">result</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poller</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">rq_sock</span><span class="p">,</span> <span class="n">_DEFAULT_TIMEOUT_MS</span><span class="p">)</span>
+
+        <span class="n">rq_sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">:</span>
+            <span class="n">details</span> <span class="o">=</span> <span class="n">details</span> <span class="o">+</span> <span class="s2">&quot;  [address was: </span><span class="si">{0}</span><span class="s2">]&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">conn_addr</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">details</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">details</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mtool</span><span class="o">.</span><span class="n">unpack_msg</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;rq_error&#39;</span><span class="p">:</span>
+            <span class="n">det</span> <span class="o">=</span> <span class="s2">&quot;REQUEST FAILED&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">err_code</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="o">.</span><span class="n">details</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">det</span><span class="p">)</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="n">det</span>
+        <span class="k">elif</span> <span class="n">result</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;launched_process_info&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;REQUEST SUCCESS  </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">dict</span><span class="p">())</span>
+            <span class="n">process_desc</span> <span class="o">=</span> <span class="n">ProcessDescription</span><span class="p">(</span><span class="n">proc_type</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">proc_type</span><span class="p">,</span>
+                                              <span class="n">name</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                              <span class="n">path</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+                                              <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
+                                              <span class="n">machine_ip</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">machine</span><span class="p">,</span>
+                                              <span class="n">pid</span><span class="o">=</span><span class="n">result</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span>
+
+            <span class="n">new_proc</span> <span class="o">=</span> <span class="n">RemoteProcess</span><span class="p">(</span><span class="n">process_desc</span><span class="p">,</span> <span class="n">conn_addr</span><span class="p">,</span>
+                                     <span class="n">reg_timeout_desc</span><span class="o">=</span><span class="n">timeout_desc</span><span class="p">,</span>
+                                     <span class="n">monitoring_optflags</span><span class="o">=</span><span class="n">monitoring_optflags</span><span class="p">,</span>
+                                     <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">monitoring_optflags</span> <span class="o">&amp;</span> <span class="n">PING</span><span class="p">:</span>
+                <span class="n">new_proc</span><span class="o">.</span><span class="n">_ctx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ctx</span>
+
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_proc_lock</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_processes</span><span class="p">[(</span><span class="n">result</span><span class="o">.</span><span class="n">machine</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">pid</span><span class="p">)]</span> <span class="o">=</span> <span class="n">new_proc</span>
+
+            <span class="n">new_proc</span><span class="o">.</span><span class="n">start_monitoring</span><span class="p">()</span>
+
+            <span class="k">return</span> <span class="n">new_proc</span><span class="p">,</span> <span class="kc">None</span></div></div>
+
+
+<div class="viewcode-block" id="ProcessDescription"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.subprocess_monitor.ProcessDescription">[docs]</a><span class="k">class</span> <span class="nc">ProcessDescription</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proc_type</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">machine_ip</span><span class="p">,</span> <span class="n">pid</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">proc_type</span> <span class="o">=</span> <span class="n">proc_type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">args</span> <span class="o">=</span> <span class="n">args</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">machine_ip</span> <span class="o">=</span> <span class="n">machine_ip</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">pid</span> <span class="o">=</span> <span class="n">pid</span>
+
+<div class="viewcode-block" id="ProcessDescription.dict"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.subprocess_monitor.ProcessDescription.dict">[docs]</a>    <span class="k">def</span> <span class="nf">dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">proc_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">proc_type</span><span class="p">,</span>
+                    <span class="n">name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                    <span class="n">uuid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span>
+                    <span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+                    <span class="n">args</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">args</span><span class="p">,</span>
+                    <span class="n">machine_ip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">machine_ip</span><span class="p">,</span>
+                    <span class="n">pid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="TimeoutDescription"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.subprocess_monitor.TimeoutDescription">[docs]</a><span class="k">class</span> <span class="nc">TimeoutDescription</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">REGISTER_TIMEOUT</span><span class="p">,</span> <span class="n">timeout_method</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">timeout_args</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout</span> <span class="o">=</span> <span class="n">timeout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout_method</span> <span class="o">=</span> <span class="n">timeout_method</span> <span class="k">if</span> <span class="n">timeout_method</span> <span class="k">else</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">default_timeout_method</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">timeout_args</span> <span class="o">=</span> <span class="n">timeout_args</span>
+
+<div class="viewcode-block" id="TimeoutDescription.default_timeout_method"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.subprocess_monitor.TimeoutDescription.default_timeout_method">[docs]</a>    <span class="k">def</span> <span class="nf">default_timeout_method</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="TimeoutDescription.timer"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.subprocess_monitor.TimeoutDescription.timer">[docs]</a>    <span class="k">def</span> <span class="nf">timer</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">threading</span><span class="o">.</span><span class="n">Timer</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">timeout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout_method</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">timeout_args</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="default_timeout_handler"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.subprocess_monitor.default_timeout_handler">[docs]</a><span class="k">def</span> <span class="nf">default_timeout_handler</span><span class="p">():</span>
+    <span class="k">return</span> <span class="n">TimeoutDescription</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

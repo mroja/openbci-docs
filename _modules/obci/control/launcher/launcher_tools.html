@@ -1,0 +1,244 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.launcher.launcher_tools &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.launcher.launcher_tools</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+
+<span class="n">NOT_READY</span> <span class="o">=</span> <span class="s1">&#39;not_ready&#39;</span>
+<span class="n">READY_TO_LAUNCH</span> <span class="o">=</span> <span class="s1">&#39;ready_to_launch&#39;</span>
+<span class="n">LAUNCHING</span> <span class="o">=</span> <span class="s1">&#39;launching&#39;</span>
+<span class="n">FAILED_LAUNCH</span> <span class="o">=</span> <span class="s1">&#39;failed_launch&#39;</span>
+<span class="n">RUNNING</span> <span class="o">=</span> <span class="s1">&#39;running&#39;</span>
+<span class="n">FINISHED</span> <span class="o">=</span> <span class="s1">&#39;finished&#39;</span>
+<span class="n">FAILED</span> <span class="o">=</span> <span class="s1">&#39;failed&#39;</span>
+<span class="n">TERMINATED</span> <span class="o">=</span> <span class="s1">&#39;terminated&#39;</span>
+
+<span class="n">EXP_STATUSES</span> <span class="o">=</span> <span class="p">[</span><span class="n">NOT_READY</span><span class="p">,</span> <span class="n">READY_TO_LAUNCH</span><span class="p">,</span> <span class="n">LAUNCHING</span><span class="p">,</span>
+                <span class="n">FAILED_LAUNCH</span><span class="p">,</span> <span class="n">RUNNING</span><span class="p">,</span> <span class="n">FINISHED</span><span class="p">,</span> <span class="n">FAILED</span><span class="p">,</span> <span class="n">TERMINATED</span><span class="p">]</span>
+
+<span class="n">POST_RUN_STATUSES</span> <span class="o">=</span> <span class="p">[</span><span class="n">FINISHED</span><span class="p">,</span> <span class="n">FAILED</span><span class="p">,</span> <span class="n">TERMINATED</span><span class="p">,</span> <span class="n">FAILED_LAUNCH</span><span class="p">]</span>
+<span class="n">RUN_STATUSES</span> <span class="o">=</span> <span class="p">[</span><span class="n">LAUNCHING</span><span class="p">,</span> <span class="n">RUNNING</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="ExperimentStatus"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launcher_tools.ExperimentStatus">[docs]</a><span class="k">class</span> <span class="nc">ExperimentStatus</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_name</span> <span class="o">=</span> <span class="n">NOT_READY</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">details</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peers_status</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="ExperimentStatus.set_status"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launcher_tools.ExperimentStatus.set_status">[docs]</a>    <span class="k">def</span> <span class="nf">set_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status_name</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="p">{}):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_name</span> <span class="o">=</span> <span class="n">status_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">details</span> <span class="o">=</span> <span class="n">details</span></div>
+
+<div class="viewcode-block" id="ExperimentStatus.as_dict"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launcher_tools.ExperimentStatus.as_dict">[docs]</a>    <span class="k">def</span> <span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">d</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">status_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">status_name</span><span class="p">,</span>
+                 <span class="n">details</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">details</span><span class="p">,</span>
+                 <span class="n">peers_status</span><span class="o">=</span><span class="p">{})</span>
+        <span class="k">for</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">st</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers_status</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">d</span><span class="p">[</span><span class="s1">&#39;peers_status&#39;</span><span class="p">][</span><span class="n">peer_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">st</span><span class="o">.</span><span class="n">as_dict</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">d</span></div>
+
+<div class="viewcode-block" id="ExperimentStatus.peer_status"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launcher_tools.ExperimentStatus.peer_status">[docs]</a>    <span class="k">def</span> <span class="nf">peer_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">):</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers_status</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ExperimentStatus.peer_status_exists"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launcher_tools.ExperimentStatus.peer_status_exists">[docs]</a>    <span class="k">def</span> <span class="nf">peer_status_exists</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">status_name</span> <span class="ow">in</span> <span class="p">[</span><span class="n">st</span><span class="o">.</span><span class="n">status_name</span> <span class="k">for</span> <span class="n">st</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">peers_status</span><span class="o">.</span><span class="n">values</span><span class="p">())]</span></div>
+
+<div class="viewcode-block" id="ExperimentStatus.del_peer_status"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launcher_tools.ExperimentStatus.del_peer_status">[docs]</a>    <span class="k">def</span> <span class="nf">del_peer_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">):</span>
+        <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers_status</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span></div></div>
+
+
+<div class="viewcode-block" id="PeerStatus"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launcher_tools.PeerStatus">[docs]</a><span class="k">class</span> <span class="nc">PeerStatus</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">status_name</span><span class="o">=</span><span class="n">NOT_READY</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span> <span class="o">=</span> <span class="n">peer_id</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_name</span> <span class="o">=</span> <span class="n">status_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">details</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="PeerStatus.set_status"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launcher_tools.PeerStatus.set_status">[docs]</a>    <span class="k">def</span> <span class="nf">set_status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status_name</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="p">()):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status_name</span> <span class="o">=</span> <span class="n">status_name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">details</span> <span class="o">=</span> <span class="n">details</span></div>
+
+<div class="viewcode-block" id="PeerStatus.as_dict"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launcher_tools.PeerStatus.as_dict">[docs]</a>    <span class="k">def</span> <span class="nf">as_dict</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">peer_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">status_name</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">status_name</span><span class="p">,</span>
+                    <span class="n">details</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">details</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="obci_root"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launcher_tools.obci_root">[docs]</a><span class="k">def</span> <span class="nf">obci_root</span><span class="p">():</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">))</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">path</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">path</span></div>
+
+
+<div class="viewcode-block" id="obci_root_relative"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launcher_tools.obci_root_relative">[docs]</a><span class="k">def</span> <span class="nf">obci_root_relative</span><span class="p">(</span><span class="n">path</span><span class="p">):</span>
+    <span class="n">_path</span> <span class="o">=</span> <span class="n">path</span>
+    <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;---- &quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">)</span>
+        <span class="n">root</span> <span class="o">=</span> <span class="n">obci_root</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">commonprefix</span><span class="p">([</span><span class="n">path</span><span class="p">,</span> <span class="n">root</span><span class="p">])</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">root</span><span class="p">):</span>
+            <span class="n">_path</span> <span class="o">=</span> <span class="n">path</span><span class="p">[</span><span class="nb">len</span><span class="p">(</span><span class="n">root</span><span class="p">):]</span>
+            <span class="k">if</span> <span class="n">_path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;/&#39;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">_path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\\</span><span class="s1">&#39;</span><span class="p">):</span>
+                <span class="n">_path</span> <span class="o">=</span> <span class="n">_path</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+    <span class="k">return</span> <span class="n">_path</span></div>
+
+
+<div class="viewcode-block" id="broker_path"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launcher_tools.broker_path">[docs]</a><span class="k">def</span> <span class="nf">broker_path</span><span class="p">():</span>
+    <span class="sd">&quot;&quot;&quot; Used only in obci_process_supervisor.py and supervisor_test.py &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">which</span><span class="p">(</span><span class="s1">&#39;obci_broker&#39;</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">which</span><span class="p">(</span><span class="s1">&#39;obci_broker&#39;</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">obci_root</span><span class="p">(),</span> <span class="s1">&#39;bin&#39;</span><span class="p">,</span> <span class="s1">&#39;obci_broker&#39;</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="module_path"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launcher_tools.module_path">[docs]</a><span class="k">def</span> <span class="nf">module_path</span><span class="p">(</span><span class="n">module</span><span class="p">):</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="n">module</span><span class="o">.</span><span class="n">__file__</span>
+    <span class="n">path</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">path</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">],</span> <span class="s1">&#39;py&#39;</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="default_config_path"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launcher_tools.default_config_path">[docs]</a><span class="k">def</span> <span class="nf">default_config_path</span><span class="p">(</span><span class="n">peer_program_path</span><span class="p">):</span>
+    <span class="n">file_endings</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;py&#39;</span><span class="p">,</span> <span class="s1">&#39;java&#39;</span><span class="p">,</span> <span class="s1">&#39;jar&#39;</span><span class="p">,</span> <span class="s1">&#39;class&#39;</span><span class="p">,</span> <span class="s1">&#39;exe&#39;</span><span class="p">,</span> <span class="s1">&#39;sh&#39;</span><span class="p">,</span> <span class="s1">&#39;bin&#39;</span><span class="p">]</span>
+    <span class="n">base</span> <span class="o">=</span> <span class="n">peer_program_path</span>
+    <span class="n">sp</span> <span class="o">=</span> <span class="n">peer_program_path</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sp</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">sp</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span> <span class="o">&lt;</span> <span class="mi">3</span> <span class="ow">or</span> <span class="n">sp</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="ow">in</span> <span class="n">file_endings</span><span class="p">:</span>
+            <span class="n">base</span> <span class="o">=</span> <span class="n">sp</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="n">conf_path</span> <span class="o">=</span> <span class="n">expand_path</span><span class="p">(</span><span class="n">base</span> <span class="o">+</span> <span class="s1">&#39;.ini&#39;</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">conf_path</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">conf_path</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="s1">&#39;&#39;</span></div>
+
+
+<div class="viewcode-block" id="expand_path"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launcher_tools.expand_path">[docs]</a><span class="k">def</span> <span class="nf">expand_path</span><span class="p">(</span><span class="n">program_path</span><span class="p">,</span> <span class="n">base_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">base_dir</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">base_dir</span> <span class="o">=</span> <span class="n">obci_root</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">program_path</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">program_path</span>
+    <span class="n">program_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">program_path</span><span class="p">)</span>
+    <span class="n">p</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">program_path</span><span class="p">)</span>
+    <span class="n">obcip</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">base_dir</span><span class="p">,</span> <span class="n">p</span><span class="p">))</span>
+    <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">p</span><span class="p">)</span> <span class="ow">and</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">p</span>
+    <span class="k">elif</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">obcip</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">obcip</span>
+    <span class="k">elif</span> <span class="n">which</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">which</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">program_path</span></div>
+
+
+<div class="viewcode-block" id="which"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launcher_tools.which">[docs]</a><span class="k">def</span> <span class="nf">which</span><span class="p">(</span><span class="n">file</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">path</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;PATH&quot;</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">pathsep</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">file</span><span class="p">)):</span>
+            <span class="k">return</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
+    <span class="k">return</span> <span class="kc">None</span></div>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">obci_root</span><span class="p">())</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

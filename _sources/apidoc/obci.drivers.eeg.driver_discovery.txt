@@ -1,0 +1,46 @@
+obci.drivers.eeg.driver_discovery package
+=========================================
+
+Submodules
+----------
+
+obci.drivers.eeg.driver_discovery.amplifier_tmsi_bt_discovery module
+--------------------------------------------------------------------
+
+.. automodule:: obci.drivers.eeg.driver_discovery.amplifier_tmsi_bt_discovery
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.drivers.eeg.driver_discovery.amplifier_tmsi_usb_discovery module
+---------------------------------------------------------------------
+
+.. automodule:: obci.drivers.eeg.driver_discovery.amplifier_tmsi_usb_discovery
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.drivers.eeg.driver_discovery.amplifier_virtual_discovery module
+--------------------------------------------------------------------
+
+.. automodule:: obci.drivers.eeg.driver_discovery.amplifier_virtual_discovery
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.drivers.eeg.driver_discovery.driver_discovery module
+---------------------------------------------------------
+
+.. automodule:: obci.drivers.eeg.driver_discovery.driver_discovery
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.drivers.eeg.driver_discovery
+    :members:
+    :undoc-members:
+    :show-inheritance:

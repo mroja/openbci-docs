@@ -1,0 +1,787 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.core package &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../index.html" />
+    <link rel="up" title="obci package" href="obci.html" />
+    <link rel="next" title="obci.core.messages package" href="obci.core.messages.html" />
+    <link rel="prev" title="obci.control.peer package" href="obci.control.peer.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="obci-core-package">
+<h1>obci.core package<a class="headerlink" href="#obci-core-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="obci.core.messages.html">obci.core.messages package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="obci.core.messages.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.core.messages.html#module-obci.core.messages.protobuf_serializer">obci.core.messages.protobuf_serializer module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.core.messages.html#module-obci.core.messages.types">obci.core.messages.types module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.core.messages.html#module-obci.core.messages">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-obci.core.asyncio_task_manager">
+<span id="obci-core-asyncio-task-manager-module"></span><h2>obci.core.asyncio_task_manager module<a class="headerlink" href="#module-obci.core.asyncio_task_manager" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.core.asyncio_task_manager.AsyncioTaskManager">
+<em class="property">class </em><code class="descclassname">obci.core.asyncio_task_manager.</code><code class="descname">AsyncioTaskManager</code><span class="sig-paren">(</span><em>asyncio_loop: typing.Union[asyncio.base_events.BaseEventLoop</em>, <em>NoneType] = None</em><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/asyncio_task_manager.html#AsyncioTaskManager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.asyncio_task_manager.AsyncioTaskManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>AsyncioTaskManager class is used to manage a set of tasks.</p>
+<p>Tasks are created using <cite>create_task</cite> function.</p>
+<p class="rubric">Examples</p>
+<p>Can be used as context manager:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">with</span> <span class="n">AsyncioTaskManager</span><span class="p">()</span> <span class="k">as</span> <span class="n">mgr</span><span class="p">:</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<p>Or as async context manager:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="k">async</span> <span class="k">with</span> <span class="n">AsyncioTaskManager</span><span class="p">()</span> <span class="k">as</span> <span class="n">mgr</span><span class="p">:</span>
+    <span class="k">pass</span>
+</pre></div>
+</div>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>asyncio_loop</strong> &#8211; existing message loop or <cite>None</cite> if new message loop should be created</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="obci.core.asyncio_task_manager.AsyncioTaskManager.async_shutdown">
+<code class="descname">async_shutdown</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/asyncio_task_manager.html#AsyncioTaskManager.async_shutdown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.asyncio_task_manager.AsyncioTaskManager.async_shutdown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Can be called from coroutine running inside message loop.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.core.asyncio_task_manager.AsyncioTaskManager.create_task">
+<code class="descname">create_task</code><span class="sig-paren">(</span><em>coro: coroutine</em><span class="sig-paren">)</span> &rarr; typing.Union[asyncio.futures.Future, concurrent.futures._base.Future]<a class="reference internal" href="../_modules/obci/core/asyncio_task_manager.html#AsyncioTaskManager.create_task"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.asyncio_task_manager.AsyncioTaskManager.create_task" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a new task and return Future object.</p>
+<p>New task will be added to an internal tasks list. When task finishes or
+raises exception or is cancelled it will be automatically removed from
+that list. When <cite>AsyncioTaskManager</cite> is asked to close it will cancel
+all tasks on that list.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Can be called from any thread or/and from any coroutine.</p>
+</div>
+</dd></dl>
+
+<dl class="staticmethod">
+<dt id="obci.core.asyncio_task_manager.AsyncioTaskManager.new_event_loop">
+<em class="property">static </em><code class="descname">new_event_loop</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; asyncio.base_events.BaseEventLoop<a class="reference internal" href="../_modules/obci/core/asyncio_task_manager.html#AsyncioTaskManager.new_event_loop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.asyncio_task_manager.AsyncioTaskManager.new_event_loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>When AsyncioTaskManager runs with self.owns_asyncio_loop == True
+this function is called to create a new asyncio event loop.</p>
+<p>Default implementation returns <a class="reference external" href="https://docs.python.org/3/library/asyncio-eventloops.html#asyncio.new_event_loop" title="(in Python v3.5)"><code class="xref py py-func docutils literal"><span class="pre">asyncio.new_event_loop()</span></code></a>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">event loop object</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="obci.core.asyncio_task_manager.AsyncioTaskManager.owns_asyncio_loop">
+<code class="descname">owns_asyncio_loop</code><a class="headerlink" href="#obci.core.asyncio_task_manager.AsyncioTaskManager.owns_asyncio_loop" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bool</em> &#8211; True if owns asyncio message loop.</p>
+<p>If this instance owns message loop, it will be closed and destroyed
+on <cite>AsyncioTaskManager</cite>&#8216;s shutdown.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.core.asyncio_task_manager.AsyncioTaskManager.shutdown">
+<code class="descname">shutdown</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/asyncio_task_manager.html#AsyncioTaskManager.shutdown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.asyncio_task_manager.AsyncioTaskManager.shutdown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Can be called from ANY thread, but NOT from event loop.
+It will block until all pending tasks are finished.
+Can be called multiple times.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="obci.core.asyncio_task_manager.MessageLoopRunningException">
+<em class="property">exception </em><code class="descclassname">obci.core.asyncio_task_manager.</code><code class="descname">MessageLoopRunningException</code><a class="reference internal" href="../_modules/obci/core/asyncio_task_manager.html#MessageLoopRunningException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.asyncio_task_manager.MessageLoopRunningException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></a></p>
+<p>Raised when function requiring to be called from outside message loop was
+called from inside message loop.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="obci.core.asyncio_task_manager.ensure_not_inside_msg_loop">
+<code class="descclassname">obci.core.asyncio_task_manager.</code><code class="descname">ensure_not_inside_msg_loop</code><span class="sig-paren">(</span><em>func: typing.Callable[..., typing.Any]</em><span class="sig-paren">)</span> &rarr; typing.Callable[..., typing.Any]<a class="reference internal" href="../_modules/obci/core/asyncio_task_manager.html#ensure_not_inside_msg_loop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.asyncio_task_manager.ensure_not_inside_msg_loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decorator used by AsyncioTaskManager and its subclasses to annotate methods
+requiring to be called outside message loop.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.core.broker">
+<span id="obci-core-broker-module"></span><h2>obci.core.broker module<a class="headerlink" href="#module-obci.core.broker" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.core.broker.Broker">
+<em class="property">class </em><code class="descclassname">obci.core.broker.</code><code class="descname">Broker</code><span class="sig-paren">(</span><em>rep_urls: typing.List[str], xpub_urls: typing.List[str], xsub_urls: typing.List[str], asyncio_loop: typing.Union[zmq.asyncio.ZMQEventLoop, NoneType] = None, zmq_context: typing.Union[zmq.asyncio.Context, NoneType] = None, zmq_io_threads: int = 1, hwm: int = 1000, msg_proxy_io_threads: int = 1, msg_proxy_hwm: int = 1000</em><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/broker.html#Broker"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.broker.Broker" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.core.zmq_asyncio_task_manager.ZmqAsyncioTaskManager" title="obci.core.zmq_asyncio_task_manager.ZmqAsyncioTaskManager"><code class="xref py py-class docutils literal"><span class="pre">obci.core.zmq_asyncio_task_manager.ZmqAsyncioTaskManager</span></code></a>, <a class="reference internal" href="#obci.core.message_handler_mixin.MessageHandlerMixin" title="obci.core.message_handler_mixin.MessageHandlerMixin"><code class="xref py py-class docutils literal"><span class="pre">obci.core.message_handler_mixin.MessageHandlerMixin</span></code></a></p>
+<p>Broker is as essential component of OpenBCI experiment. It consists of
+REP socket, XPUB/XSUB message proxy and internal peer (with ID &#8216;0&#8217;).
+Every peer connects to broker on initialization and registers. Broker
+also acts as a message proxy and/or router between peers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>rep_urls</strong> &#8211; list of URLs to bind REP socket to</li>
+<li><strong>xpub_urls</strong> &#8211; list of URLs to bind message proxy XPUB socket to</li>
+<li><strong>xsub_urls</strong> &#8211; list of URLs to bind message proxy XSUB socket to</li>
+<li><strong>asyncio_loop</strong> &#8211; existing message loop to use or <cite>None</cite> if new message loop is requested</li>
+<li><strong>zmq_context</strong> &#8211; existing ZMQ asyncio context or <cite>None</cite> if new context is requested</li>
+<li><strong>zmq_io_threads</strong> &#8211; number of ZMQ I/O threads to use in broker</li>
+<li><strong>hwm</strong> &#8211; ZMQ High Water Mark for broker</li>
+<li><strong>msg_proxy_io_threads</strong> &#8211; number of ZMQ I/O threads to use in message proxy</li>
+<li><strong>msg_proxy_hwm</strong> &#8211; ZMQ High Water Mark for message proxy</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.core.broker.MsgProxy">
+<em class="property">class </em><code class="descclassname">obci.core.broker.</code><code class="descname">MsgProxy</code><span class="sig-paren">(</span><em>xpub_urls: typing.List[str], xsub_urls: typing.List[str], io_threads: int = 1, hwm: int = 1000</em><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/broker.html#MsgProxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.broker.MsgProxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Message proxy is an integral part of Broker. It routes messages from
+multiple publishers to multiple subscribers.</p>
+<p><cite>MsgProxy</cite> opens an XSUB socket, an XPUB socket, and binds them to
+specified IP addresses and ports. Then, all peers connect to the proxy,
+instead of to each other. By using such pattern it becomes trivial to
+add more subscribers or publishers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>xpub_urls</strong> &#8211; list of URLs to bind XPUB socket to</li>
+<li><strong>xsub_urls</strong> &#8211; list of URLs to bind XSUB socket to</li>
+<li><strong>io_threads</strong> &#8211; size of the ZMQ threads pool to handle I/O operations</li>
+<li><strong>hwm</strong> &#8211; High Water Mark set on all ZMQ sockets</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="method">
+<dt id="obci.core.broker.MsgProxy.shutdown">
+<code class="descname">shutdown</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/broker.html#MsgProxy.shutdown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.broker.MsgProxy.shutdown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Shutdown message proxy. Release all associated resources.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.core.broker.PeerInfo">
+<em class="property">class </em><code class="descclassname">obci.core.broker.</code><code class="descname">PeerInfo</code><span class="sig-paren">(</span><em>peer_id: str</em>, <em>url: str</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/core/broker.html#PeerInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.broker.PeerInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Used by Broker to hold information about connected peers.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>peer_id</strong> &#8211; unique peer ID</li>
+<li><strong>url</strong> &#8211; URL of peer REP socket</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.core.message_handler_mixin">
+<span id="obci-core-message-handler-mixin-module"></span><h2>obci.core.message_handler_mixin module<a class="headerlink" href="#module-obci.core.message_handler_mixin" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.core.message_handler_mixin.MessageHandlerMixin">
+<em class="property">class </em><code class="descclassname">obci.core.message_handler_mixin.</code><code class="descname">MessageHandlerMixin</code> &rarr; None<a class="reference internal" href="../_modules/obci/core/message_handler_mixin.html#MessageHandlerMixin"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.message_handler_mixin.MessageHandlerMixin" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Implements common message handling interface used by Peer and Broker classes.</p>
+<dl class="method">
+<dt id="obci.core.message_handler_mixin.MessageHandlerMixin.handle_message">
+<code class="descname">handle_message</code><span class="sig-paren">(</span><em>msg: obci.core.messages.Message</em><span class="sig-paren">)</span> &rarr; typing.Union[obci.core.messages.Message, NoneType]<a class="reference internal" href="../_modules/obci/core/message_handler_mixin.html#MessageHandlerMixin.handle_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.message_handler_mixin.MessageHandlerMixin.handle_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called by message dispatching loop when new message arrives.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>msg</strong> &#8211; message to handle</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">value returned by handler</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Raises:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.5)"><code class="xref py py-exc docutils literal"><span class="pre">KeyError</span></code></a> &#8211; when handler for <cite>msg.type</cite> is not registered</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.core.message_handler_mixin.MessageHandlerMixin.register_message_handler">
+<code class="descname">register_message_handler</code><span class="sig-paren">(</span><em>msg_type: str, handler: typing.Union[typing.Callable[[obci.core.messages.Message], typing.Union[obci.core.messages.Message, NoneType]], typing.Callable[[obci.core.messages.Message], coroutine]]</em><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/message_handler_mixin.html#MessageHandlerMixin.register_message_handler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.message_handler_mixin.MessageHandlerMixin.register_message_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register <cite>handler</cite> function to be called when message with <cite>msg_type</cite> arrives.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>msg_type</strong> &#8211; Message type string.</li>
+<li><strong>handler</strong> &#8211; Function called when new message arrives.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.core.message_handler_mixin.MessageHandlerMixin.unregister_message_handler">
+<code class="descname">unregister_message_handler</code><span class="sig-paren">(</span><em>msg_type: str</em><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/message_handler_mixin.html#MessageHandlerMixin.unregister_message_handler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.message_handler_mixin.MessageHandlerMixin.unregister_message_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unregister previously registered message handler.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>msg_type</strong> &#8211; Message type string.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.core.message_statistics">
+<span id="obci-core-message-statistics-module"></span><h2>obci.core.message_statistics module<a class="headerlink" href="#module-obci.core.message_statistics" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.core.message_statistics.MsgPerfStats">
+<em class="property">class </em><code class="descclassname">obci.core.message_statistics.</code><code class="descname">MsgPerfStats</code><span class="sig-paren">(</span><em>interval: float</em>, <em>name: str = ''</em><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/message_statistics.html#MsgPerfStats"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.message_statistics.MsgPerfStats" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p><cite>MsgPerfStats</cite> receives messages with <cite>msg</cite> function and periodically
+prints some statistical information.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>interval</strong> &#8211; how often statistics will be printed</li>
+<li><strong>name</strong> &#8211; name of this counter</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="attribute">
+<dt id="obci.core.message_statistics.MsgPerfStats.interval">
+<code class="descname">interval</code><a class="headerlink" href="#obci.core.message_statistics.MsgPerfStats.interval" title="Permalink to this definition">¶</a></dt>
+<dd><p>How often message statistics will be printed to stdout. Specified in seconds.</p>
+<div class="admonition note">
+<p class="first admonition-title">Note</p>
+<p class="last">Interval is checked only in self.msg function, this class doesn&#8217;t use its own timer.</p>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.core.message_statistics.MsgPerfStats.msg">
+<code class="descname">msg</code><span class="sig-paren">(</span><em>msg: obci.core.messages.Message</em><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/message_statistics.html#MsgPerfStats.msg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.message_statistics.MsgPerfStats.msg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called to count new message into statistics.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>msg</strong> (<a class="reference internal" href="obci.core.messages.html#obci.core.messages.Message" title="obci.core.messages.Message"><code class="xref py py-class docutils literal"><span class="pre">Message</span></code></a>) &#8211; message to include into statistics</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.core.message_statistics.MsgPerfStats.reset">
+<code class="descname">reset</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/message_statistics.html#MsgPerfStats.reset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.message_statistics.MsgPerfStats.reset" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reset statistics.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.core.peer">
+<span id="obci-core-peer-module"></span><h2>obci.core.peer module<a class="headerlink" href="#module-obci.core.peer" title="Permalink to this headline">¶</a></h2>
+<dl class="exception">
+<dt id="obci.core.peer.MultiplePeersAvailable">
+<em class="property">exception </em><code class="descclassname">obci.core.peer.</code><code class="descname">MultiplePeersAvailable</code><span class="sig-paren">(</span><em>peers: typing.List[str], *args, **kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/core/peer.html#MultiplePeersAvailable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.MultiplePeersAvailable" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></a></p>
+<p>Raised in Peer.query method when more that one peer can answer
+specified query. Caller must decide which peer to ask and reissue query
+by calling Peer.query method with initial_peer parameter set to one of
+supplied peer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>peers</strong> &#8211; list of peers</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.core.peer.Peer">
+<em class="property">class </em><code class="descclassname">obci.core.peer.</code><code class="descname">Peer</code><span class="sig-paren">(</span><em>urls: typing.Union[str, obci.core.peer.PeerInitUrls], peer_id: typing.Union[str, NoneType] = None, asyncio_loop: typing.Union[zmq.asyncio.ZMQEventLoop, NoneType] = None, zmq_context: typing.Union[zmq.asyncio.Context, NoneType] = None, zmq_io_threads: int = 1, hwm: int = 1000</em><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/peer.html#Peer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.Peer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.core.zmq_asyncio_task_manager.ZmqAsyncioTaskManager" title="obci.core.zmq_asyncio_task_manager.ZmqAsyncioTaskManager"><code class="xref py py-class docutils literal"><span class="pre">obci.core.zmq_asyncio_task_manager.ZmqAsyncioTaskManager</span></code></a>, <a class="reference internal" href="#obci.core.message_handler_mixin.MessageHandlerMixin" title="obci.core.message_handler_mixin.MessageHandlerMixin"><code class="xref py py-class docutils literal"><span class="pre">obci.core.message_handler_mixin.MessageHandlerMixin</span></code></a></p>
+<p>Base peer class. All peers derive from this class.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>urls</strong> &#8211; string or PeerInitUrls with initial bootstrap addresses</li>
+<li><strong>peer_id</strong> &#8211; globally unique identifier</li>
+<li><strong>asyncio_loop</strong> &#8211; existing ZMQ asyncio message loop or <cite>None</cite> if loop is requested</li>
+<li><strong>zmq_context</strong> &#8211; existing ZMQ asyncio context or <cite>None</cite> if new context is requested</li>
+<li><strong>zmq_io_threads</strong> &#8211; number of ZMQ I/O threads</li>
+<li><strong>hwm</strong> &#8211; ZMQ high water mark</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="classmethod">
+<dt id="obci.core.peer.Peer.add_arguments">
+<em class="property">classmethod </em><code class="descname">add_arguments</code><span class="sig-paren">(</span><em>parser: argparse.ArgumentParser</em><span class="sig-paren">)</span> &rarr; argparse.ArgumentParser<a class="reference internal" href="../_modules/obci/core/peer.html#Peer.add_arguments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.Peer.add_arguments" title="Permalink to this definition">¶</a></dt>
+<dd><p>Add command line args recognized by this class when using <cite>create_peer</cite> method.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="obci.core.peer.Peer.create_peer">
+<em class="property">classmethod </em><code class="descname">create_peer</code><span class="sig-paren">(</span><em>argv: typing.List[str]</em><span class="sig-paren">)</span> &rarr; obci.core.peer.Peer<a class="reference internal" href="../_modules/obci/core/peer.html#Peer.create_peer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.Peer.create_peer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Parse supplied argv and create new Peer instance.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.core.peer.Peer.heartbeat">
+<code class="descname">heartbeat</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/peer.html#Peer.heartbeat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.Peer.heartbeat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Periodically send HEARTBEAT messages.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="obci.core.peer.Peer.id">
+<code class="descname">id</code><a class="headerlink" href="#obci.core.peer.Peer.id" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>str</em> &#8211; Unique identification string.</p>
+<p>Read only property. Can be set only when creating a new peer instance.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.core.peer.Peer.initialization_finished">
+<code class="descname">initialization_finished</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/peer.html#Peer.initialization_finished"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.Peer.initialization_finished" title="Permalink to this definition">¶</a></dt>
+<dd><p>Run when initialization finished and all message sending mechanisms
+are available to use.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.core.peer.Peer.query">
+<code class="descname">query</code><span class="sig-paren">(</span><em>query_type: str</em>, <em>query_params: typing.Union[dict</em>, <em>NoneType] = None</em>, <em>initial_peer: typing.Union[str</em>, <em>NoneType] = None</em><span class="sig-paren">)</span> &rarr; typing.Union[dict, str, int, float, NoneType, typing.List[typing.Any]]<a class="reference internal" href="../_modules/obci/core/peer.html#Peer.query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.Peer.query" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send query message to Broker (or any other peer in <cite>initial_peer</cite> is specified).</p>
+<p>Returned value can be any JSON-serializable object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">Union</span></code></a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>query_type</strong> (<code class="docutils literal"><span class="pre">str</span></code>) &#8211; query type</li>
+<li><strong>query_params</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">Union</span></code></a>) &#8211; optional query parameters</li>
+<li><strong>initial_peer</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">Union</span></code></a>) &#8211; if specified this peer will be asked instead of Broker</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">query response</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.core.peer.Peer.query_async">
+<code class="descname">query_async</code><span class="sig-paren">(</span><em>query_type: str</em>, <em>query_params: typing.Union[dict</em>, <em>NoneType] = None</em>, <em>initial_peer: typing.Union[str</em>, <em>NoneType] = None</em><span class="sig-paren">)</span> &rarr; typing.Union[dict, str, int, float, NoneType, typing.List[typing.Any]]<a class="reference internal" href="../_modules/obci/core/peer.html#Peer.query_async"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.Peer.query_async" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async version of <a class="reference internal" href="#obci.core.peer.Peer.query" title="obci.core.peer.Peer.query"><code class="xref py py-func docutils literal"><span class="pre">Peer.query()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.core.peer.Peer.register_query_handler">
+<code class="descname">register_query_handler</code><span class="sig-paren">(</span><em>msg_type: str, handler: typing.Union[typing.Callable[[obci.core.messages.Message], obci.core.messages.Message], typing.Callable[[obci.core.messages.Message], coroutine]]</em><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/peer.html#Peer.register_query_handler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.Peer.register_query_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Register callback handler for specified query type.</p>
+<p><cite>handler</cite> function must return a valid <cite>Message</cite> object.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>msg_type</strong> (<code class="docutils literal"><span class="pre">str</span></code>) &#8211; query type</li>
+<li><strong>handler</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">Union</span></code></a>) &#8211; function to execute when specified query is received</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.core.peer.Peer.register_query_handler_async">
+<code class="descname">register_query_handler_async</code><span class="sig-paren">(</span><em>msg_type: str, handler: typing.Union[typing.Callable[[obci.core.messages.Message], obci.core.messages.Message], typing.Callable[[obci.core.messages.Message], coroutine]]</em><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/peer.html#Peer.register_query_handler_async"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.Peer.register_query_handler_async" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async version of <a class="reference internal" href="#obci.core.peer.Peer.register_query_handler_async" title="obci.core.peer.Peer.register_query_handler_async"><code class="xref py py-func docutils literal"><span class="pre">Peer.register_query_handler_async()</span></code></a>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.core.peer.Peer.remove_filter">
+<code class="descname">remove_filter</code><span class="sig-paren">(</span><em>msg_type: str</em>, <em>msg_subtype: typing.Union[str</em>, <em>NoneType] = None</em><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/peer.html#Peer.remove_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.Peer.remove_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unsubscribe for messages with <cite>msg_type</cite> message type.</p>
+<p>Peer must be initialized to use this function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>msg_type</strong> &#8211; </li>
+<li><strong>msg_subtype</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.core.peer.Peer.send_broker_message">
+<code class="descname">send_broker_message</code><span class="sig-paren">(</span><em>msg: obci.core.messages.Message</em>, <em>timeout: float = 5.0</em><span class="sig-paren">)</span> &rarr; obci.core.messages.Message<a class="reference internal" href="../_modules/obci/core/peer.html#Peer.send_broker_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.Peer.send_broker_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send message to Broker and return answer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="obci.core.messages.html#obci.core.messages.Message" title="obci.core.messages.Message"><code class="xref py py-class docutils literal"><span class="pre">Message</span></code></a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>msg</strong> (<a class="reference internal" href="obci.core.messages.html#obci.core.messages.Message" title="obci.core.messages.Message"><code class="xref py py-class docutils literal"><span class="pre">Message</span></code></a>) &#8211; message object to send</li>
+<li><strong>timeout</strong> (<code class="docutils literal"><span class="pre">float</span></code>) &#8211; timeout in seconds</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">response message</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.core.peer.Peer.send_message">
+<code class="descname">send_message</code><span class="sig-paren">(</span><em>msg: obci.core.messages.Message</em><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/peer.html#Peer.send_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.Peer.send_message" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send broadcast message.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>msg</strong> (<a class="reference internal" href="obci.core.messages.html#obci.core.messages.Message" title="obci.core.messages.Message"><code class="xref py py-class docutils literal"><span class="pre">Message</span></code></a>) &#8211; message object to send</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.core.peer.Peer.send_message_to_peer">
+<code class="descname">send_message_to_peer</code><span class="sig-paren">(</span><em>url: str</em>, <em>msg: obci.core.messages.Message</em>, <em>timeout: float = 5.0</em><span class="sig-paren">)</span> &rarr; obci.core.messages.Message<a class="reference internal" href="../_modules/obci/core/peer.html#Peer.send_message_to_peer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.Peer.send_message_to_peer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Send message to specified peer and return answer.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="obci.core.messages.html#obci.core.messages.Message" title="obci.core.messages.Message"><code class="xref py py-class docutils literal"><span class="pre">Message</span></code></a></p>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>url</strong> (<code class="docutils literal"><span class="pre">str</span></code>) &#8211; peer&#8217;s REP socket URL</li>
+<li><strong>msg</strong> (<a class="reference internal" href="obci.core.messages.html#obci.core.messages.Message" title="obci.core.messages.Message"><code class="xref py py-class docutils literal"><span class="pre">Message</span></code></a>) &#8211; message object to send</li>
+<li><strong>timeout</strong> (<code class="docutils literal"><span class="pre">float</span></code>) &#8211; timeout in seconds</li>
+</ul>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">response message</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.core.peer.Peer.set_filter">
+<code class="descname">set_filter</code><span class="sig-paren">(</span><em>msg_type: str</em>, <em>msg_subtype: typing.Union[str</em>, <em>NoneType] = None</em><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/peer.html#Peer.set_filter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.Peer.set_filter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Subscribe for messages with <cite>msg_type</cite> message type.</p>
+<p>Peer must be initialized to use this function.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>msg_type</strong> &#8211; </li>
+<li><strong>msg_subtype</strong> &#8211; </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.core.peer.Peer.unregister_query_handler">
+<code class="descname">unregister_query_handler</code><span class="sig-paren">(</span><em>msg_type: typing.Union[str</em>, <em>NoneType] = None</em><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/peer.html#Peer.unregister_query_handler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.Peer.unregister_query_handler" title="Permalink to this definition">¶</a></dt>
+<dd><p>Unregister callback handler for specified query type or for all query
+types if <cite>msg_type</cite> is <cite>None</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>msg_type</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Union" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">Union</span></code></a>) &#8211; query type</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.core.peer.Peer.unregister_query_handler_async">
+<code class="descname">unregister_query_handler_async</code><span class="sig-paren">(</span><em>msg_type: typing.Union[str</em>, <em>NoneType] = None</em><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/peer.html#Peer.unregister_query_handler_async"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.Peer.unregister_query_handler_async" title="Permalink to this definition">¶</a></dt>
+<dd><p>Async version of <a class="reference internal" href="#obci.core.peer.Peer.unregister_query_handler" title="obci.core.peer.Peer.unregister_query_handler"><code class="xref py py-func docutils literal"><span class="pre">Peer.unregister_query_handler()</span></code></a>.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.core.peer.PeerInitUrls">
+<em class="property">class </em><code class="descclassname">obci.core.peer.</code><code class="descname">PeerInitUrls</code><a class="reference internal" href="../_modules/obci/core/peer.html#PeerInitUrls"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.PeerInitUrls" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.core.peer.PeerInitUrls" title="obci.core.peer.PeerInitUrls"><code class="xref py py-class docutils literal"><span class="pre">obci.core.peer.PeerInitUrls</span></code></a></p>
+<p>List of initial URL adresses.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>pub_urls</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.5)"><em>list</em></a>) &#8211; list of PUB URL&#8217;s to bind to</li>
+<li><strong>rep_urls</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.5)"><em>list</em></a>) &#8211; list of REP URL&#8217;s to bind to</li>
+<li><strong>broker_rep_url</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.5)"><em>str</em></a>) &#8211; broker&#8217;s REP URL</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Create new instance of PeerInitUrls(pub_urls, rep_urls, broker_rep_url)</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="obci.core.peer.QueryAnswerUnknown">
+<em class="property">exception </em><code class="descclassname">obci.core.peer.</code><code class="descname">QueryAnswerUnknown</code><a class="reference internal" href="../_modules/obci/core/peer.html#QueryAnswerUnknown"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.QueryAnswerUnknown" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></a></p>
+<p>Raised when answer to query is unknown.</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="obci.core.peer.TooManyRedirectsException">
+<em class="property">exception </em><code class="descclassname">obci.core.peer.</code><code class="descname">TooManyRedirectsException</code><a class="reference internal" href="../_modules/obci/core/peer.html#TooManyRedirectsException"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.peer.TooManyRedirectsException" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></a></p>
+<p>Raised when too many redirects occurred in Peer.query method.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.core.zmq_asyncio_task_manager">
+<span id="obci-core-zmq-asyncio-task-manager-module"></span><h2>obci.core.zmq_asyncio_task_manager module<a class="headerlink" href="#module-obci.core.zmq_asyncio_task_manager" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.core.zmq_asyncio_task_manager.ZmqAsyncioTaskManager">
+<em class="property">class </em><code class="descclassname">obci.core.zmq_asyncio_task_manager.</code><code class="descname">ZmqAsyncioTaskManager</code><span class="sig-paren">(</span><em>asyncio_loop: typing.Union[zmq.asyncio.ZMQEventLoop</em>, <em>NoneType] = None</em>, <em>zmq_context: typing.Union[zmq.asyncio.Context</em>, <em>NoneType] = None</em>, <em>zmq_io_threads: int = 1</em><span class="sig-paren">)</span> &rarr; None<a class="reference internal" href="../_modules/obci/core/zmq_asyncio_task_manager.html#ZmqAsyncioTaskManager"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.zmq_asyncio_task_manager.ZmqAsyncioTaskManager" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.core.asyncio_task_manager.AsyncioTaskManager" title="obci.core.asyncio_task_manager.AsyncioTaskManager"><code class="xref py py-class docutils literal"><span class="pre">obci.core.asyncio_task_manager.AsyncioTaskManager</span></code></a></p>
+<p>Adds ZMQ context management to <cite>AsyncioTaskManager</cite>.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>asyncio_loop</strong> &#8211; existing message loop or <cite>None</cite> if new message loop should be created</li>
+<li><strong>zmq_context</strong> &#8211; existing asyncio ZMQ context or <cite>None</cite> if new context should be created</li>
+<li><strong>zmq_io_threads</strong> &#8211; number if ZMQ I/O threads</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="staticmethod">
+<dt id="obci.core.zmq_asyncio_task_manager.ZmqAsyncioTaskManager.new_event_loop">
+<em class="property">static </em><code class="descname">new_event_loop</code><span class="sig-paren">(</span><span class="sig-paren">)</span> &rarr; zmq.asyncio.ZMQEventLoop<a class="reference internal" href="../_modules/obci/core/zmq_asyncio_task_manager.html#ZmqAsyncioTaskManager.new_event_loop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.core.zmq_asyncio_task_manager.ZmqAsyncioTaskManager.new_event_loop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Overloaded function to create ZMQEventLoop instances.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">new instance if ZMQEventLoop</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="obci.core.zmq_asyncio_task_manager.ZmqAsyncioTaskManager.owns_zmq_context">
+<code class="descname">owns_zmq_context</code><a class="headerlink" href="#obci.core.zmq_asyncio_task_manager.ZmqAsyncioTaskManager.owns_zmq_context" title="Permalink to this definition">¶</a></dt>
+<dd><p>True if ZMQ context is owned by this object.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.core">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-obci.core" title="Permalink to this headline">¶</a></h2>
+<p>This module contains core modules for OpenBCI framework such as Broker, Peer and Message.</p>
+<dl class="data">
+<dt id="obci.core.OBCI_DEBUG">
+<code class="descclassname">obci.core.</code><code class="descname">OBCI_DEBUG</code><em class="property"> = False</em><a class="headerlink" href="#obci.core.OBCI_DEBUG" title="Permalink to this definition">¶</a></dt>
+<dd><p><em>bool</em> &#8211; Set to True if <cite>OBCI_DEBUG</cite> environment variable is defined.</p>
+<p>If enabled sets root logger level to <cite>DEBUG</cite> and enables all warnings
+generated using <cite>warnings</cite> module.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">obci</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="obci.html">obci package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="obci.acquisition.html">obci.acquisition package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.analysis.html">obci.analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.benchmark.html">obci.benchmark package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.cmd.html">obci.cmd package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.configs.html">obci.configs package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.control.html">obci.control package</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">obci.core package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.drivers.html">obci.drivers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.gui.html">obci.gui package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.mx_legacy.html">obci.mx_legacy package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.peers.html">obci.peers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.scenarios.html">obci.scenarios package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.utils.html">obci.utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">obci</a><ul>
+  <li><a href="obci.html">obci package</a><ul>
+      <li>Previous: <a href="obci.control.peer.html" title="previous chapter">obci.control.peer package</a></li>
+      <li>Next: <a href="obci.core.messages.html" title="next chapter">obci.core.messages package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/apidoc/obci.core.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

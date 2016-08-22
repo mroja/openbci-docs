@@ -1,0 +1,86 @@
+obci.control.peer package
+=========================
+
+Submodules
+----------
+
+obci.control.peer.config_defaults module
+----------------------------------------
+
+.. automodule:: obci.control.peer.config_defaults
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.peer.config_server module
+--------------------------------------
+
+.. automodule:: obci.control.peer.config_server
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.peer.configured_client module
+------------------------------------------
+
+.. automodule:: obci.control.peer.configured_client
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.peer.configured_multiplexer_server module
+------------------------------------------------------
+
+.. automodule:: obci.control.peer.configured_multiplexer_server
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.peer.peer_cmd module
+---------------------------------
+
+.. automodule:: obci.control.peer.peer_cmd
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.peer.peer_config module
+------------------------------------
+
+.. automodule:: obci.control.peer.peer_config
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.peer.peer_config_parser module
+-------------------------------------------
+
+.. automodule:: obci.control.peer.peer_config_parser
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.peer.peer_config_serializer module
+-----------------------------------------------
+
+.. automodule:: obci.control.peer.peer_config_serializer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.peer.peer_control module
+-------------------------------------
+
+.. automodule:: obci.control.peer.peer_control
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.control.peer
+    :members:
+    :undoc-members:
+    :show-inheritance:

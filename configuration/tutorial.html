@@ -1,0 +1,281 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>Peer configuration tutorial &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../index.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="peer-configuration-tutorial">
+<h1>Peer configuration tutorial<a class="headerlink" href="#peer-configuration-tutorial" title="Permalink to this headline">¶</a></h1>
+<p>Here we describe how to create OpenBCI peer configuration files and use them. Then we show how to run configured peers without using launcher.</p>
+<div class="section" id="configuration-file">
+<h2>Configuration file<a class="headerlink" href="#configuration-file" title="Permalink to this headline">¶</a></h2>
+<p>Peer configuration is stored in one or more files, in INI-like format. The most important (and mandatory) config file is the one stored in the same directory as the peer source code file. Its name is the same as the peer it configures: for a peer implemented in file <em>peer_a.py</em> you define <em>peer_a.ini</em>. This file is called <strong>basic config</strong>. Treat it as a part of peer implementation. Basic config is always parsed and is the reference for validation of any configuration overrides.</p>
+<p>Configuration file contains four sections:  <code class="docutils literal"><span class="pre">[config_sources]</span></code>, <code class="docutils literal"><span class="pre">[local_params]</span></code>, <code class="docutils literal"><span class="pre">[external_params]</span></code> and <code class="docutils literal"><span class="pre">[launch_dependencies]</span></code>.</p>
+<p><code class="docutils literal"><span class="pre">[local_params]</span></code> is the most straightforward section. Here we define config parameters which
+are <em>owned</em> by the peer &#8211; its properties. For an amplifier such properties would be sampling rate
+or number of channels.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">local_params</span><span class="p">]</span>
+
+<span class="n">cookies_to_eat</span> <span class="o">=</span> <span class="mi">128</span>
+<span class="n">super_important_param</span> <span class="o">=</span> <span class="mi">0</span>
+</pre></div>
+</div>
+<p>A peer may also need parameters of other peers. For example a signal filter would need sampling rate
+of an amplifier from which it takes the signal. How to represent this in a config file? With the new configuration system we introduced peer_id&#8217;s for peers, which should be unique in the scope of a running experiment. Configuration file though has to be usable in many experiments, so we cannot hardcode exact peer ID&#8217;s there. Instead, in a section <code class="docutils literal"><span class="pre">[config_sources]</span></code> we define symbollic names for peers, from which the configured peer should take parameters.:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">config_sources</span><span class="p">]</span>
+<span class="n">signal_properties_source</span><span class="o">=</span>
+<span class="p">;</span> <span class="ow">or</span> <span class="n">maybe</span> <span class="n">just</span>
+<span class="n">amplifier</span><span class="o">=</span>
+</pre></div>
+</div>
+<p>In run-time real peer_ids are assigned to these config sources.</p>
+<p>In a similar manner we define <code class="docutils literal"><span class="pre">[launch_dependencies]</span></code>. Launch dependencies are peers we need to synchronize with: a peer will not start its actual work until all the peers it depends on report that they are ready.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">launch_dependencies</span><span class="p">]</span>
+<span class="n">amplifier</span><span class="o">=</span>
+</pre></div>
+</div>
+<p>Both config and launch dependencies&#8217; names are visible in the scope of the configuration file. So &#8216;amplifier&#8217; from the example above is the same peer as the one in <code class="docutils literal"><span class="pre">[config_sources]</span></code>.</p>
+<p>Now the <code class="docutils literal"><span class="pre">[external_params]</span></code> section. Let&#8217;s say a peer needs a parameter &#8216;sampling_rate&#8217; from some other peer which we symbolicly named &#8216;amplifier&#8217;. It will store the parameter as &#8216;amp_sampling_rate&#8217;. We can represent this as follows:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">external_params</span><span class="p">]</span>
+<span class="n">amp_sampling_rate</span> <span class="o">=</span> <span class="n">amplifier</span><span class="o">.</span><span class="n">sampling_rate</span>
+</pre></div>
+</div>
+<p>All parameter names we define in a config file should be unique. You can move parameters between <code class="docutils literal"><span class="pre">[external_params]</span></code> and <code class="docutils literal"><span class="pre">[local_params]</span></code> in config files loaded after the <em>basic config</em>. This may be useful during module development when we want to quickly test how the module works without loading other peers. Also the other way may be useful if in some experiment we want to change the way parameters are passed.</p>
+<div class="section" id="config-overriding">
+<h3>Config overriding<a class="headerlink" href="#config-overriding" title="Permalink to this headline">¶</a></h3>
+<p>As mentioned above, you can pass custom configuration files to the peer. The one restriction is that you cannot define any parameter names not defined in basic config. You can move a parameter form local to external section, add a launch or config dependecy. If a config dependency is not referenced in external_params configuration, the peer will not require passing the dependency&#8217;s real peer_id on launch.</p>
+</div>
+<div class="section" id="command-line-peer-invocation">
+<h3>Command line - peer invocation<a class="headerlink" href="#command-line-peer-invocation" title="Permalink to this headline">¶</a></h3>
+<p>Below is the somewhat messy usage help generated by the config processing module using argparse:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">usage</span><span class="p">:</span> <span class="n">some_peer</span><span class="o">.</span><span class="n">py</span> <span class="n">peer_id</span> <span class="p">[</span><span class="n">options</span><span class="p">]</span>
+
+<span class="n">positional</span> <span class="n">arguments</span><span class="p">:</span>
+  <span class="n">peer_id</span>               <span class="n">Unique</span> <span class="n">name</span> <span class="k">for</span> <span class="n">this</span> <span class="n">instance</span> <span class="n">of</span> <span class="n">this</span> <span class="n">peer</span>
+
+<span class="n">optional</span> <span class="n">arguments</span><span class="p">:</span>
+  <span class="o">-</span><span class="n">h</span><span class="p">,</span> <span class="o">--</span><span class="n">help</span>            <span class="n">show</span> <span class="n">this</span> <span class="n">help</span> <span class="n">message</span> <span class="ow">and</span> <span class="n">exit</span>
+  <span class="o">-</span><span class="n">p</span> <span class="n">LOCAL_PARAMS</span> <span class="n">LOCAL_PARAMS</span><span class="p">,</span> <span class="o">--</span><span class="n">local_params</span> <span class="n">LOCAL_PARAMS</span> <span class="n">LOCAL_PARAMS</span>
+                        <span class="n">Local</span> <span class="n">parameter</span> <span class="n">override</span> <span class="n">value</span><span class="p">:</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">value</span><span class="o">.</span>
+  <span class="o">-</span><span class="n">e</span> <span class="n">EXTERNAL_PARAMS</span> <span class="n">EXTERNAL_PARAMS</span><span class="p">,</span> <span class="o">--</span><span class="n">external_params</span> <span class="n">EXTERNAL_PARAMS</span> <span class="n">EXTERNAL_PARAMS</span>
+                        <span class="n">External</span> <span class="n">parameter</span> <span class="n">override</span> <span class="n">value</span><span class="p">:</span> <span class="n">param_name</span> <span class="n">value_def</span> <span class="o">.</span>
+  <span class="o">-</span><span class="n">c</span> <span class="n">CONFIG_SOURCES</span> <span class="n">CONFIG_SOURCES</span><span class="p">,</span> <span class="o">--</span><span class="n">config_sources</span> <span class="n">CONFIG_SOURCES</span> <span class="n">CONFIG_SOURCES</span>
+                        <span class="n">Config</span> <span class="n">source</span> <span class="n">ID</span> <span class="n">assignment</span><span class="p">:</span> <span class="n">src_name</span> <span class="n">peer_id</span>
+  <span class="o">-</span><span class="n">d</span> <span class="n">LAUNCH_DEPENDENCIES</span> <span class="n">LAUNCH_DEPENDENCIES</span><span class="p">,</span> <span class="o">--</span><span class="n">launch_dependencies</span> <span class="n">LAUNCH_DEPENDENCIES</span> <span class="n">LAUNCH_DEPENDENCIES</span>
+                        <span class="n">Launch</span> <span class="n">dependency</span> <span class="n">ID</span> <span class="n">assignment</span><span class="p">:</span> <span class="n">dep_name</span> <span class="n">peer_id</span>
+  <span class="o">-</span><span class="n">f</span> <span class="n">CONFIG_FILE</span><span class="p">,</span> <span class="o">--</span><span class="n">config_file</span> <span class="n">CONFIG_FILE</span>
+                        <span class="n">Additional</span> <span class="n">configuration</span> <span class="n">file</span> <span class="p">(</span><span class="n">overrides</span><span class="p">):</span>
+                        <span class="n">path_to_file</span><span class="o">.</span>
+</pre></div>
+</div>
+<p>When starting a peer with config support you need to provide a peer_id for it and peer_ids of its launch/config dependecies. Custom config files &#8211; option -f. You can also override some parameters: using option -p / &#8211;local-params param_name value  or -e / &#8211;external-params  param_name value_definitions.</p>
+<p>Assume we want to run two peers: <code class="docutils literal"><span class="pre">peer_a.py</span></code> with default configuration (defined in peer_a.ini in source directory)</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">config_sources</span><span class="p">]</span>
+<span class="n">amp1_signal</span><span class="o">=</span>
+<span class="n">peerb</span><span class="o">=</span>
+
+<span class="p">[</span><span class="n">launch_dependencies</span><span class="p">]</span>
+<span class="n">peerb</span><span class="o">=</span>
+
+<span class="p">[</span><span class="n">external_params</span><span class="p">]</span>
+<span class="n">ext_txt</span> <span class="o">=</span> <span class="n">peerb</span><span class="o">.</span><span class="n">text</span>
+
+<span class="p">[</span><span class="n">local_params</span><span class="p">]</span>
+<span class="n">my_param</span> <span class="o">=</span> <span class="mi">1234</span>
+<span class="n">p</span> <span class="o">=</span> <span class="n">some</span> <span class="n">text</span> <span class="n">here</span>
+</pre></div>
+</div>
+<p>and <code class="docutils literal"><span class="pre">peer_b.py</span></code> with configuration peer_b.ini</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="p">[</span><span class="n">config_sources</span><span class="p">]</span>
+<span class="n">some_peer</span><span class="o">=</span>
+
+<span class="p">[</span><span class="n">external_params</span><span class="p">]</span>
+<span class="n">ext_p</span> <span class="o">=</span> <span class="n">some_peer</span><span class="o">.</span><span class="n">p</span>
+
+<span class="p">[</span><span class="n">launch_dependencies</span><span class="p">]</span>
+
+<span class="p">[</span><span class="n">local_params</span><span class="p">]</span>
+<span class="n">text</span> <span class="o">=</span> <span class="n">text</span> <span class="n">text</span> <span class="n">tralala</span>
+</pre></div>
+</div>
+<p><code class="docutils literal"><span class="pre">peer_a</span></code> takes parameter &#8216;text&#8217; from a peer &#8216;peerb&#8217;, and <code class="docutils literal"><span class="pre">peer_b</span></code> takes parameter &#8216;p&#8217; from a peer &#8216;some_peer&#8217;. Peer_a also waits for &#8216;peerb&#8217; readiness. We want them to take those parameters from each other.</p>
+<p>Invocation of those peers with just assigning them peer_id&#8217;s would look like this:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="n">python</span> <span class="n">peer_a</span><span class="o">.</span><span class="n">py</span> <span class="n">i_am_roger</span> <span class="o">-</span><span class="n">c</span> <span class="n">peerb</span> <span class="n">sue</span>
+<span class="n">python</span> <span class="n">peer_b</span><span class="o">.</span><span class="n">py</span> <span class="n">sue</span> <span class="o">-</span><span class="n">c</span> <span class="n">some_peer</span> <span class="n">i_am_roger</span>
+</pre></div>
+</div>
+<p>We do not need to provide launch depenency ID for peer_a because this time it&#8217;s the same peer as in config dependencies - assignment will be automatic.</p>
+</div>
+</div>
+<div class="section" id="programming-openbci-peers-with-configuration-support">
+<h2>Programming OpenBCI peers with configuration support<a class="headerlink" href="#programming-openbci-peers-with-configuration-support" title="Permalink to this headline">¶</a></h2>
+<p>To enable configuration processing in a peer, import modules:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="kn">import</span> <span class="nn">peer.peer_config_control</span>
+<span class="kn">import</span> <span class="nn">common.config_message</span> <span class="k">as</span> <span class="nn">cmsg</span>
+</pre></div>
+</div>
+<p>The second module is not necessary for config initialization but may be needed for processing configuration messages later.</p>
+<p>In the peer initialization code you need to also initialize config processing:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">peer</span><span class="o">.</span><span class="n">peer_config_control</span><span class="o">.</span><span class="n">PeerControl</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+
+<span class="c1"># this will parse command line arguments, process all configuration and</span>
+<span class="c1"># acquire external params. You need to provide a connection to Multiplexer.</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">initialize_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">)</span>
+
+<span class="c1"># ...some other initialization</span>
+
+<span class="c1"># inform other peers that this peer is ready to work</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">send_peer_ready</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">)</span>
+
+<span class="c1"># wait for launch dependencies&#39; readiness</span>
+<span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">synchronize_ready</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Later, when you need a parameter value, call <code class="docutils literal"><span class="pre">get_param(param_name_str)</span></code> on your config object.</p>
+<p>An example code for <code class="docutils literal"><span class="pre">peer_a.py</span></code> (in test directory) which does nothing apart from initialization:</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">multiplexer.multiplexer_constants</span> <span class="k">import</span> <span class="n">peers</span><span class="p">,</span> <span class="n">types</span>
+<span class="kn">from</span> <span class="nn">multiplexer.clients</span> <span class="k">import</span> <span class="n">BaseMultiplexerServer</span>
+<span class="kn">import</span> <span class="nn">settings</span>
+
+<span class="kn">import</span> <span class="nn">peer.peer_config_control</span>
+
+<span class="k">class</span> <span class="nc">TestServer2</span><span class="p">(</span><span class="n">BaseMultiplexerServer</span><span class="p">):</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addresses</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">TestServer2</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">addresses</span><span class="o">=</span><span class="n">addresses</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">peers</span><span class="o">.</span><span class="n">ETR_SERVER</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">peer</span><span class="o">.</span><span class="n">peer_config_control</span><span class="o">.</span><span class="n">PeerConfigControl</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">initialize_config</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">send_peer_ready</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">synchronize_ready</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">handle_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mxmsg</span><span class="p">):</span>
+        <span class="c1"># handle something</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">no_response</span><span class="p">()</span>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">srv</span> <span class="o">=</span> <span class="n">TestServer2</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">MULTIPLEXER_ADDRESSES</span><span class="p">)</span>
+    <span class="n">srv</span><span class="o">.</span><span class="n">loop</span><span class="p">()</span>
+</pre></div>
+</div>
+<div class="section" id="temporary-example-experiment-definition-in-k2launcher">
+<h3>[TEMPORARY] Example experiment definition in k2launcher<a class="headerlink" href="#temporary-example-experiment-definition-in-k2launcher" title="Permalink to this headline">¶</a></h3>
+<p>This will soon be replaced by a new launcher. Defining new tasks in captain  for every experiment would be daunting.</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="c1"># this is the intermediate for exchanging parameters between peers</span>
+<span class="n">task</span><span class="p">(</span><span class="s2">&quot;python ../obci_control/peer/config_server.py&quot;</span><span class="p">,</span> <span class="s2">&quot;config_server&quot;</span><span class="p">)</span>
+
+<span class="n">task</span><span class="p">(</span><span class="s2">&quot;python ../obci_control/test/peer_a.py i_am_roger -c peerb sue, &quot;</span><span class="n">A</span><span class="s2">&quot;)</span>
+<span class="n">task</span><span class="p">(</span><span class="s2">&quot;python ../obci_control/test/peer_b.py  sue -c some_peer i_am_roger&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">)</span>
+
+<span class="n">start</span><span class="p">(</span><span class="s2">&quot;cftest&quot;</span><span class="p">,</span> <span class="s2">&quot;config_server&quot;</span><span class="p">)</span>
+<span class="n">start</span><span class="p">(</span><span class="s2">&quot;cftest&quot;</span><span class="p">,</span> <span class="s2">&quot;A&quot;</span><span class="p">)</span>
+<span class="n">start</span><span class="p">(</span><span class="s2">&quot;cftest&quot;</span><span class="p">,</span> <span class="s2">&quot;B&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="other-features">
+<h3>Other features<a class="headerlink" href="#other-features" title="Permalink to this headline">¶</a></h3>
+<div class="admonition-todo admonition" id="index-0">
+<p class="first admonition-title">Todo</p>
+<p class="last">Support for updating and distributing configuration parameters during runtime will be added (using Multiplexer messages). Take note, though, that updating config parameters during runtime is a more complicated issue: peers need custom methods for handling parameter changes to prevent possible program crashes.</p>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/configuration/tutorial.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

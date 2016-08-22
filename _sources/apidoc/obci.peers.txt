@@ -1,0 +1,29 @@
+obci.peers package
+==================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    obci.peers.test
+
+Submodules
+----------
+
+obci.peers.dummy_config_server module
+-------------------------------------
+
+.. automodule:: obci.peers.dummy_config_server
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.peers
+    :members:
+    :undoc-members:
+    :show-inheritance:

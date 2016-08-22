@@ -1,0 +1,317 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.analysis.obci_signal_processing.smart_tags_manager &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.analysis.obci_signal_processing.smart_tags_manager</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+
+<span class="c1"># Author:</span>
+<span class="c1">#     Mateusz Kruszyński &lt;mateusz.kruszynski@gmail.com&gt;</span>
+<span class="sd">&quot;&quot;&quot;Implement one class - SmartTagsManager.&quot;&quot;&quot;</span>
+
+<span class="kn">import</span> <span class="nn">queue</span>
+<span class="kn">from</span> <span class="nn">functools</span> <span class="k">import</span> <span class="n">cmp_to_key</span>
+
+<span class="kn">from</span> <span class="nn">.tags</span> <span class="k">import</span> <span class="n">smart_tag</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">read_manager</span>
+<span class="kn">from</span> <span class="nn">.signal</span> <span class="k">import</span> <span class="n">signal_exceptions</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">obci_signal_processing_logging</span> <span class="k">as</span> <span class="n">logger</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="s2">&quot;smart_tags_manager&quot;</span><span class="p">,</span> <span class="s2">&quot;info&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="SmartTagsManager"><a class="viewcode-back" href="../../../../apidoc/obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.smart_tags_manager.SmartTagsManager">[docs]</a><span class="k">class</span> <span class="nc">SmartTagsManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;By now manager gets in init tag definition object and dictionary of</span>
+<span class="sd">    files paths. Regarding tag definition it iterates smart tags from file</span>
+<span class="sd">    in iter_smart_tags().</span>
+<span class="sd">    Public interface:</span>
+<span class="sd">    - __init__()</span>
+<span class="sd">    - iter_smart_tags()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_tag_def</span><span class="p">,</span> <span class="n">p_info_file</span><span class="p">,</span> <span class="n">p_data_file</span><span class="p">,</span> <span class="n">p_tags_file</span><span class="p">,</span> <span class="n">p_read_manager</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Init all needed slots, read tags file, init smart tags.</span>
+<span class="sd">        Parameters:</span>
+<span class="sd">        - p_tag_def - an instance of tag definition object</span>
+<span class="sd">        (see smart_tag_definition.py)</span>
+<span class="sd">        - p_files - a dictionary with files paths:</span>
+<span class="sd">        &#39;info&#39; - info file</span>
+<span class="sd">        &#39;data&#39; - data file</span>
+<span class="sd">        &#39;tags&#39; - tags file</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">p_read_manager</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Open files</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_read_manager</span> <span class="o">=</span> <span class="n">read_manager</span><span class="o">.</span><span class="n">ReadManager</span><span class="p">(</span>
+                <span class="n">p_info_file</span><span class="p">,</span>
+                <span class="n">p_data_file</span><span class="p">,</span>
+                <span class="n">p_tags_file</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_read_manager</span> <span class="o">=</span> <span class="n">p_read_manager</span>
+
+        <span class="c1"># Init smart tags, here just create smart tags objects without</span>
+        <span class="c1"># data slot set.</span>
+
+        <span class="c1"># PUBLIC SLOTS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">num_of_channels</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_read_manager</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span>
+            <span class="s1">&#39;number_of_channels&#39;</span><span class="p">))</span>
+        <span class="n">l_freq_str</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_manager</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;sampling_frequency&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sampling_freq</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">l_freq_str</span><span class="p">)</span>
+        <span class="c1"># PUBLIC SLOTS</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sample_duration</span> <span class="o">=</span> <span class="mi">1</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sampling_freq</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_first_sample_ts</span> <span class="o">=</span> <span class="mf">0.0</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_first_sample_ts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_manager</span><span class="o">.</span><span class="n">get_start_timestamp</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_smart_tags</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_smart_tags</span><span class="p">(</span><span class="n">p_tag_def</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">str</span><span class="p">({</span><span class="s1">&#39;tags_num&#39;</span><span class="p">:</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_smart_tags</span><span class="p">),</span>
+                    <span class="s1">&#39;num_of_channels&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">num_of_channels</span><span class="p">,</span>
+                    <span class="s1">&#39;sampling_freq&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_freq</span><span class="p">})</span>
+
+<div class="viewcode-block" id="SmartTagsManager.get_read_manager"><a class="viewcode-back" href="../../../../apidoc/obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.smart_tags_manager.SmartTagsManager.get_read_manager">[docs]</a>    <span class="k">def</span> <span class="nf">get_read_manager</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_manager</span></div>
+
+    <span class="k">def</span> <span class="nf">_init_smart_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_tag_def</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Init smart tags depending on given smart tag definition.&quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Start initialising smart tags.&quot;</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">l_defs</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="n">p_tag_def</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="n">l_defs</span> <span class="o">=</span> <span class="p">[</span><span class="n">p_tag_def</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">i_def</span> <span class="ow">in</span> <span class="n">l_defs</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">i_def</span><span class="o">.</span><span class="n">is_type</span><span class="p">(</span><span class="s2">&quot;duration&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_init_duration_smart_tags</span><span class="p">(</span><span class="n">i_def</span><span class="p">)</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Finished initialising smart tags.&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">i_def</span><span class="o">.</span><span class="n">is_type</span><span class="p">(</span><span class="s2">&quot;end_tag&quot;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_init_end_tag_smart_tags</span><span class="p">(</span><span class="n">i_def</span><span class="p">)</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Finished initialising smart tags.&quot;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Unrecognised tag definition type.&quot;</span><span class="p">)</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Unrecognised tag definition type.&quot;</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">cmp_tags</span><span class="p">(</span><span class="n">t1</span><span class="p">,</span> <span class="n">t2</span><span class="p">):</span>
+            <span class="n">ts1</span> <span class="o">=</span> <span class="n">t1</span><span class="p">[</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">]</span>
+            <span class="n">ts2</span> <span class="o">=</span> <span class="n">t2</span><span class="p">[</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">ts1</span> <span class="o">==</span> <span class="n">ts2</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">0</span>
+            <span class="k">elif</span> <span class="n">ts1</span> <span class="o">&gt;</span> <span class="n">ts2</span><span class="p">:</span>
+                <span class="k">return</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="o">-</span><span class="mi">1</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_smart_tags</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="n">cmp_to_key</span><span class="p">(</span><span class="n">cmp_tags</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_init_end_tag_smart_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_tag_def</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read all tags from file - create smart tags objects while doing it.</span>
+<span class="sd">        End-tag-smart-tag is tag that begins and end with some particular tag.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="n">l_st_queue</span> <span class="o">=</span> <span class="n">queue</span><span class="o">.</span><span class="n">Queue</span><span class="p">()</span>  <span class="c1"># Tags waiting for end tag</span>
+        <span class="k">for</span> <span class="n">i_tag</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_manager</span><span class="o">.</span><span class="n">iter_tags</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">i_tag</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="ow">in</span> <span class="n">p_tag_def</span><span class="o">.</span><span class="n">end_tags_names</span><span class="p">:</span>
+                <span class="c1"># Ending tag is met - set this tag to all smart tags waiting</span>
+                <span class="c1"># in the queue</span>
+                <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+                    <span class="k">try</span><span class="p">:</span>
+                        <span class="n">i_st</span> <span class="o">=</span> <span class="n">l_st_queue</span><span class="o">.</span><span class="n">get_nowait</span><span class="p">()</span>
+                    <span class="k">except</span><span class="p">:</span>
+                        <span class="k">break</span>
+                    <span class="n">i_st</span><span class="o">.</span><span class="n">set_end_tag</span><span class="p">(</span><span class="n">i_tag</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_smart_tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i_st</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">i_tag</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">p_tag_def</span><span class="o">.</span><span class="n">start_tag_name</span><span class="p">:</span>
+                <span class="c1"># Create new smart tag, append it to queue</span>
+                <span class="n">st</span> <span class="o">=</span> <span class="n">smart_tag</span><span class="o">.</span><span class="n">SmartTagEndTag</span><span class="p">(</span><span class="n">p_tag_def</span><span class="p">,</span> <span class="n">i_tag</span><span class="p">)</span>
+                <span class="k">if</span> <span class="s1">&#39;self&#39;</span> <span class="ow">in</span> <span class="n">p_tag_def</span><span class="o">.</span><span class="n">end_tags_names</span><span class="p">:</span>
+                    <span class="c1"># end_tags_names contains &#39;self&#39; literal which means</span>
+                    <span class="c1"># that st`s end tag is its start tag</span>
+                    <span class="n">st</span><span class="o">.</span><span class="n">set_end_tag</span><span class="p">(</span><span class="n">i_tag</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">_smart_tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">l_st_queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_init_duration_smart_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_tag_def</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Read all tags from file - create smart tags objects while doing it.</span>
+<span class="sd">        Duration-smart-tag is tag that begins with some particular tag.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">for</span> <span class="n">i_tag</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_manager</span><span class="o">.</span><span class="n">iter_tags</span><span class="p">(</span><span class="n">p_tag_def</span><span class="o">.</span><span class="n">start_tag_name</span><span class="p">):</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got tag in _init_duration_smart_tags: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i_tag</span><span class="p">))</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Want tag: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">p_tag_def</span><span class="o">.</span><span class="n">start_tag_name</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;. Got tag: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i_tag</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]))</span>
+            <span class="n">st</span> <span class="o">=</span> <span class="n">smart_tag</span><span class="o">.</span><span class="n">SmartTagDuration</span><span class="p">(</span><span class="n">p_tag_def</span><span class="p">,</span> <span class="n">i_tag</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_smart_tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">st</span><span class="p">)</span>
+
+<div class="viewcode-block" id="SmartTagsManager.get_smart_tags"><a class="viewcode-back" href="../../../../apidoc/obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.smart_tags_manager.SmartTagsManager.get_smart_tags">[docs]</a>    <span class="k">def</span> <span class="nf">get_smart_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_tag_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_from</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_len</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_func</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">sts</span> <span class="o">=</span> <span class="p">[</span><span class="n">t</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_smart_tags</span><span class="p">()]</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_read_manager</span><span class="p">()</span><span class="o">.</span><span class="n">tags_source</span><span class="o">.</span><span class="n">_filter_tags</span><span class="p">(</span>
+            <span class="n">sts</span><span class="p">,</span> <span class="n">p_tag_type</span><span class="p">,</span> <span class="n">p_from</span><span class="p">,</span> <span class="n">p_len</span><span class="p">,</span> <span class="n">p_func</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="SmartTagsManager.iter_smart_tags"><a class="viewcode-back" href="../../../../apidoc/obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.smart_tags_manager.SmartTagsManager.iter_smart_tags">[docs]</a>    <span class="k">def</span> <span class="nf">iter_smart_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        This is an iterator, so use it like::</span>
+
+<span class="sd">            for i in mgr.iter_smart_tags():</span>
+<span class="sd">                pass</span>
+
+<span class="sd">        It iterates SmartTag objects. You can call get_data() on smart tag,</span>
+<span class="sd">        and you will get samples for all channels for that smart tag in format:</span>
+<span class="sd">        [[list of all samples from ch 0], [list of all samples from ch 1] ...]</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;FIRST SAMPLE TIMESTMP: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_first_sample_ts</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">i_st</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_smart_tags</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+
+                <span class="k">if</span> <span class="n">i_st</span><span class="o">.</span><span class="n">is_initialised</span><span class="p">():</span>
+                    <span class="k">yield</span> <span class="n">i_st</span>
+                    <span class="k">continue</span>
+
+                <span class="c1"># First needed sample timestamp</span>
+                <span class="n">l_start_ts</span> <span class="o">=</span> <span class="n">i_st</span><span class="o">.</span><span class="n">get_start_timestamp</span><span class="p">()</span>
+                <span class="n">l_samples_to_start</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">l_start_ts</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_first_sample_ts</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_freq</span><span class="p">)</span>
+
+                <span class="c1"># Last needed sample timestamp</span>
+                <span class="n">l_end_ts</span> <span class="o">=</span> <span class="n">i_st</span><span class="o">.</span><span class="n">get_end_timestamp</span><span class="p">()</span>
+                <span class="n">l_samples_to_end</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">l_end_ts</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_first_sample_ts</span><span class="p">)</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">sampling_freq</span><span class="p">)</span>
+
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Tag start timestamp: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l_start_ts</span><span class="p">))</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;To start tag samples:: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l_samples_to_start</span><span class="p">))</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Tag end timestamp: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l_end_ts</span><span class="p">))</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Tag end tag samples: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l_samples_to_end</span><span class="p">))</span>
+
+                <span class="c1"># To-be-returned data</span>
+                <span class="c1"># l_data = [[] for i in range(self.num_of_channels)]</span>
+
+                <span class="c1"># Set read manager pointer to start sample</span>
+                <span class="c1"># self._read_manager.goto_value(</span>
+                <span class="c1">#    self.num_of_channels*l_samples_to_start)</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;SAMPLES NO START: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l_samples_to_start</span><span class="p">))</span>
+                <span class="n">l_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_manager</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">l_samples_to_start</span><span class="p">,</span> <span class="p">(</span><span class="n">l_samples_to_end</span> <span class="o">-</span> <span class="n">l_samples_to_start</span><span class="p">))</span>
+                <span class="n">l_tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_manager</span><span class="o">.</span><span class="n">get_tags</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">l_start_ts</span><span class="p">,</span> <span class="p">(</span><span class="n">l_end_ts</span> <span class="o">-</span> <span class="n">l_start_ts</span><span class="p">))</span>
+                <span class="n">l_info</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_read_manager</span><span class="o">.</span><span class="n">get_params</span><span class="p">()</span>
+                <span class="n">l_info</span><span class="p">[</span><span class="s1">&#39;number_of_samples&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">l_samples_to_end</span> <span class="o">-</span> <span class="n">l_samples_to_start</span><span class="p">)</span> <span class="o">*</span> <span class="n">l_info</span><span class="p">[</span><span class="s1">&#39;number_of_channels&#39;</span><span class="p">]</span>
+                <span class="c1"># TODO set some l_info parameters</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;SAMPLES NO END: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l_samples_to_end</span><span class="p">))</span>
+
+                <span class="c1"># Now l_data contains samples from all channels between</span>
+                <span class="c1"># l_start and l_end timestamp</span>
+                <span class="n">i_st</span><span class="o">.</span><span class="n">data_source</span><span class="o">.</span><span class="n">set_samples</span><span class="p">(</span><span class="n">l_data</span><span class="p">)</span>
+                <span class="n">i_st</span><span class="o">.</span><span class="n">info_source</span><span class="o">.</span><span class="n">set_params</span><span class="p">(</span><span class="n">l_info</span><span class="p">)</span>
+                <span class="n">i_st</span><span class="o">.</span><span class="n">tags_source</span><span class="o">.</span><span class="n">set_tags</span><span class="p">(</span><span class="n">l_tags</span><span class="p">)</span>
+                <span class="n">i_st</span><span class="o">.</span><span class="n">set_initialised</span><span class="p">()</span>
+                <span class="k">yield</span> <span class="n">i_st</span>  <span class="c1"># Return smart tag filled with data</span>
+            <span class="k">except</span> <span class="n">signal_exceptions</span><span class="o">.</span><span class="n">NoNextValue</span><span class="p">:</span>
+                <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;No samples left. Some smart tags could have been ignored, probably &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span>
+                    <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_smart_tags</span><span class="p">)</span> <span class="o">-</span> <span class="n">i</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; of &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_smart_tags</span><span class="p">))</span> <span class="o">+</span> <span class="s2">&quot; tags.&quot;</span><span class="p">)</span>
+                <span class="k">break</span>  <span class="c1"># Exit the loop, end iterator</span>
+        <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Finished smart tags iteration&quot;</span><span class="p">)</span></div>
+        <span class="c1"># Reset samples count so that next</span>
+        <span class="c1"># iter_smart_tags call will work</span>
+
+    <span class="k">def</span> <span class="nf">__iter__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_smart_tags</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

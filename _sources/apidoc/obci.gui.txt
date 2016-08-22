@@ -1,0 +1,17 @@
+obci.gui package
+================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    obci.gui.frontend
+
+Module contents
+---------------
+
+.. automodule:: obci.gui
+    :members:
+    :undoc-members:
+    :show-inheritance:

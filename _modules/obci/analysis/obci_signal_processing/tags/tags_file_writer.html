@@ -1,0 +1,280 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.analysis.obci_signal_processing.tags.tags_file_writer &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.analysis.obci_signal_processing.tags.tags_file_writer</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1">#</span>
+<span class="c1"># OpenBCI - framework for Brain-Computer Interfaces based on EEG signal</span>
+<span class="c1"># Project was initiated by Magdalena Michalska and Krzysztof Kulewski</span>
+<span class="c1"># as part of their MSc theses at the University of Warsaw.</span>
+<span class="c1"># Copyright (C) 2008-2009 Krzysztof Kulewski and Magdalena Michalska</span>
+<span class="c1">#</span>
+<span class="c1"># This program is free software: you can redistribute it and/or modify</span>
+<span class="c1"># it under the terms of the GNU General Public License as published by</span>
+<span class="c1"># the Free Software Foundation, either version 3 of the License, or</span>
+<span class="c1"># (at your option) any later version.</span>
+<span class="c1">#</span>
+<span class="c1"># This program is distributed in the hope that it will be useful,</span>
+<span class="c1"># but WITHOUT ANY WARRANTY; without even the implied warranty of</span>
+<span class="c1"># MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the</span>
+<span class="c1"># GNU General Public License for more details.</span>
+<span class="c1">#</span>
+<span class="c1"># You should have received a copy of the GNU General Public License</span>
+<span class="c1"># along with this program.  If not, see &lt;http://www.gnu.org/licenses/&gt;.</span>
+<span class="c1">#</span>
+<span class="c1"># Author:</span>
+<span class="c1">#     Mateusz Kruszyński &lt;mateusz.kruszynski@gmail.com&gt;</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span> <span class="nn">xml.dom.minidom</span>
+<span class="kn">from</span> <span class="nn">..</span> <span class="k">import</span> <span class="n">types_utils</span>
+
+
+<span class="n">TAG_STYLES</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;gray&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;fill_color&#39;</span><span class="p">:</span> <span class="s1">&#39;808080&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;outline_color&#39;</span><span class="p">:</span> <span class="s1">&#39;808080&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;outline_width&#39;</span><span class="p">:</span> <span class="s1">&#39;1.0&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;outline_dash&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;key_shortcut&#39;</span><span class="p">:</span> <span class="s1">&#39;Shift b&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;marker&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span>
+             <span class="p">},</span>
+    <span class="s1">&#39;red&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;fill_color&#39;</span><span class="p">:</span> <span class="s1">&#39;ff0000&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;outline_color&#39;</span><span class="p">:</span> <span class="s1">&#39;808080&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;outline_width&#39;</span><span class="p">:</span> <span class="s1">&#39;1.0&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;outline_dash&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;key_shortcut&#39;</span><span class="p">:</span> <span class="s1">&#39;Shift b&#39;</span><span class="p">,</span>
+            <span class="s1">&#39;marker&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span>
+            <span class="p">},</span>
+    <span class="s1">&#39;blue&#39;</span><span class="p">:</span> <span class="p">{</span><span class="s1">&#39;fill_color&#39;</span><span class="p">:</span> <span class="s1">&#39;0017ff&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;outline_color&#39;</span><span class="p">:</span> <span class="s1">&#39;808080&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;outline_width&#39;</span><span class="p">:</span> <span class="s1">&#39;1.0&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;outline_dash&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;key_shortcut&#39;</span><span class="p">:</span> <span class="s1">&#39;Shift b&#39;</span><span class="p">,</span>
+             <span class="s1">&#39;marker&#39;</span><span class="p">:</span> <span class="s1">&#39;0&#39;</span>
+             <span class="p">},</span>
+
+
+
+<span class="p">}</span>
+
+<span class="n">TAG_DEFS</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="c1"># &#39;default&#39;: &#39;gray&#39;,</span>
+    <span class="c1"># &#39;word&#39;: &#39;red&#39;,</span>
+    <span class="c1"># &#39;mask2&#39;: &#39;blue&#39;</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="TagsFileWriter"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tags.html#obci.analysis.obci_signal_processing.tags.tags_file_writer.TagsFileWriter">[docs]</a><span class="k">class</span> <span class="nc">TagsFileWriter</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;A proxy for openbci tags file, that writes every next tag to file.</span>
+<span class="sd">    public interface:</span>
+<span class="sd">    - tag_received(tag_dict)</span>
+<span class="sd">    - finish_saving()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_file_path</span><span class="p">,</span> <span class="n">p_defs</span><span class="o">=</span><span class="kc">None</span>
+                 <span class="c1"># p_defs = [{&#39;name&#39;:&#39;default&#39;,</span>
+                 <span class="c1">#           &#39;description&#39;:&#39;default description&#39;}]</span>
+                 <span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Prepare data structure for storing in-memory xml file.&quot;&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_file_path</span> <span class="o">=</span> <span class="n">p_file_path</span>
+        <span class="c1"># TODO works in windows and linux on path with spaces?</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span> <span class="o">=</span> <span class="n">xml</span><span class="o">.</span><span class="n">dom</span><span class="o">.</span><span class="n">minidom</span><span class="o">.</span><span class="n">Document</span><span class="p">()</span>
+        <span class="c1"># an object useful in the future to easily create xml elements</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xml_root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span>
+            <span class="s1">&#39;tagFile&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xml_root</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="s1">&#39;formatVersion&#39;</span><span class="p">,</span> <span class="s1">&#39;1.0&#39;</span><span class="p">)</span>
+        <span class="c1"># this is going to be an in-memory representation of xml info file</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xml_root</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_default_tags</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_tags_defs</span><span class="p">(</span><span class="n">p_defs</span><span class="p">)</span>
+
+        <span class="c1"># create &#39;tags&#39; tag structure</span>
+        <span class="n">l_td</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="s1">&#39;tagData&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xml_root</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">l_td</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tags_root</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="s1">&#39;tags&#39;</span><span class="p">)</span>
+        <span class="n">l_td</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_tags_root</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">def</span> <span class="nf">_init_default_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">l_pg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="s1">&#39;paging&#39;</span><span class="p">)</span>
+        <span class="n">l_pg</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="s1">&#39;page_size&#39;</span><span class="p">,</span> <span class="s1">&#39;20.0&#39;</span><span class="p">)</span>
+        <span class="n">l_pg</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="s1">&#39;blocks_per_page&#39;</span><span class="p">,</span> <span class="s1">&#39;5&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xml_root</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">l_pg</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_init_tags_defs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_defs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Create structure:</span>
+<span class="sd">        &lt;tag_definitions&gt;</span>
+<span class="sd">           &lt;def_group &quot;name&quot;=&quot;channelTags&quot;&gt;</span>
+<span class="sd">              &lt;tag_item .... /&gt;</span>
+<span class="sd">           &lt;/def_group&gt;</span>
+<span class="sd">        &lt;/tag_definitions&gt;</span>
+
+<span class="sd">        tag_item paramteres are taken from TAG_DEFS.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">p_defs</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">l_td</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="s1">&#39;tag_definitions&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_xml_root</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">l_td</span><span class="p">)</span>
+
+        <span class="n">l_tgr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="s1">&#39;def_group&#39;</span><span class="p">)</span>
+        <span class="n">l_tgr</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="s1">&#39;name&#39;</span><span class="p">,</span> <span class="s1">&#39;channelTags&#39;</span><span class="p">)</span>
+        <span class="n">l_td</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">l_tgr</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">i_def</span> <span class="ow">in</span> <span class="n">p_defs</span><span class="p">:</span>
+            <span class="n">l_item</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="s1">&#39;tag_item&#39;</span><span class="p">)</span>
+            <span class="c1"># Set name and description</span>
+            <span class="k">for</span> <span class="n">i_key</span><span class="p">,</span> <span class="n">i_value</span> <span class="ow">in</span> <span class="n">i_def</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">l_item</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">i_key</span><span class="p">,</span> <span class="n">i_value</span><span class="p">)</span>
+
+            <span class="c1"># Set styles</span>
+            <span class="n">l_styles</span> <span class="o">=</span> <span class="n">TAG_STYLES</span><span class="p">[</span><span class="n">TAG_DEFS</span><span class="p">[</span><span class="n">i_def</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]]]</span>
+            <span class="k">for</span> <span class="n">i_key</span><span class="p">,</span> <span class="n">i_value</span> <span class="ow">in</span> <span class="n">l_styles</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">l_item</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">i_key</span><span class="p">,</span> <span class="n">i_value</span><span class="p">)</span>
+            <span class="n">l_tgr</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">l_item</span><span class="p">)</span>
+
+<div class="viewcode-block" id="TagsFileWriter.tag_received"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tags.html#obci.analysis.obci_signal_processing.tags.tags_file_writer.TagsFileWriter.tag_received">[docs]</a>    <span class="k">def</span> <span class="nf">tag_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_tag_dict</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;For give dictionary with pirs key -&gt; value create an xml element.</span>
+<span class="sd">        An exception is with key &#39;desc&#39; where xml elements are created for</span>
+<span class="sd">        every element of p_tag_dict[&#39;desc&#39;] value which is a dictionary.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">p_tag_dict</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_serialize_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_first_sample_ts</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write all self._tags to xml file.&quot;&quot;&quot;</span>
+
+        <span class="k">for</span> <span class="n">i_tag_dict</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_tags</span><span class="p">:</span>
+            <span class="n">l_tag_params</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">l_tag_params</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_tag_def_for</span><span class="p">(</span><span class="n">i_tag_dict</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">])</span>
+            <span class="n">l_tag_params</span><span class="p">[</span><span class="s1">&#39;length&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">i_tag_dict</span><span class="p">[</span><span class="s1">&#39;end_timestamp&#39;</span><span class="p">])</span> <span class="o">-</span> \
+                <span class="nb">float</span><span class="p">(</span><span class="n">i_tag_dict</span><span class="p">[</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">])</span>
+            <span class="n">l_tag_params</span><span class="p">[</span><span class="s1">&#39;position&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">i_tag_dict</span><span class="p">[</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">])</span> <span class="o">-</span> <span class="n">p_first_sample_ts</span>
+
+            <span class="n">l_tag</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="s1">&#39;tag&#39;</span><span class="p">)</span>
+            <span class="n">l_tag</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="s1">&#39;channelNumber&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="o">-</span><span class="mi">1</span><span class="p">))</span>
+
+            <span class="k">for</span> <span class="n">i_key</span><span class="p">,</span> <span class="n">i_value</span> <span class="ow">in</span> <span class="n">l_tag_params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">l_tag</span><span class="o">.</span><span class="n">setAttribute</span><span class="p">(</span><span class="n">i_key</span><span class="p">,</span> <span class="n">types_utils</span><span class="o">.</span><span class="n">to_string</span><span class="p">(</span><span class="n">i_value</span><span class="p">))</span>
+
+            <span class="k">for</span> <span class="n">i_key</span><span class="p">,</span> <span class="n">i_value</span> <span class="ow">in</span> <span class="n">i_tag_dict</span><span class="p">[</span><span class="s1">&#39;desc&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">elem</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span><span class="o">.</span><span class="n">createElement</span><span class="p">(</span><span class="n">i_key</span><span class="p">)</span>
+                <span class="n">val</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span><span class="o">.</span><span class="n">createTextNode</span><span class="p">(</span><span class="n">types_utils</span><span class="o">.</span><span class="n">to_string</span><span class="p">(</span><span class="n">i_value</span><span class="p">))</span>
+                <span class="n">elem</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">val</span><span class="p">)</span>
+                <span class="n">l_tag</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">elem</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_tags_root</span><span class="o">.</span><span class="n">appendChild</span><span class="p">(</span><span class="n">l_tag</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_tag_def_for</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_tag_name</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">p_tag_name</span>
+
+<div class="viewcode-block" id="TagsFileWriter.finish_saving"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.tags.html#obci.analysis.obci_signal_processing.tags.tags_file_writer.TagsFileWriter.finish_saving">[docs]</a>    <span class="k">def</span> <span class="nf">finish_saving</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_first_sample_ts</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Write xml tags to the file, return the file`s path.&quot;&quot;&quot;</span>
+        <span class="c1"># TODO - lapac bledy</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_serialize_tags</span><span class="p">(</span><span class="n">p_first_sample_ts</span><span class="p">)</span>
+
+        <span class="n">f</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_path</span><span class="p">,</span> <span class="s1">&#39;wb&#39;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_xml_factory</span><span class="o">.</span><span class="n">toxml</span><span class="p">(</span><span class="s1">&#39;utf-8&#39;</span><span class="p">))</span>  <span class="c1"># TODO ustawic kodowanie</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_path</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

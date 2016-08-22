@@ -1,0 +1,206 @@
+obci.control.launcher package
+=============================
+
+Submodules
+----------
+
+obci.control.launcher.eeg_experiment_finder module
+--------------------------------------------------
+
+.. automodule:: obci.control.launcher.eeg_experiment_finder
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.launch_file_parser module
+-----------------------------------------------
+
+.. automodule:: obci.control.launcher.launch_file_parser
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.launch_file_serializer module
+---------------------------------------------------
+
+.. automodule:: obci.control.launcher.launch_file_serializer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.launcher_logging module
+---------------------------------------------
+
+.. automodule:: obci.control.launcher.launcher_logging
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.launcher_messages module
+----------------------------------------------
+
+.. automodule:: obci.control.launcher.launcher_messages
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.launcher_tools module
+-------------------------------------------
+
+.. automodule:: obci.control.launcher.launcher_tools
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.local_process module
+------------------------------------------
+
+.. automodule:: obci.control.launcher.local_process
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.obci_client module
+----------------------------------------
+
+.. automodule:: obci.control.launcher.obci_client
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.obci_control_peer module
+----------------------------------------------
+
+.. automodule:: obci.control.launcher.obci_control_peer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.obci_experiment module
+--------------------------------------------
+
+.. automodule:: obci.control.launcher.obci_experiment
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.obci_process_supervisor module
+----------------------------------------------------
+
+.. automodule:: obci.control.launcher.obci_process_supervisor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.obci_script module
+----------------------------------------
+
+.. automodule:: obci.control.launcher.obci_script
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.obci_script_utils module
+----------------------------------------------
+
+.. automodule:: obci.control.launcher.obci_script_utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.obci_server module
+----------------------------------------
+
+.. automodule:: obci.control.launcher.obci_server
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.plain_tcp_handling module
+-----------------------------------------------
+
+.. automodule:: obci.control.launcher.plain_tcp_handling
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.process module
+------------------------------------
+
+.. automodule:: obci.control.launcher.process
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.process_io_handler module
+-----------------------------------------------
+
+.. automodule:: obci.control.launcher.process_io_handler
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.remote_process module
+-------------------------------------------
+
+.. automodule:: obci.control.launcher.remote_process
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.server_scanner module
+-------------------------------------------
+
+.. automodule:: obci.control.launcher.server_scanner
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.start_eeg_signal module
+---------------------------------------------
+
+.. automodule:: obci.control.launcher.start_eeg_signal
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.subprocess_monitor module
+-----------------------------------------------
+
+.. automodule:: obci.control.launcher.subprocess_monitor
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.system_config module
+------------------------------------------
+
+.. automodule:: obci.control.launcher.system_config
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.twisted_tcp_handling module
+-------------------------------------------------
+
+.. automodule:: obci.control.launcher.twisted_tcp_handling
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.control.launcher.view module
+---------------------------------
+
+.. automodule:: obci.control.launcher.view
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.control.launcher
+    :members:
+    :undoc-members:
+    :show-inheritance:

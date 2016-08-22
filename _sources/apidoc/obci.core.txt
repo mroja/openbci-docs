@@ -1,0 +1,69 @@
+obci.core package
+=================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    obci.core.messages
+
+Submodules
+----------
+
+obci.core.asyncio_task_manager module
+-------------------------------------
+
+.. automodule:: obci.core.asyncio_task_manager
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.core.broker module
+-----------------------
+
+.. automodule:: obci.core.broker
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.core.message_handler_mixin module
+--------------------------------------
+
+.. automodule:: obci.core.message_handler_mixin
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.core.message_statistics module
+-----------------------------------
+
+.. automodule:: obci.core.message_statistics
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.core.peer module
+---------------------
+
+.. automodule:: obci.core.peer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.core.zmq_asyncio_task_manager module
+-----------------------------------------
+
+.. automodule:: obci.core.zmq_asyncio_task_manager
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.core
+    :members:
+    :undoc-members:
+    :show-inheritance:

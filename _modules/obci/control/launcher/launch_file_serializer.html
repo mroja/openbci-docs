@@ -1,0 +1,313 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.launcher.launch_file_serializer &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.launcher.launch_file_serializer</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">configparser</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">codecs</span>
+<span class="kn">import</span> <span class="nn">io</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">import</span> <span class="nn">obci.control.peer.peer_config_serializer</span> <span class="k">as</span> <span class="nn">peer_config_serializer</span>
+<span class="kn">from</span> <span class="nn">obci.control.launcher.launch_file_parser</span> <span class="k">import</span> <span class="n">parse_peer_default_config</span>
+<span class="kn">import</span> <span class="nn">obci.control.common.obci_control_settings</span> <span class="k">as</span> <span class="nn">settings</span>
+<span class="kn">import</span> <span class="nn">obci.control.launcher.launcher_tools</span> <span class="k">as</span> <span class="nn">launcher_tools</span>
+
+<span class="n">PEERS</span> <span class="o">=</span> <span class="s2">&quot;peers&quot;</span>
+<span class="n">CONFIG_SRCS</span> <span class="o">=</span> <span class="s2">&quot;config_sources&quot;</span>
+<span class="n">LAUNCH_DEPS</span> <span class="o">=</span> <span class="s2">&quot;launch_dependencies&quot;</span>
+<span class="n">SYS_SECTIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">PEERS</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="LaunchFileSerializer"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launch_file_serializer.LaunchFileSerializer">[docs]</a><span class="k">class</span> <span class="nc">LaunchFileSerializer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+<div class="viewcode-block" id="LaunchFileSerializer.serialize"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launch_file_serializer.LaunchFileSerializer.serialize">[docs]</a>    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_config</span><span class="p">,</span> <span class="n">dump_dir_path</span><span class="p">,</span> <span class="n">dump_file</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_tools</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">dump_dir_path</span><span class="p">:</span>
+            <span class="n">dump_dir_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">dump_dir_path</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">dump_dir_path</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">dump_dir_path</span><span class="p">):</span>
+                <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">dump_dir_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prepare</span><span class="p">(</span><span class="n">system_config</span><span class="p">,</span> <span class="n">dump_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dump_special_sections</span><span class="p">(</span><span class="n">system_config</span><span class="p">,</span> <span class="n">dump_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_dump_peer_configs</span><span class="p">(</span><span class="n">system_config</span><span class="p">,</span> <span class="n">dump_file</span><span class="p">,</span> <span class="n">dump_dir_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save</span><span class="p">(</span><span class="n">dump_file</span><span class="p">,</span> <span class="n">dump_dir_path</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_init_tools</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_config</span><span class="p">,</span> <span class="n">dump_file</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_dump_special_sections</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_config</span><span class="p">,</span> <span class="n">dump_file</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_dump_peer_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_config</span><span class="p">,</span> <span class="n">dump_file</span><span class="p">,</span> <span class="n">dump_dir</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_dump_peer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_config</span><span class="p">,</span> <span class="n">dump_file</span><span class="p">,</span> <span class="n">dump_dir</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">dump_file</span><span class="p">,</span> <span class="n">dump_dir_path</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="LaunchFileSerializerINI"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launch_file_serializer.LaunchFileSerializerINI">[docs]</a><span class="k">class</span> <span class="nc">LaunchFileSerializerINI</span><span class="p">(</span><span class="n">LaunchFileSerializer</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dump scenario to an INI scenario file and separate peer config files.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">_init_tools</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">RawConfigParser</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">add_section</span><span class="p">(</span><span class="n">PEERS</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_config</span><span class="p">,</span> <span class="n">dump_file</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_dump_special_sections</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_config</span><span class="p">,</span> <span class="n">dump_file</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">PEERS</span><span class="p">,</span> <span class="s2">&quot;scenario_dir&quot;</span><span class="p">,</span> <span class="n">system_config</span><span class="o">.</span><span class="n">scenario_dir</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_dump_peer_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_config</span><span class="p">,</span> <span class="n">dump_file</span><span class="p">,</span> <span class="n">dump_dir</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">peer</span><span class="p">,</span> <span class="n">descriptor</span> <span class="ow">in</span> <span class="n">system_config</span><span class="o">.</span><span class="n">peers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">peer_section</span> <span class="o">=</span> <span class="n">PEERS</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">peer</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">add_section</span><span class="p">(</span><span class="n">peer_section</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">peer_section</span><span class="p">,</span> <span class="s2">&quot;path&quot;</span><span class="p">,</span> <span class="n">descriptor</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+
+            <span class="n">peer_file_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dump_peer</span><span class="p">(</span><span class="n">descriptor</span><span class="p">,</span> <span class="n">dump_file</span><span class="p">,</span> <span class="n">dump_dir</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">peer_file_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">peer_file_name</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;HOME&#39;</span><span class="p">]):</span>
+                    <span class="n">peer_file_name</span> <span class="o">=</span> <span class="n">peer_file_name</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;HOME&#39;</span><span class="p">],</span> <span class="s1">&#39;~&#39;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">peer_section</span><span class="p">,</span> <span class="s2">&quot;config&quot;</span><span class="p">,</span> <span class="n">peer_file_name</span><span class="p">)</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dump_peer_config_sources</span><span class="p">(</span><span class="n">peer</span><span class="p">,</span> <span class="n">descriptor</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">config_sources</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dump_peer_launch_deps</span><span class="p">(</span><span class="n">peer</span><span class="p">,</span> <span class="n">descriptor</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">launch_deps</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_dump_peer_config_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">config_sources</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">config_sources</span><span class="p">:</span>
+            <span class="n">conf_section</span> <span class="o">=</span> <span class="n">PEERS</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">peer_id</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">CONFIG_SRCS</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">add_section</span><span class="p">(</span><span class="n">conf_section</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">src_name</span><span class="p">,</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">config_sources</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">conf_section</span><span class="p">,</span> <span class="n">src_name</span><span class="p">,</span> <span class="n">src</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_dump_peer_launch_deps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">launch_deps</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">launch_deps</span><span class="p">:</span>
+            <span class="n">conf_section</span> <span class="o">=</span> <span class="n">PEERS</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">peer_id</span> <span class="o">+</span> <span class="s2">&quot;.&quot;</span> <span class="o">+</span> <span class="n">LAUNCH_DEPS</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">add_section</span><span class="p">(</span><span class="n">conf_section</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">dep_name</span><span class="p">,</span> <span class="n">dep</span> <span class="ow">in</span> <span class="n">launch_deps</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">conf_section</span><span class="p">,</span> <span class="n">dep_name</span><span class="p">,</span> <span class="n">dep</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_dump_peer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_descriptor</span><span class="p">,</span> <span class="n">dump_file</span><span class="p">,</span> <span class="n">dump_dir</span><span class="p">):</span>
+        <span class="n">ser</span> <span class="o">=</span> <span class="n">peer_config_serializer</span><span class="o">.</span><span class="n">PeerConfigSerializerINI</span><span class="p">()</span>
+        <span class="n">base_config</span><span class="p">,</span> <span class="n">parser</span> <span class="o">=</span> <span class="n">parse_peer_default_config</span><span class="p">(</span><span class="n">peer_descriptor</span><span class="o">.</span><span class="n">peer_id</span><span class="p">,</span>
+                                                        <span class="n">peer_descriptor</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">diff_src</span><span class="p">,</span> <span class="n">diff_deps</span><span class="p">,</span> <span class="n">diff_params</span> <span class="o">=</span> <span class="n">ser</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">base_config</span><span class="p">,</span> <span class="n">peer_descriptor</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+        <span class="n">peer_file_name</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="n">diff_src</span> <span class="ow">or</span> <span class="n">diff_deps</span> <span class="ow">or</span> <span class="n">diff_params</span><span class="p">:</span>
+            <span class="n">peer_file_name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">dump_dir</span><span class="p">,</span> <span class="n">peer_descriptor</span><span class="o">.</span><span class="n">peer_id</span> <span class="o">+</span> <span class="s1">&#39;.ini&#39;</span><span class="p">)</span>
+            <span class="k">with</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">peer_file_name</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="n">ser</span><span class="o">.</span><span class="n">serialize_diff</span><span class="p">(</span><span class="n">base_config</span><span class="p">,</span> <span class="n">peer_descriptor</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">peer_file_name</span>
+
+    <span class="k">def</span> <span class="nf">_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_file_obj</span><span class="p">,</span> <span class="n">dump_dir</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">p_file_obj</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LaunchFileSerializerJSON"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launch_file_serializer.LaunchFileSerializerJSON">[docs]</a><span class="k">class</span> <span class="nc">LaunchFileSerializerJSON</span><span class="p">(</span><span class="n">LaunchFileSerializer</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Dump entire scenario to one large JSON.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dic</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">_init_tools</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dic</span> <span class="o">=</span> <span class="p">{</span><span class="n">PEERS</span><span class="p">:</span> <span class="p">{}}</span>
+
+    <span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_config</span><span class="p">,</span> <span class="n">dump_file</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_dump_special_sections</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_config</span><span class="p">,</span> <span class="n">dump_file</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dic</span><span class="p">[</span><span class="n">PEERS</span><span class="p">][</span><span class="s2">&quot;scenario_dir&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">system_config</span><span class="o">.</span><span class="n">scenario_dir</span>
+
+    <span class="k">def</span> <span class="nf">_dump_peer_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">system_config</span><span class="p">,</span> <span class="n">dump_file</span><span class="p">,</span> <span class="n">dump_dir</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">peer</span><span class="p">,</span> <span class="n">descriptor</span> <span class="ow">in</span> <span class="n">system_config</span><span class="o">.</span><span class="n">peers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">peer_cfg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dic</span><span class="p">[</span><span class="n">PEERS</span><span class="p">][</span><span class="n">peer</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="n">peer_cfg</span><span class="p">[</span><span class="s2">&quot;path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">descriptor</span><span class="o">.</span><span class="n">path</span>
+
+            <span class="n">peer_json</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_dump_peer</span><span class="p">(</span><span class="n">descriptor</span><span class="p">,</span> <span class="n">dump_file</span><span class="p">,</span> <span class="n">dump_dir</span><span class="p">)</span>
+
+            <span class="n">peer_cfg</span><span class="p">[</span><span class="s2">&quot;config&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">peer_json</span><span class="p">)</span>
+
+            <span class="n">peer_cfg</span><span class="p">[</span><span class="s2">&quot;machine&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">descriptor</span><span class="o">.</span><span class="n">machine</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dump_peer_config_sources</span><span class="p">(</span><span class="n">peer</span><span class="p">,</span> <span class="n">descriptor</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">config_sources</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_dump_peer_launch_deps</span><span class="p">(</span><span class="n">peer</span><span class="p">,</span> <span class="n">descriptor</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">launch_deps</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_dump_peer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_descriptor</span><span class="p">,</span> <span class="n">dump_file</span><span class="p">,</span> <span class="n">dump_dir</span><span class="p">):</span>
+        <span class="n">ser</span> <span class="o">=</span> <span class="n">peer_config_serializer</span><span class="o">.</span><span class="n">PeerConfigSerializerJSON</span><span class="p">()</span>
+        <span class="n">base_config</span><span class="p">,</span> <span class="n">parser</span> <span class="o">=</span> <span class="n">parse_peer_default_config</span><span class="p">(</span><span class="n">peer_descriptor</span><span class="o">.</span><span class="n">peer_id</span><span class="p">,</span>
+                                                        <span class="n">peer_descriptor</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="n">diff_src</span><span class="p">,</span> <span class="n">diff_deps</span><span class="p">,</span> <span class="n">diff_params</span> <span class="o">=</span> <span class="n">ser</span><span class="o">.</span><span class="n">difference</span><span class="p">(</span><span class="n">base_config</span><span class="p">,</span> <span class="n">peer_descriptor</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
+        <span class="n">conf</span> <span class="o">=</span> <span class="s1">&#39;</span><span class="si">{}</span><span class="s1">&#39;</span>
+        <span class="k">if</span> <span class="n">diff_src</span> <span class="ow">or</span> <span class="n">diff_deps</span> <span class="ow">or</span> <span class="n">diff_params</span><span class="p">:</span>
+            <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+            <span class="n">ser</span><span class="o">.</span><span class="n">serialize_diff</span><span class="p">(</span><span class="n">base_config</span><span class="p">,</span> <span class="n">peer_descriptor</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span>
+            <span class="n">conf</span> <span class="o">=</span> <span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">conf</span>
+
+    <span class="k">def</span> <span class="nf">_dump_peer_config_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">config_sources</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">config_sources</span><span class="p">:</span>
+            <span class="n">conf_section</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dic</span><span class="p">[</span><span class="n">PEERS</span><span class="p">][</span><span class="n">peer_id</span><span class="p">][</span><span class="n">CONFIG_SRCS</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">src_name</span><span class="p">,</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">config_sources</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">conf_section</span><span class="p">[</span><span class="n">src_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">src</span>
+
+    <span class="k">def</span> <span class="nf">_dump_peer_launch_deps</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">launch_deps</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">launch_deps</span><span class="p">:</span>
+            <span class="n">conf_section</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">dic</span><span class="p">[</span><span class="n">PEERS</span><span class="p">][</span><span class="n">peer_id</span><span class="p">][</span><span class="n">LAUNCH_DEPS</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="k">for</span> <span class="n">dep_name</span><span class="p">,</span> <span class="n">dep</span> <span class="ow">in</span> <span class="n">launch_deps</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="n">conf_section</span><span class="p">[</span><span class="n">dep_name</span><span class="p">]</span> <span class="o">=</span> <span class="n">dep</span>
+
+    <span class="k">def</span> <span class="nf">_save</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_file_obj</span><span class="p">,</span> <span class="n">dump_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">json</span><span class="o">.</span><span class="n">dump</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">dic</span><span class="p">,</span> <span class="n">p_file_obj</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="serialize_scenario_json"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launch_file_serializer.serialize_scenario_json">[docs]</a><span class="k">def</span> <span class="nf">serialize_scenario_json</span><span class="p">(</span><span class="n">p_system_config</span><span class="p">):</span>
+    <span class="n">buf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">()</span>
+    <span class="n">ser</span> <span class="o">=</span> <span class="n">LaunchFileSerializerJSON</span><span class="p">()</span>
+    <span class="n">ser</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">p_system_config</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">buf</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">buf</span><span class="o">.</span><span class="n">getvalue</span><span class="p">()</span></div>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">launch_file_parser</span>
+    <span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">system_config</span>
+
+    <span class="n">launch_parser</span> <span class="o">=</span> <span class="n">launch_file_parser</span><span class="o">.</span><span class="n">LaunchFileParser</span><span class="p">(</span>
+        <span class="n">launcher_tools</span><span class="o">.</span><span class="n">obci_root</span><span class="p">(),</span> <span class="n">settings</span><span class="o">.</span><span class="n">DEFAULT_SCENARIO_DIR</span><span class="p">)</span>
+    <span class="n">config</span> <span class="o">=</span> <span class="n">system_config</span><span class="o">.</span><span class="n">OBCIExperimentConfig</span><span class="p">()</span>
+    <span class="n">status</span> <span class="o">=</span> <span class="n">launcher_tools</span><span class="o">.</span><span class="n">ExperimentStatus</span><span class="p">()</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">launcher_tools</span><span class="o">.</span><span class="n">expand_path</span><span class="p">(</span><span class="s1">&#39;scenarios/cebit/switch/hci_switch_mult_dummy.ini&#39;</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">launch_parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+    <span class="n">rd</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">config_ready</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">rd</span><span class="p">,</span> <span class="n">details</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;INFO A&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">config</span><span class="o">.</span><span class="n">all_param_values</span><span class="p">(</span><span class="s1">&#39;amplifier&#39;</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="se">\n</span><span class="s2"> *********************************</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+    <span class="n">json_ser</span> <span class="o">=</span> <span class="n">serialize_scenario_json</span><span class="p">(</span><span class="n">config</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">json_ser</span><span class="p">)</span>
+
+    <span class="n">jsonpar</span> <span class="o">=</span> <span class="n">launch_file_parser</span><span class="o">.</span><span class="n">LaunchJSONParser</span><span class="p">(</span>
+        <span class="n">launcher_tools</span><span class="o">.</span><span class="n">obci_root</span><span class="p">(),</span> <span class="n">settings</span><span class="o">.</span><span class="n">DEFAULT_SCENARIO_DIR</span><span class="p">)</span>
+    <span class="n">inbuf</span> <span class="o">=</span> <span class="n">io</span><span class="o">.</span><span class="n">StringIO</span><span class="p">(</span><span class="n">json_ser</span><span class="p">)</span>
+    <span class="n">new_conf</span> <span class="o">=</span> <span class="n">system_config</span><span class="o">.</span><span class="n">OBCIExperimentConfig</span><span class="p">()</span>
+
+    <span class="n">jsonpar</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">inbuf</span><span class="p">,</span> <span class="n">new_conf</span><span class="p">)</span>
+    <span class="n">rd</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="n">new_conf</span><span class="o">.</span><span class="n">config_ready</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;INFO B&quot;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">rd</span><span class="p">,</span> <span class="n">details</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="n">new_conf</span><span class="o">.</span><span class="n">all_param_values</span><span class="p">(</span><span class="s1">&#39;amplifier&#39;</span><span class="p">))</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

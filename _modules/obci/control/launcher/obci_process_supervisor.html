@@ -1,0 +1,611 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.launcher.obci_process_supervisor &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.launcher.obci_process_supervisor</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python3</span>
+
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">argparse</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">import</span> <span class="nn">zmq</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.common.message</span> <span class="k">import</span> <span class="n">send_msg</span>
+<span class="kn">import</span> <span class="nn">obci.control.common.net_tools</span> <span class="k">as</span> <span class="nn">net</span>
+<span class="kn">import</span> <span class="nn">obci.control.common.obci_control_settings</span> <span class="k">as</span> <span class="nn">settings</span>
+<span class="kn">from</span> <span class="nn">obci.control.peer.config_defaults</span> <span class="k">import</span> <span class="n">CONFIG_DEFAULTS</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.launcher.obci_control_peer</span> <span class="k">import</span> <span class="n">OBCIControlPeer</span><span class="p">,</span> <span class="n">basic_arg_parser</span>
+
+<span class="kn">import</span> <span class="nn">obci.control.launcher.launcher_tools</span> <span class="k">as</span> <span class="nn">launcher_tools</span>
+
+<span class="kn">from</span> <span class="nn">obci.utils.openbci_logging</span> <span class="k">import</span> <span class="n">log_crash</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.launcher.subprocess_monitor</span> <span class="k">import</span> <span class="n">SubprocessMonitor</span><span class="p">,</span> <span class="n">NO_STDIO</span><span class="p">,</span> <span class="n">RETURNCODE</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.launcher.process_io_handler</span> <span class="k">import</span> <span class="n">DEFAULT_TAIL_RQ</span>
+
+<span class="n">TEST_PACKS</span> <span class="o">=</span> <span class="mi">100000</span>
+
+
+<div class="viewcode-block" id="OBCIProcessSupervisor"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor">[docs]</a><span class="k">class</span> <span class="nc">OBCIProcessSupervisor</span><span class="p">(</span><span class="n">OBCIControlPeer</span><span class="p">):</span>
+    <span class="n">msg_handlers</span> <span class="o">=</span> <span class="n">OBCIControlPeer</span><span class="o">.</span><span class="n">msg_handlers</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sandbox_dir</span><span class="p">,</span>
+                 <span class="n">source_addresses</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">source_pub_addresses</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">rep_addresses</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">pub_addresses</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">experiment_uuid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span>
+                 <span class="n">name</span><span class="o">=</span><span class="s1">&#39;obci_process_supervisor&#39;</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">peers</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">launcher_tools</span><span class="o">.</span><span class="n">READY_TO_LAUNCH</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source_pub_addresses</span> <span class="o">=</span> <span class="n">source_pub_addresses</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">machine</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sandbox_dir</span> <span class="o">=</span> <span class="n">sandbox_dir</span> <span class="k">if</span> <span class="n">sandbox_dir</span> <span class="k">else</span> <span class="n">settings</span><span class="o">.</span><span class="n">DEFAULT_SANDBOX_DIR</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mx_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">set_mx_data</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer_env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mx_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">launch_data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peer_order</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_running_peer_order</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_current_part</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__cfg_launch_info</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__cfg_morph</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">experiment_uuid</span> <span class="o">=</span> <span class="n">experiment_uuid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peers_to_launch</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">processes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">restarting</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rqs</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nearby_machines</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">DNS</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">test_count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">__cfg_lock</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">RLock</span><span class="p">()</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">OBCIProcessSupervisor</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span>
+            <span class="n">source_addresses</span><span class="o">=</span><span class="n">source_addresses</span><span class="p">,</span>
+            <span class="n">rep_addresses</span><span class="o">=</span><span class="n">rep_addresses</span><span class="p">,</span>
+            <span class="n">pub_addresses</span><span class="o">=</span><span class="n">pub_addresses</span><span class="p">,</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subprocess_mgr</span> <span class="o">=</span> <span class="n">SubprocessMonitor</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OBCIProcessSupervisor.peer_type"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.peer_type">[docs]</a>    <span class="k">def</span> <span class="nf">peer_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="s2">&quot;obci_process_supervisor&quot;</span></div>
+
+<div class="viewcode-block" id="OBCIProcessSupervisor.net_init"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.net_init">[docs]</a>    <span class="k">def</span> <span class="nf">net_init</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source_sub_socket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SUB</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">source_sub_socket</span><span class="o">.</span><span class="n">setsockopt_string</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SUBSCRIBE</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_all_sockets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_sub_socket</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_pub_addresses</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">addr</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">source_pub_addresses</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">source_sub_socket</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
+
+        <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_server_socket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs_addresses</span><span class="p">)</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_init_socket</span><span class="p">([],</span> <span class="n">zmq</span><span class="o">.</span><span class="n">PULL</span><span class="p">)</span>
+        <span class="c1"># self.config_server_socket.setsockopt(zmq.SUBSCRIBE, &quot;&quot;)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">cs_addr</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">choose_local</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cs_addresses</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs_addr</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cs_addr</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">choose_not_local</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">cs_addresses</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">cs_addr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs_addr</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_all_sockets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config_server_socket</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">OBCIProcessSupervisor</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">net_init</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="OBCIProcessSupervisor.params_for_registration"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.params_for_registration">[docs]</a>    <span class="k">def</span> <span class="nf">params_for_registration</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">mx_data</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="kc">None</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">mx_data</span><span class="p">:</span>
+            <span class="n">mx_data</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">mx_addr_str</span><span class="p">(((</span><span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mx_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mx_data</span><span class="p">[</span><span class="mi">1</span><span class="p">])),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mx_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]]</span>
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">pid</span><span class="o">=</span><span class="n">os</span><span class="o">.</span><span class="n">getpid</span><span class="p">(),</span> <span class="n">machine</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="p">,</span>
+                    <span class="n">mx_data</span><span class="o">=</span><span class="n">mx_data</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OBCIProcessSupervisor.custom_sockets"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.custom_sockets">[docs]</a>    <span class="k">def</span> <span class="nf">custom_sockets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">source_sub_socket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_server_socket</span><span class="p">]</span></div>
+
+    <span class="k">def</span> <span class="nf">_handle_registration_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">launch_data</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;launch_data&#39;</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peers_to_launch</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">launch_data</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peer_order</span> <span class="o">=</span> <span class="n">response</span><span class="o">.</span><span class="n">params</span><span class="p">[</span><span class="s1">&#39;peer_order&#39;</span><span class="p">]</span>
+        <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer_order</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_running_peer_order</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">part</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;RECEIVED LAUNCH DATA: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">launch_data</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OBCIProcessSupervisor.set_mx_data"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.set_mx_data">[docs]</a>    <span class="k">def</span> <span class="nf">set_mx_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">src_</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">choose_not_local</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_pub_addresses</span><span class="p">)[:</span><span class="mi">1</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">src_</span><span class="p">:</span>
+            <span class="n">src_</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">choose_local</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">source_pub_addresses</span><span class="p">,</span> <span class="n">ip</span><span class="o">=</span><span class="kc">True</span><span class="p">)[:</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">src_</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">src</span> <span class="o">=</span> <span class="n">src</span><span class="p">[</span><span class="mi">6</span><span class="p">:]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">src</span> <span class="o">==</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">():</span>
+            <span class="n">sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REP</span><span class="p">)</span>
+            <span class="n">port</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">sock</span><span class="o">.</span><span class="n">bind_to_random_port</span><span class="p">(</span><span class="s2">&quot;tcp://127.0.0.1&quot;</span><span class="p">,</span>
+                                                <span class="n">min_port</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">PORT_RANGE</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                                <span class="n">max_port</span><span class="o">=</span><span class="n">settings</span><span class="o">.</span><span class="n">PORT_RANGE</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="n">sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">return</span> <span class="p">(</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="n">port</span><span class="p">),</span> <span class="s2">&quot;&quot;</span>  <span class="c1"># empty passwd</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="OBCIProcessSupervisor.mx_addr_str"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.mx_addr_str">[docs]</a>    <span class="k">def</span> <span class="nf">mx_addr_str</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mx_data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">mx_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="n">addr</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="n">mx_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;mx addr str:  &quot;</span> <span class="o">+</span> <span class="n">addr</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">addr</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OBCIProcessSupervisor.peer_env"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.peer_env">[docs]</a>    <span class="k">def</span> <span class="nf">peer_env</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mx_data</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">mx_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+
+        <span class="n">env</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+        <span class="n">addr</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="n">mx_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">addr</span> <span class="o">==</span> <span class="s1">&#39;0.0.0.0&#39;</span><span class="p">:</span>
+            <span class="n">addr</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span>
+
+        <span class="n">_env</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;MULTIPLEXER_ADDRESSES&quot;</span><span class="p">:</span> <span class="nb">str</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+        <span class="p">}</span>
+        <span class="n">env</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">_env</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">env</span></div>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;start_broker&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="OBCIProcessSupervisor.handle_start_broker"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.handle_start_broker">[docs]</a>    <span class="k">def</span> <span class="nf">handle_start_broker</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;mx&#39;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">launch_data</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">mx_data</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;..starting multiplexer&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">peer_order</span><span class="o">.</span><span class="n">remove</span><span class="p">([</span><span class="s1">&#39;mx&#39;</span><span class="p">])</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">peers_to_launch</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;mx&#39;</span><span class="p">)</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">launcher_tools</span><span class="o">.</span><span class="n">broker_path</span><span class="p">()</span>
+
+            <span class="n">args</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="s1">&#39;run_multiplexer&#39;</span><span class="p">,</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mx_addr_str</span><span class="p">(((</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mx_data</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">mx_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
+            <span class="p">]</span>
+            <span class="n">proc</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_launch_process</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="s1">&#39;multiplexer&#39;</span><span class="p">,</span> <span class="s1">&#39;mx&#39;</span><span class="p">,</span>
+                                                 <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">processes</span><span class="p">[</span><span class="s1">&#39;mx&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">proc</span>
+            <span class="k">if</span> <span class="n">proc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">mx</span> <span class="o">=</span> <span class="n">proc</span></div>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;start_config_server&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="OBCIProcessSupervisor.handle_start_config_srv"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.handle_start_config_srv">[docs]</a>    <span class="k">def</span> <span class="nf">handle_start_config_srv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="k">if</span> <span class="s1">&#39;mx&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">launch_data</span><span class="p">:</span>
+            <span class="n">mx_addr</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">mx_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+            <span class="n">mx_addr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">mx_addr</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">md</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mx_data</span><span class="p">)</span>
+            <span class="n">md</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">mx_addr</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mx_data</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">md</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer_env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mx_data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s2">&quot;config_server&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">launch_data</span><span class="p">:</span>
+            <span class="n">proc</span><span class="p">,</span> <span class="n">details</span><span class="p">,</span> <span class="n">wait</span><span class="p">,</span> <span class="n">info_obj</span> <span class="o">=</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">launch_process</span><span class="p">(</span><span class="s2">&quot;config_server&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">launch_data</span><span class="p">[</span><span class="s2">&quot;config_server&quot;</span><span class="p">],</span>
+                                    <span class="n">restore_config</span><span class="o">=</span><span class="n">message</span><span class="o">.</span><span class="n">restore_config</span><span class="p">)</span>
+            <span class="n">tim</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Timer</span><span class="p">(</span><span class="mf">1.5</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__if_config_server_conn_didnt_work</span><span class="p">)</span>
+            <span class="n">tim</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">__if_config_server_conn_didnt_work</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">__cfg_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__cfg_launch_info</span><span class="p">:</span>
+                <span class="n">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_publish_socket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__cfg_launch_info</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__cfg_launch_info</span> <span class="o">=</span> <span class="kc">None</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;connection to config server is shaky :(&quot;</span><span class="p">)</span>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;start_peers&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="OBCIProcessSupervisor.handle_start_peers"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.handle_start_peers">[docs]</a>    <span class="k">def</span> <span class="nf">handle_start_peers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;start peers --  my mx_data: </span><span class="si">%s</span><span class="s2">, received mx_data: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                         <span class="bp">self</span><span class="o">.</span><span class="n">mx_data</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">mx_data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="s1">&#39;mx&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">launch_data</span><span class="p">:</span>
+            <span class="n">mx_addr</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">mx_data</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;:&#39;</span><span class="p">)</span>
+            <span class="n">mx_addr</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">mx_addr</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+            <span class="n">md</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mx_data</span><span class="p">)</span>
+            <span class="n">md</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">mx_addr</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mx_data</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">md</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">env</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer_env</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mx_data</span><span class="p">)</span>
+        <span class="c1"># tmp.workarounds: wait for mx  on other machine to initialize</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.75</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">add_launch_data</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">machine</span> <span class="ow">in</span> <span class="n">message</span><span class="o">.</span><span class="n">add_launch_data</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_launch_processes</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">add_launch_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="p">])</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_launch_processes</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">launch_data</span><span class="p">)</span></div>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;manage_peers&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="OBCIProcessSupervisor.handle_manage_peers"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.handle_manage_peers">[docs]</a>    <span class="k">def</span> <span class="nf">handle_manage_peers</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">message</span><span class="o">.</span><span class="n">receiver</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">for</span> <span class="n">peer</span> <span class="ow">in</span> <span class="n">message</span><span class="o">.</span><span class="n">kill_peers</span><span class="p">:</span>
+            <span class="n">proc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">peer</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">proc</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;peer to kill not found: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">peer</span><span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;MORPH:  KILLING </span><span class="si">%s</span><span class="s2"> &quot;</span><span class="p">,</span> <span class="n">peer</span><span class="p">)</span>
+            <span class="n">proc</span><span class="o">.</span><span class="n">kill_with_force</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;MORPH:  KILLED </span><span class="si">%s</span><span class="s2"> &quot;</span><span class="p">,</span> <span class="n">peer</span><span class="p">)</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">processes</span><span class="p">[</span><span class="n">peer</span><span class="p">]</span>
+            <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">launch_data</span><span class="p">[</span><span class="n">peer</span><span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">peer</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">message</span><span class="o">.</span><span class="n">start_peers_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">launch_data</span><span class="p">[</span><span class="n">peer</span><span class="p">]</span> <span class="o">=</span> <span class="n">data</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">restarting</span> <span class="o">=</span> <span class="p">[</span><span class="n">peer</span> <span class="k">for</span> <span class="n">peer</span> <span class="ow">in</span> <span class="n">message</span><span class="o">.</span><span class="n">start_peers_data</span> <span class="k">if</span> <span class="n">peer</span> <span class="ow">in</span> <span class="n">message</span><span class="o">.</span><span class="n">kill_peers</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_launch_processes</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">start_peers_data</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_launch_processes</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">launch_data</span><span class="p">,</span> <span class="n">restore_config</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="n">proc</span><span class="p">,</span> <span class="n">details</span><span class="p">,</span> <span class="n">info_obj</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="n">success</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">status</span> <span class="o">=</span> <span class="n">launcher_tools</span><span class="o">.</span><span class="n">LAUNCHING</span>
+
+        <span class="n">ldata</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="k">if</span> <span class="s1">&#39;amplifier&#39;</span> <span class="ow">in</span> <span class="n">launch_data</span><span class="p">:</span>
+            <span class="n">ldata</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="s1">&#39;amplifier&#39;</span><span class="p">,</span> <span class="n">launch_data</span><span class="p">[</span><span class="s1">&#39;amplifier&#39;</span><span class="p">]))</span>
+        <span class="k">for</span> <span class="n">peer</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">launch_data</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">peer</span><span class="p">,</span> <span class="n">data</span><span class="p">)</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ldata</span> <span class="ow">and</span> <span class="n">peer</span> <span class="o">!=</span> <span class="s1">&#39;config_server&#39;</span><span class="p">:</span>
+                <span class="n">ldata</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">peer</span><span class="p">,</span> <span class="n">data</span><span class="p">))</span>
+
+        <span class="k">for</span> <span class="n">peer</span><span class="p">,</span> <span class="n">data</span> <span class="ow">in</span> <span class="n">ldata</span><span class="p">:</span>  <span class="c1"># self.launch_data.iteritems():</span>
+            <span class="k">if</span> <span class="n">peer</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;mx&#39;</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="n">proc</span><span class="p">,</span> <span class="n">details</span><span class="p">,</span> <span class="n">wait</span><span class="p">,</span> <span class="n">info_obj</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">launch_process</span><span class="p">(</span><span class="n">peer</span><span class="p">,</span> <span class="n">data</span><span class="p">,</span> <span class="n">restore_config</span><span class="o">=</span><span class="n">restore_config</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">wait</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">proc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">success</span> <span class="o">=</span> <span class="kc">False</span>
+                <span class="k">break</span>
+
+        <span class="k">if</span> <span class="n">success</span><span class="p">:</span>
+            <span class="n">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_publish_socket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;all_peers_launched&quot;</span><span class="p">,</span>
+                                                               <span class="n">machine</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="p">))</span>
+
+<div class="viewcode-block" id="OBCIProcessSupervisor.launch_process"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.launch_process">[docs]</a>    <span class="k">def</span> <span class="nf">launch_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer</span><span class="p">,</span> <span class="n">launch_data</span><span class="p">,</span> <span class="n">restore_config</span><span class="o">=</span><span class="p">[]):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="n">launch_data</span>
+        <span class="n">wait</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">p</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">data</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">])</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">isabs</span><span class="p">(</span><span class="n">p</span><span class="p">):</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">launcher_tools</span><span class="o">.</span><span class="n">obci_root</span><span class="p">(),</span> <span class="n">p</span><span class="p">)</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">realpath</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+
+        <span class="n">args</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;args&#39;</span><span class="p">]</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_attach_base_config_path</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="s1">&#39;experiment_uuid&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_uuid</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">peer</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;config_server&#39;</span><span class="p">):</span>
+            <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="s1">&#39;launcher_socket_addr&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">cs_addr</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">restore_config</span><span class="p">:</span>
+                <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="s1">&#39;restore_peers&#39;</span><span class="p">,</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">restore_config</span><span class="p">)]</span>
+            <span class="c1"># wait = 0.5</span>
+        <span class="k">if</span> <span class="s2">&quot;log_dir&quot;</span> <span class="ow">in</span> <span class="n">args</span><span class="p">:</span>
+            <span class="n">idx</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="s2">&quot;log_dir&quot;</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="n">log_dir</span> <span class="o">=</span> <span class="n">args</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+            <span class="n">log_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">log_dir</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">args</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">log_dir</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">log_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">CONFIG_DEFAULTS</span><span class="p">[</span><span class="s2">&quot;log_dir&quot;</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+            <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="s1">&#39;log_dir&#39;</span><span class="p">,</span> <span class="n">log_dir</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">log_dir</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">log_dir</span><span class="p">)</span>
+
+        <span class="n">proc</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_launch_process</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;peer_type&#39;</span><span class="p">],</span>
+                                             <span class="n">peer</span><span class="p">,</span> <span class="n">env</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">env</span><span class="p">,</span> <span class="n">capture_io</span><span class="o">=</span><span class="n">NO_STDIO</span><span class="p">)</span>
+        <span class="n">info_obj</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;path&quot;</span><span class="p">:</span> <span class="n">path</span><span class="p">,</span>
+            <span class="s2">&quot;args&quot;</span><span class="p">:</span> <span class="n">args</span><span class="p">,</span>
+            <span class="s2">&quot;peer&quot;</span><span class="p">:</span> <span class="n">peer</span>
+        <span class="p">}</span>
+        <span class="k">if</span> <span class="n">proc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">processes</span><span class="p">[</span><span class="n">peer</span><span class="p">]</span> <span class="o">=</span> <span class="n">proc</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;OBCI LAUNCH FAILED&quot;</span><span class="p">)</span>
+            <span class="n">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_publish_socket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;obci_launch_failed&quot;</span><span class="p">,</span>
+                                                               <span class="n">machine</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">info_obj</span><span class="p">[</span><span class="s1">&#39;path&#39;</span><span class="p">],</span>
+                                                               <span class="n">args</span><span class="o">=</span><span class="n">info_obj</span><span class="p">[</span><span class="s1">&#39;args&#39;</span><span class="p">],</span> <span class="n">details</span><span class="o">=</span><span class="n">details</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">processes</span> <span class="o">=</span> <span class="p">{}</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">subprocess_mgr</span><span class="o">.</span><span class="n">killall</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">proc</span><span class="p">,</span> <span class="n">details</span><span class="p">,</span> <span class="n">wait</span><span class="p">,</span> <span class="n">info_obj</span></div>
+
+    <span class="k">def</span> <span class="nf">_launch_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">proc_type</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span>
+                        <span class="n">env</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">capture_io</span><span class="o">=</span><span class="n">NO_STDIO</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;launching..... </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+        <span class="n">proc</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subprocess_mgr</span><span class="o">.</span><span class="n">new_local_process</span><span class="p">(</span><span class="n">path</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span>
+                                                              <span class="n">proc_type</span><span class="o">=</span><span class="n">proc_type</span><span class="p">,</span>
+                                                              <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                                              <span class="n">monitoring_optflags</span><span class="o">=</span><span class="n">RETURNCODE</span><span class="p">,</span>
+                                                              <span class="n">capture_io</span><span class="o">=</span><span class="n">capture_io</span><span class="p">,</span>
+                                                              <span class="n">env</span><span class="o">=</span><span class="n">env</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">proc</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;process launch FAILED: </span><span class="si">%s</span><span class="s2"> --- </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span>
+                              <span class="n">path</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
+            <span class="n">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_publish_socket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;launch_error&quot;</span><span class="p">,</span>
+                                                               <span class="n">sender</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span>
+                                                               <span class="n">details</span><span class="o">=</span><span class="nb">dict</span><span class="p">(</span><span class="n">machine</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span>
+                                                                            <span class="n">error</span><span class="o">=</span><span class="n">details</span><span class="p">,</span> <span class="n">peer_id</span><span class="o">=</span><span class="n">name</span><span class="p">)))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;process launch success:&quot;</span> <span class="o">+</span>
+                             <span class="n">path</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="p">)</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">proc</span><span class="o">.</span><span class="n">pid</span><span class="p">))</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;launched_process_info&quot;</span><span class="p">,</span>
+                                      <span class="n">sender</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span>
+                                      <span class="n">machine</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="p">,</span>
+                                      <span class="n">pid</span><span class="o">=</span><span class="n">proc</span><span class="o">.</span><span class="n">pid</span><span class="p">,</span>
+                                      <span class="n">proc_type</span><span class="o">=</span><span class="n">proc_type</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                                      <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span>
+                                      <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="o">==</span> <span class="s2">&quot;config_server&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__cfg_launch_info</span> <span class="o">=</span> <span class="n">msg</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_publish_socket</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">proc</span><span class="p">,</span> <span class="n">details</span>
+
+    <span class="k">def</span> <span class="nf">_attach_base_config_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">launch_path</span><span class="p">,</span> <span class="n">launch_args</span><span class="p">):</span>
+        <span class="n">peer_id</span> <span class="o">=</span> <span class="n">launch_args</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">base</span> <span class="o">=</span> <span class="n">launch_path</span><span class="o">.</span><span class="n">rsplit</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">ini</span> <span class="o">=</span> <span class="s1">&#39;.&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="n">base</span><span class="p">,</span> <span class="s1">&#39;ini&#39;</span><span class="p">])</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">ini</span><span class="p">]</span> <span class="o">+</span> <span class="n">launch_args</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;get_tail&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="OBCIProcessSupervisor.handle_get_tail"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.handle_get_tail">[docs]</a>    <span class="k">def</span> <span class="nf">handle_get_tail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">len</span> <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">len</span> <span class="k">else</span> <span class="n">DEFAULT_TAIL_RQ</span>
+        <span class="n">peer</span> <span class="o">=</span> <span class="n">message</span><span class="o">.</span><span class="n">peer_id</span>
+        <span class="k">if</span> <span class="n">peer</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">launch_data</span><span class="p">:</span>
+            <span class="k">return</span>
+        <span class="n">experiment_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">launch_data</span><span class="p">[</span><span class="n">peer</span><span class="p">][</span><span class="s1">&#39;experiment_id&#39;</span><span class="p">]</span>
+        <span class="n">txt</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processes</span><span class="p">[</span><span class="n">peer</span><span class="p">]</span><span class="o">.</span><span class="n">tail_stdout</span><span class="p">(</span><span class="n">lines</span><span class="o">=</span><span class="n">lines</span><span class="p">)</span>
+        <span class="n">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_publish_socket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;tail&quot;</span><span class="p">,</span> <span class="n">txt</span><span class="o">=</span><span class="n">txt</span><span class="p">,</span>
+                                                           <span class="n">sender</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span>
+                                                           <span class="n">experiment_id</span><span class="o">=</span><span class="n">experiment_id</span><span class="p">,</span>
+                                                           <span class="n">peer_id</span><span class="o">=</span><span class="n">peer</span><span class="p">))</span></div>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;experiment_finished&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="OBCIProcessSupervisor.handle_experiment_finished"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.handle_experiment_finished">[docs]</a>    <span class="k">def</span> <span class="nf">handle_experiment_finished</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;morph_to_new_scenario&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="OBCIProcessSupervisor.handle_morph"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.handle_morph">[docs]</a>    <span class="k">def</span> <span class="nf">handle_morph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s1">&#39;nearby_machines&#39;</span><span class="p">)</span>
+<div class="viewcode-block" id="OBCIProcessSupervisor.handle_nearby_machines"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.handle_nearby_machines">[docs]</a>    <span class="k">def</span> <span class="nf">handle_nearby_machines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_nearby_machines</span><span class="o">.</span><span class="n">mass_update</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">nearby_machines</span><span class="p">)</span></div>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;stop_all&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="OBCIProcessSupervisor.handle_stop_all"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.handle_stop_all">[docs]</a>    <span class="k">def</span> <span class="nf">handle_stop_all</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subprocess_mgr</span><span class="o">.</span><span class="n">killall</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;_kill_peer&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="OBCIProcessSupervisor.handle_kill_peer"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.handle_kill_peer">[docs]</a>    <span class="k">def</span> <span class="nf">handle_kill_peer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="n">proc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">processes</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">peer_id</span><span class="p">,</span> <span class="kc">None</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">proc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>  <span class="c1"># is on this machine</span>
+            <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">morph</span> <span class="ow">and</span> <span class="n">message</span><span class="o">.</span><span class="n">peer_id</span> <span class="o">==</span> <span class="s1">&#39;config_server&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__cfg_morph</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">proc</span><span class="o">.</span><span class="n">kill_with_force</span><span class="p">()</span></div>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;rq_ok&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="OBCIProcessSupervisor.handle_rq_ok"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.handle_rq_ok">[docs]</a>    <span class="k">def</span> <span class="nf">handle_rq_ok</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">rqs</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="c1"># print &quot;--&gt; &quot;, self.rqs</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">rqs</span> <span class="o">==</span> <span class="mi">10000</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;GOT </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">rqs</span><span class="p">),</span> <span class="s2">&quot;messages!&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rqs</span> <span class="o">=</span> <span class="mi">0</span></div>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;experiment_launch_error&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="OBCIProcessSupervisor.handle_experiment_launch_error"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.handle_experiment_launch_error">[docs]</a>    <span class="k">def</span> <span class="nf">handle_experiment_launch_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subprocess_mgr</span><span class="o">.</span><span class="n">killall</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;dead_process&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="OBCIProcessSupervisor.handle_dead_process"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.handle_dead_process">[docs]</a>    <span class="k">def</span> <span class="nf">handle_dead_process</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="n">proc</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">subprocess_mgr</span><span class="o">.</span><span class="n">process</span><span class="p">(</span><span class="n">message</span><span class="o">.</span><span class="n">machine</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">proc</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">proc</span><span class="o">.</span><span class="n">mark_delete</span><span class="p">()</span>
+            <span class="n">name</span> <span class="o">=</span> <span class="n">proc</span><span class="o">.</span><span class="n">name</span>
+            <span class="k">if</span> <span class="p">(</span><span class="n">proc</span><span class="o">.</span><span class="n">proc_type</span> <span class="o">==</span> <span class="s1">&#39;obci_peer&#39;</span> <span class="ow">or</span> <span class="n">proc</span><span class="o">.</span><span class="n">proc_type</span> <span class="o">==</span> <span class="s1">&#39;multiplexer&#39;</span><span class="p">)</span> <span class="ow">and</span> \
+                    <span class="ow">not</span> <span class="p">(</span><span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">restarting</span> <span class="ow">and</span> <span class="n">message</span><span class="o">.</span><span class="n">status</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="s1">&#39;terminated&#39;</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;KILLLING! sending obci_peer_&quot;</span>
+                                 <span class="s2">&quot;dead for process </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">proc</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                <span class="n">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_publish_socket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;obci_peer_dead&quot;</span><span class="p">,</span>
+                                                                   <span class="n">sender</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="p">,</span>
+                                                                   <span class="n">sender_ip</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="p">,</span>
+                                                                   <span class="n">peer_id</span><span class="o">=</span><span class="n">proc</span><span class="o">.</span><span class="n">name</span><span class="p">,</span>
+                                                                   <span class="n">path</span><span class="o">=</span><span class="n">proc</span><span class="o">.</span><span class="n">path</span><span class="p">,</span>
+                                                                   <span class="n">status</span><span class="o">=</span><span class="n">proc</span><span class="o">.</span><span class="n">status</span><span class="p">()</span>
+                                                                   <span class="p">))</span>
+            <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">restarting</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">restarting</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__cfg_morph</span> <span class="ow">and</span> <span class="n">name</span> <span class="o">==</span> <span class="s1">&#39;config_server&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__cfg_morph</span> <span class="o">=</span> <span class="kc">False</span></div>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;obci_peer_registered&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="OBCIProcessSupervisor.handle_obci_peer_registered"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.handle_obci_peer_registered">[docs]</a>    <span class="k">def</span> <span class="nf">handle_obci_peer_registered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="n">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_publish_socket</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">())</span></div>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;obci_peer_params_changed&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="OBCIProcessSupervisor.handle_obci_peer_params_changed"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.handle_obci_peer_params_changed">[docs]</a>    <span class="k">def</span> <span class="nf">handle_obci_peer_params_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="n">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_publish_socket</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">())</span></div>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;obci_peer_ready&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">handle_obci_peer_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;got! &quot;</span> <span class="o">+</span> <span class="n">message</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
+        <span class="n">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_publish_socket</span><span class="p">,</span> <span class="n">message</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">())</span>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;config_server_ready&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="OBCIProcessSupervisor.handle_obci_peer_ready"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.handle_obci_peer_ready">[docs]</a>    <span class="k">def</span> <span class="nf">handle_obci_peer_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="c1"># config_server successfully connected to MX, now send &quot;launched_process_info&quot;</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">__cfg_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">__cfg_launch_info</span><span class="p">:</span>
+                <span class="n">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_publish_socket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">__cfg_launch_info</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">__cfg_launch_info</span> <span class="o">=</span> <span class="kc">None</span></div>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;obci_control_message&quot;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">handle_obci_control_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="c1"># ignore :)</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;obci_peer_dead&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="OBCIProcessSupervisor.handle_obci_control_message"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.handle_obci_control_message">[docs]</a>    <span class="k">def</span> <span class="nf">handle_obci_control_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="c1"># ignore :)</span>
+        <span class="k">pass</span></div>
+
+    <span class="nd">@msg_handlers</span><span class="o">.</span><span class="n">handler</span><span class="p">(</span><span class="s2">&quot;process_supervisor_registered&quot;</span><span class="p">)</span>
+<div class="viewcode-block" id="OBCIProcessSupervisor.handle_supervisor_registered"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.handle_supervisor_registered">[docs]</a>    <span class="k">def</span> <span class="nf">handle_supervisor_registered</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">messsage</span><span class="p">,</span> <span class="n">sock</span><span class="p">):</span>
+        <span class="c1"># also ignore</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="OBCIProcessSupervisor.cleanup_before_net_shutdown"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.cleanup_before_net_shutdown">[docs]</a>    <span class="k">def</span> <span class="nf">cleanup_before_net_shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">kill_message</span><span class="p">,</span> <span class="n">sock</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">processes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subprocess_mgr</span><span class="o">.</span><span class="n">killall</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OBCIProcessSupervisor.clean_up"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.OBCIProcessSupervisor.clean_up">[docs]</a>    <span class="k">def</span> <span class="nf">clean_up</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;cleaning up&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">processes</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subprocess_mgr</span><span class="o">.</span><span class="n">killall</span><span class="p">(</span><span class="n">force</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">subprocess_mgr</span><span class="o">.</span><span class="n">delete_all</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_crash_extra_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exception</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">OBCIProcessSupervisor</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">_crash_extra_data</span><span class="p">(</span><span class="n">exception</span><span class="p">)</span>
+        <span class="n">data</span><span class="o">.</span><span class="n">update</span><span class="p">({</span>
+            <span class="s1">&#39;experiment_uuid&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiment_uuid</span><span class="p">,</span>
+            <span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span>
+        <span class="p">})</span>
+        <span class="k">return</span> <span class="n">data</span></div>
+
+
+<div class="viewcode-block" id="process_supervisor_arg_parser"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.process_supervisor_arg_parser">[docs]</a><span class="k">def</span> <span class="nf">process_supervisor_arg_parser</span><span class="p">():</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span><span class="n">parents</span><span class="o">=</span><span class="p">[</span><span class="n">basic_arg_parser</span><span class="p">()],</span>
+                                     <span class="n">description</span><span class="o">=</span><span class="s1">&#39;A process supervisor for OBCI Peers&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--sv-pub-addresses&#39;</span><span class="p">,</span> <span class="n">nargs</span><span class="o">=</span><span class="s1">&#39;+&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Addresses of the PUB socket of the supervisor&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--sandbox-dir&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Directory to store temporary and log files&#39;</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--name&#39;</span><span class="p">,</span> <span class="n">default</span><span class="o">=</span><span class="s1">&#39;obci_process_supervisor&#39;</span><span class="p">,</span>
+                        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;Human readable name of this process&#39;</span><span class="p">)</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s1">&#39;--experiment-uuid&#39;</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s1">&#39;UUID of the parent obci_experiment&#39;</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">parser</span></div>
+
+
+<div class="viewcode-block" id="run_obci_process_supervisor"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_process_supervisor.run_obci_process_supervisor">[docs]</a><span class="k">def</span> <span class="nf">run_obci_process_supervisor</span><span class="p">():</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">process_supervisor_arg_parser</span><span class="p">()</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="n">process_sv</span> <span class="o">=</span> <span class="n">OBCIProcessSupervisor</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">sandbox_dir</span><span class="p">,</span>
+                                       <span class="n">source_addresses</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">sv_addresses</span><span class="p">,</span>
+                                       <span class="n">source_pub_addresses</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">sv_pub_addresses</span><span class="p">,</span>
+                                       <span class="n">rep_addresses</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">rep_addresses</span><span class="p">,</span>
+                                       <span class="n">pub_addresses</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">pub_addresses</span><span class="p">,</span>
+                                       <span class="n">experiment_uuid</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">experiment_uuid</span><span class="p">,</span>
+                                       <span class="n">name</span><span class="o">=</span><span class="n">args</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+    <span class="n">process_sv</span><span class="o">.</span><span class="n">run</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

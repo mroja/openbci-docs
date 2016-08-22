@@ -1,0 +1,10 @@
+obci.scenarios package
+======================
+
+Module contents
+---------------
+
+.. automodule:: obci.scenarios
+    :members:
+    :undoc-members:
+    :show-inheritance:

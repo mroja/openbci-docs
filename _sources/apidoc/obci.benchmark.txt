@@ -1,0 +1,22 @@
+obci.benchmark package
+======================
+
+Submodules
+----------
+
+obci.benchmark.averaging_peer module
+------------------------------------
+
+.. automodule:: obci.benchmark.averaging_peer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.benchmark
+    :members:
+    :undoc-members:
+    :show-inheritance:

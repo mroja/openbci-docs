@@ -1,0 +1,435 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.launcher.obci_client &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.launcher.obci_client</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">socket</span>
+
+<span class="kn">import</span> <span class="nn">zmq</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.common.message</span> <span class="k">import</span> <span class="n">OBCIMessageTool</span><span class="p">,</span> <span class="n">send_msg</span><span class="p">,</span> <span class="n">PollingObject</span>
+<span class="kn">from</span> <span class="nn">obci.control.launcher.launcher_messages</span> <span class="k">import</span> <span class="n">message_templates</span>
+
+<span class="kn">import</span> <span class="nn">obci.control.common.net_tools</span> <span class="k">as</span> <span class="nn">net</span>
+
+
+<div class="viewcode-block" id="EmptyResponse"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.EmptyResponse">[docs]</a><span class="k">class</span> <span class="nc">EmptyResponse</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">details</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="s2">&quot;no_data&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">details</span> <span class="o">=</span> <span class="n">details</span></div>
+
+
+<div class="viewcode-block" id="OBCIClient"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient">[docs]</a><span class="k">class</span> <span class="nc">OBCIClient</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="n">default_timeout</span> <span class="o">=</span> <span class="mi">5000</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">server_addresses</span><span class="p">,</span> <span class="n">zmq_context</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span> <span class="o">=</span> <span class="n">zmq_context</span> <span class="k">if</span> <span class="n">zmq_context</span> <span class="k">else</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">server_addresses</span> <span class="o">=</span> <span class="n">server_addresses</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">init_server_socket</span><span class="p">(</span><span class="n">server_addresses</span><span class="p">)</span>
+
+        <span class="c1"># self = zmq.Poller()</span>
+        <span class="c1"># self.register(self.server_req_socket, zmq.POLLIN)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">poller</span> <span class="o">=</span> <span class="n">PollingObject</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span> <span class="o">=</span> <span class="n">OBCIMessageTool</span><span class="p">(</span><span class="n">message_templates</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">dns</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">DNS</span><span class="p">()</span>
+
+<div class="viewcode-block" id="OBCIClient.init_server_socket"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.init_server_socket">[docs]</a>    <span class="k">def</span> <span class="nf">init_server_socket</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">srv_addrs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;server socket restart&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REQ</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">addr</span> <span class="ow">in</span> <span class="n">srv_addrs</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OBCIClient.launch"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.launch">[docs]</a>    <span class="k">def</span> <span class="nf">launch</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">launch_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sandbox_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrites</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_create_experiment</span><span class="p">(</span><span class="n">launch_file</span><span class="p">,</span> <span class="n">sandbox_dir</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">overwrites</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;create result:&quot;</span><span class="p">,</span> <span class="n">result</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">result</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">init_server_socket</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server_addresses</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="k">if</span> <span class="n">result</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="s2">&quot;experiment_created&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="n">machine</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">origin_machine</span>
+        <span class="n">addrs</span> <span class="o">=</span> <span class="p">[</span><span class="n">addr</span> <span class="k">for</span> <span class="n">addr</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">rep_addrs</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_addr_connectable</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="n">machine</span><span class="p">)]</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_start_experiment</span><span class="p">(</span><span class="n">addrs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OBCIClient.morph"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.morph">[docs]</a>    <span class="k">def</span> <span class="nf">morph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp_strname</span><span class="p">,</span> <span class="n">launch_file</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">leave_on</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment_contact</span><span class="p">(</span><span class="n">exp_strname</span><span class="p">)</span>
+        <span class="n">exp_sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REQ</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;rq_error&quot;</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;no_data&quot;</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">response</span>
+            <span class="k">for</span> <span class="n">addr</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">rep_addrs</span><span class="p">:</span>
+                <span class="n">exp_sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
+
+            <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s1">&#39;morph_to_new_scenario&#39;</span><span class="p">,</span> <span class="n">launch_file</span><span class="o">=</span><span class="n">launch_file</span><span class="p">,</span>
+                                      <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span> <span class="n">overwrites</span><span class="o">=</span><span class="n">overwrites</span><span class="p">,</span> <span class="n">leave_on</span><span class="o">=</span><span class="n">leave_on</span><span class="p">)</span>
+            <span class="n">send_msg</span><span class="p">(</span><span class="n">exp_sock</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+
+            <span class="n">response</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">exp_sock</span><span class="p">,</span> <span class="mi">6000</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">response</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">exp_sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_addr_connectable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">machine</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">machine</span> <span class="o">==</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span> <span class="ow">or</span> \
+            <span class="p">(</span><span class="n">net</span><span class="o">.</span><span class="n">is_ip</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">net</span><span class="o">.</span><span class="n">addr_is_local</span><span class="p">(</span><span class="n">addr</span><span class="p">))</span>
+
+<div class="viewcode-block" id="OBCIClient.start_chosen_experiment"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.start_chosen_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">start_chosen_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp_strname</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment_contact</span><span class="p">(</span><span class="n">exp_strname</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;rq_error&quot;</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;no_data&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">response</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_start_experiment</span><span class="p">(</span><span class="n">response</span><span class="o">.</span><span class="n">rep_addrs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OBCIClient.send_start_experiment"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.send_start_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">send_start_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp_addrs</span><span class="p">):</span>
+        <span class="n">exp_sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REQ</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">addr</span> <span class="ow">in</span> <span class="n">exp_addrs</span><span class="p">:</span>
+                <span class="n">exp_sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
+
+                <span class="n">send_msg</span><span class="p">(</span><span class="n">exp_sock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;start_experiment&quot;</span><span class="p">))</span>
+                <span class="n">reply</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">exp_sock</span><span class="p">,</span> <span class="mi">20000</span><span class="p">)</span>
+
+                <span class="c1"># print reply</span>
+                <span class="k">return</span> <span class="n">reply</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">exp_sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="OBCIClient.force_kill_experiment"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.force_kill_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">force_kill_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">strname</span><span class="p">):</span>
+        <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="OBCIClient.get_experiment_contact"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.get_experiment_contact">[docs]</a>    <span class="k">def</span> <span class="nf">get_experiment_contact</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">strname</span><span class="p">):</span>
+        <span class="n">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;get_experiment_contact&quot;</span><span class="p">,</span>
+                                                             <span class="n">strname</span><span class="o">=</span><span class="n">strname</span><span class="p">))</span>
+        <span class="n">response</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_timeout</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div>
+
+<div class="viewcode-block" id="OBCIClient.ping_server"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.ping_server">[docs]</a>    <span class="k">def</span> <span class="nf">ping_server</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
+        <span class="n">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;ping&quot;</span><span class="p">))</span>
+        <span class="n">response</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">response</span></div>
+
+<div class="viewcode-block" id="OBCIClient.retry_ping"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.retry_ping">[docs]</a>    <span class="k">def</span> <span class="nf">retry_ping</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">50</span><span class="p">):</span>
+        <span class="n">response</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div>
+
+<div class="viewcode-block" id="OBCIClient.send_create_experiment"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.send_create_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">send_create_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">launch_file</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">sandbox_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">overwrites</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+
+        <span class="n">send_msg</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span>
+                <span class="s2">&quot;create_experiment&quot;</span><span class="p">,</span>
+                <span class="n">launch_file</span><span class="o">=</span><span class="n">launch_file</span><span class="p">,</span>
+                <span class="n">sandbox_dir</span><span class="o">=</span><span class="n">sandbox_dir</span><span class="p">,</span>
+                <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+                <span class="n">overwrites</span><span class="o">=</span><span class="n">overwrites</span><span class="p">))</span>
+
+        <span class="n">response</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span><span class="p">,</span> <span class="mi">5000</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div>
+
+<div class="viewcode-block" id="OBCIClient.send_list_experiments"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.send_list_experiments">[docs]</a>    <span class="k">def</span> <span class="nf">send_list_experiments</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;list_experiments&quot;</span><span class="p">))</span>
+
+        <span class="n">response</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span><span class="p">,</span> <span class="mi">4000</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div>
+
+<div class="viewcode-block" id="OBCIClient.send_list_nearby_machines"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.send_list_nearby_machines">[docs]</a>    <span class="k">def</span> <span class="nf">send_list_nearby_machines</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;list_nearby_machines&quot;</span><span class="p">))</span>
+        <span class="n">response</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span><span class="p">,</span> <span class="mi">4000</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">response</span></div>
+
+<div class="viewcode-block" id="OBCIClient.get_experiment_details"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.get_experiment_details">[docs]</a>    <span class="k">def</span> <span class="nf">get_experiment_details</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">strname</span><span class="p">,</span> <span class="n">peer_id</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment_contact</span><span class="p">(</span><span class="n">strname</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;rq_error&quot;</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;no_data&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">response</span>
+
+        <span class="n">sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REQ</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">addr</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">rep_addrs</span><span class="p">:</span>
+                <span class="n">sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">peer_id</span><span class="p">:</span>
+                <span class="n">send_msg</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;get_peer_info&quot;</span><span class="p">,</span> <span class="n">peer_id</span><span class="o">=</span><span class="n">peer_id</span><span class="p">))</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">send_msg</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;get_experiment_info&quot;</span><span class="p">))</span>
+            <span class="n">response</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">response</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="OBCIClient.configure_peer"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.configure_peer">[docs]</a>    <span class="k">def</span> <span class="nf">configure_peer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp_strname</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">config_overrides</span><span class="p">,</span> <span class="n">override_files</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment_contact</span><span class="p">(</span><span class="n">exp_strname</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;rq_error&quot;</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;no_data&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">response</span>
+
+        <span class="n">sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REQ</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">addr</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">rep_addrs</span><span class="p">:</span>
+                <span class="n">sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">override_files</span><span class="p">:</span>
+                <span class="n">send_msg</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;get_peer_info&quot;</span><span class="p">,</span> <span class="n">peer_id</span><span class="o">=</span><span class="n">peer_id</span><span class="p">))</span>
+                <span class="n">response</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="ow">is</span> <span class="s1">&#39;rq_error&#39;</span><span class="p">:</span>
+                    <span class="k">return</span> <span class="n">response</span>
+
+            <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;update_peer_config&quot;</span><span class="p">,</span> <span class="n">peer_id</span><span class="o">=</span><span class="n">peer_id</span><span class="p">,</span>
+                                      <span class="o">**</span><span class="n">config_overrides</span><span class="p">)</span>
+
+            <span class="n">send_msg</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+            <span class="c1"># print msg</span>
+            <span class="n">response</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">response</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+            <span class="c1"># &quot;update_peer_config&quot; : dict(peer_id=&#39;&#39;, local_params=&#39;&#39;,</span>
+            <span class="c1">#                 external_params=&#39;&#39;, launch_dependencies=&#39;&#39;, config_sources=&#39;&#39;),</span>
+
+<div class="viewcode-block" id="OBCIClient.kill_exp"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.kill_exp">[docs]</a>    <span class="k">def</span> <span class="nf">kill_exp</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">strname</span><span class="p">,</span> <span class="n">force</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span><span class="p">,</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;kill_experiment&quot;</span><span class="p">,</span> <span class="n">strname</span><span class="o">=</span><span class="n">strname</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="OBCIClient.srv_kill"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.srv_kill">[docs]</a>    <span class="k">def</span> <span class="nf">srv_kill</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span><span class="p">,</span>
+                 <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;kill&quot;</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">server_req_socket</span><span class="p">,</span> <span class="mi">2000</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="OBCIClient.join_experiment"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.join_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">join_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">strname</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment_contact</span><span class="p">(</span><span class="n">strname</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;rq_error&quot;</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;no_data&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">response</span>
+
+        <span class="n">sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REQ</span><span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_connect</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">rep_addrs</span><span class="p">)</span>
+
+            <span class="n">send_msg</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;join_experiment&quot;</span><span class="p">,</span>
+                                               <span class="n">peer_id</span><span class="o">=</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">peer_type</span><span class="o">=</span><span class="s1">&#39;obci_peer&#39;</span><span class="p">))</span>
+            <span class="n">response</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="mi">5000</span><span class="p">)</span>
+            <span class="n">sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">return</span> <span class="n">response</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="OBCIClient.add_peer"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.add_peer">[docs]</a>    <span class="k">def</span> <span class="nf">add_peer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">strname</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">path</span><span class="p">,</span> <span class="n">machine</span><span class="p">,</span> <span class="n">param_overwrites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">custom_config_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">config_sources</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">launch_dependencies</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">apply_globals</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment_contact</span><span class="p">(</span><span class="n">strname</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;rq_error&quot;</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;no_data&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">response</span>
+
+        <span class="n">sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REQ</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_connect</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">rep_addrs</span><span class="p">)</span>
+            <span class="n">send_msg</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;add_peer&quot;</span><span class="p">,</span>
+                                               <span class="n">peer_id</span><span class="o">=</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">peer_path</span><span class="o">=</span><span class="n">path</span><span class="p">,</span> <span class="n">peer_type</span><span class="o">=</span><span class="s1">&#39;obci_peer&#39;</span><span class="p">,</span>
+                                               <span class="n">machine</span><span class="o">=</span><span class="n">machine</span><span class="p">,</span> <span class="n">param_overwrites</span><span class="o">=</span><span class="n">param_overwrites</span><span class="p">,</span>
+                                               <span class="n">custom_config_path</span><span class="o">=</span><span class="n">custom_config_path</span><span class="p">,</span> <span class="n">config_sources</span><span class="o">=</span><span class="n">config_sources</span><span class="p">,</span>
+                                               <span class="n">launch_dependencies</span><span class="o">=</span><span class="n">launch_dependencies</span><span class="p">,</span> <span class="n">apply_globals</span><span class="o">=</span><span class="n">apply_globals</span><span class="p">))</span>
+            <span class="n">response</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="mi">5000</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">response</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="OBCIClient.kill_peer"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.kill_peer">[docs]</a>    <span class="k">def</span> <span class="nf">kill_peer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp_strname</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">remove_config</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment_contact</span><span class="p">(</span><span class="n">exp_strname</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;rq_error&quot;</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;no_data&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">response</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REQ</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_connect</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">rep_addrs</span><span class="p">)</span>
+            <span class="n">send_msg</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;kill_peer&quot;</span><span class="p">,</span>
+                                               <span class="n">peer_id</span><span class="o">=</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">remove_config</span><span class="o">=</span><span class="n">remove_config</span><span class="p">))</span>
+            <span class="n">response</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="mi">5000</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">response</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sock</span><span class="p">,</span> <span class="n">addr_list</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;****  &quot;</span><span class="p">,</span> <span class="n">addr_list</span><span class="p">)</span>
+        <span class="n">this</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_this_machine</span><span class="p">(</span><span class="n">addr_list</span><span class="p">)</span>
+        <span class="n">connected</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">for</span> <span class="n">addr</span> <span class="ow">in</span> <span class="n">addr_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">this</span> <span class="ow">and</span> <span class="p">(</span><span class="s1">&#39;localhost&#39;</span> <span class="ow">in</span> <span class="n">addr</span> <span class="ow">or</span> <span class="s1">&#39;127.0.0.1&#39;</span> <span class="ow">in</span> <span class="n">addr</span><span class="p">):</span>
+                <span class="k">continue</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
+                <span class="n">connected</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">except</span> <span class="n">zmq</span><span class="o">.</span><span class="n">ZMQError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="s2">&quot; ::: &quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">connected</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Could not connect to any of the addresses: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">addr_list</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_is_this_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr_list</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">addr</span> <span class="ow">in</span> <span class="n">addr_list</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">dns</span><span class="o">.</span><span class="n">is_this_machine</span><span class="p">(</span><span class="n">addr</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+<div class="viewcode-block" id="OBCIClient.leave_experiment"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.leave_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">leave_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">strname</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment_contact</span><span class="p">(</span><span class="n">strname</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;rq_error&quot;</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;no_data&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">response</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REQ</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_connect</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="n">response</span><span class="o">.</span><span class="n">rep_addrs</span><span class="p">)</span>
+
+            <span class="n">send_msg</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;leave_experiment&quot;</span><span class="p">,</span>
+                                               <span class="n">peer_id</span><span class="o">=</span><span class="n">peer_id</span><span class="p">))</span>
+            <span class="n">response</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="mi">5000</span><span class="p">)</span>
+            <span class="k">return</span> <span class="n">response</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="OBCIClient.get_tail"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.get_tail">[docs]</a>    <span class="k">def</span> <span class="nf">get_tail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">strname</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">len_</span><span class="p">):</span>
+        <span class="n">response</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_experiment_contact</span><span class="p">(</span><span class="n">strname</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;rq_error&quot;</span> <span class="ow">or</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;no_data&quot;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">response</span>
+
+        <span class="n">sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REQ</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">addr</span> <span class="ow">in</span> <span class="n">response</span><span class="o">.</span><span class="n">rep_addrs</span><span class="p">:</span>
+                <span class="n">sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
+
+            <span class="n">send_msg</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;get_tail&quot;</span><span class="p">,</span> <span class="n">peer_id</span><span class="o">=</span><span class="n">peer_id</span><span class="p">,</span> <span class="nb">len</span><span class="o">=</span><span class="n">len_</span><span class="p">))</span>
+            <span class="n">response</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="mi">4000</span><span class="p">)</span>
+
+            <span class="k">return</span> <span class="n">response</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="OBCIClient.poll_recv"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.obci_client.OBCIClient.poll_recv">[docs]</a>    <span class="k">def</span> <span class="nf">poll_recv</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">socket</span><span class="p">,</span> <span class="n">timeout</span><span class="p">):</span>
+        <span class="n">result</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">poller</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">socket</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">result</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">unpack_msg</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">EmptyResponse</span><span class="p">(</span><span class="n">details</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">result</span><span class="p">,</span> <span class="n">details</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

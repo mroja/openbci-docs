@@ -1,0 +1,198 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.launcher.server_scanner &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.launcher.server_scanner</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">zmq</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">select</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.common.message</span> <span class="k">import</span> <span class="n">OBCIMessageTool</span><span class="p">,</span> <span class="n">send_msg</span>
+<span class="kn">from</span> <span class="nn">obci.control.launcher.launcher_messages</span> <span class="k">import</span> <span class="n">message_templates</span>
+
+
+<span class="n">UPDATE_INTERVAL</span> <span class="o">=</span> <span class="mi">8</span>
+<span class="n">_LOOPS</span> <span class="o">=</span> <span class="mi">3</span>
+
+<span class="n">ALLOWED_SILENCE</span> <span class="o">=</span> <span class="mi">45</span>
+
+
+<div class="viewcode-block" id="update_nearby_servers"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.server_scanner.update_nearby_servers">[docs]</a><span class="k">def</span> <span class="nf">update_nearby_servers</span><span class="p">(</span><span class="n">srv_data</span><span class="p">,</span> <span class="n">bcast_port</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">update_push_addr</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="n">mtool</span> <span class="o">=</span> <span class="n">OBCIMessageTool</span><span class="p">(</span><span class="n">message_templates</span><span class="p">)</span>
+
+    <span class="n">loops_to_update</span> <span class="o">=</span> <span class="n">_LOOPS</span>
+
+    <span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_DGRAM</span><span class="p">)</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">bcast_port</span><span class="p">))</span>
+
+    <span class="n">notify_sock</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">update_push_addr</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">ctx</span> <span class="o">=</span> <span class="n">ctx</span> <span class="k">if</span> <span class="n">ctx</span> <span class="k">else</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">()</span>
+        <span class="n">notify_sock</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">PUSH</span><span class="p">)</span>
+        <span class="n">notify_sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">update_push_addr</span><span class="p">)</span>
+
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="n">changed</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">inp</span><span class="p">,</span> <span class="n">out</span><span class="p">,</span> <span class="n">exc</span> <span class="o">=</span> <span class="n">select</span><span class="o">.</span><span class="n">select</span><span class="p">([</span><span class="n">s</span><span class="p">],</span> <span class="p">[],</span> <span class="p">[],</span> <span class="n">UPDATE_INTERVAL</span> <span class="o">/</span> <span class="n">_LOOPS</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">srv_data</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&quot;nearby_servers_update - exception: </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="n">srv_data</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">critical</span><span class="p">(</span><span class="s2">&quot;nearby_servers - aborting&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">s</span> <span class="ow">in</span> <span class="n">inp</span><span class="p">:</span>
+            <span class="n">data</span><span class="p">,</span> <span class="n">wherefrom</span> <span class="o">=</span> <span class="n">s</span><span class="o">.</span><span class="n">recvfrom</span><span class="p">(</span><span class="mi">1500</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="n">data</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">message</span> <span class="o">=</span> <span class="n">mtool</span><span class="o">.</span><span class="n">unpack_msg</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+            <span class="n">changed</span> <span class="o">=</span> <span class="n">srv_data</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">ip</span><span class="o">=</span><span class="n">wherefrom</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">hostname</span><span class="o">=</span><span class="n">message</span><span class="o">.</span><span class="n">sender_ip</span><span class="p">,</span>
+                                      <span class="n">uuid</span><span class="o">=</span><span class="n">message</span><span class="o">.</span><span class="n">sender</span><span class="p">,</span> <span class="n">rep_port</span><span class="o">=</span><span class="n">message</span><span class="o">.</span><span class="n">rep_port</span><span class="p">,</span>
+                                      <span class="n">pub_port</span><span class="o">=</span><span class="n">message</span><span class="o">.</span><span class="n">pub_port</span><span class="p">)</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># print &quot;no data&quot;</span>
+            <span class="k">pass</span>
+
+        <span class="n">loops_to_update</span> <span class="o">-=</span> <span class="mi">1</span>
+
+        <span class="k">if</span> <span class="n">loops_to_update</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">loops_to_update</span> <span class="o">=</span> <span class="n">_LOOPS</span>
+            <span class="n">changed</span> <span class="o">=</span> <span class="n">srv_data</span><span class="o">.</span><span class="n">clean_silent</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">changed</span><span class="p">:</span>
+            <span class="n">send_msg</span><span class="p">(</span><span class="n">notify_sock</span><span class="p">,</span> <span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s1">&#39;nearby_machines&#39;</span><span class="p">,</span>
+                                                 <span class="n">nearby_machines</span><span class="o">=</span><span class="n">srv_data</span><span class="o">.</span><span class="n">dict_snapshot</span><span class="p">()))</span>
+
+    <span class="n">s</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="broadcast_server"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.server_scanner.broadcast_server">[docs]</a><span class="k">def</span> <span class="nf">broadcast_server</span><span class="p">(</span><span class="n">server_uuid</span><span class="p">,</span> <span class="n">rep_port</span><span class="p">,</span> <span class="n">pub_port</span><span class="p">,</span> <span class="n">bcast_port</span><span class="p">):</span>
+    <span class="n">mtool</span> <span class="o">=</span> <span class="n">OBCIMessageTool</span><span class="p">(</span><span class="n">message_templates</span><span class="p">)</span>
+
+    <span class="n">str_msg</span> <span class="o">=</span> <span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;server_broadcast&quot;</span><span class="p">,</span> <span class="n">sender_ip</span><span class="o">=</span><span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">(),</span> <span class="n">sender</span><span class="o">=</span><span class="n">server_uuid</span><span class="p">,</span>
+                             <span class="n">rep_port</span><span class="o">=</span><span class="n">rep_port</span><span class="p">,</span> <span class="n">pub_port</span><span class="o">=</span><span class="n">pub_port</span><span class="p">)</span>
+    <span class="n">str_msg</span> <span class="o">+=</span> <span class="n">b</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span>
+
+    <span class="n">s</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">AF_INET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SOCK_DGRAM</span><span class="p">)</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">bind</span><span class="p">((</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+    <span class="n">s</span><span class="o">.</span><span class="n">setsockopt</span><span class="p">(</span><span class="n">socket</span><span class="o">.</span><span class="n">SOL_SOCKET</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">SO_BROADCAST</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
+
+    <span class="c1"># introduction</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">10</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">sendto</span><span class="p">(</span><span class="n">str_msg</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;&lt;broadcast&gt;&#39;</span><span class="p">,</span> <span class="n">bcast_port</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="k">pass</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.3</span><span class="p">)</span>
+
+    <span class="c1"># updates</span>
+    <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">sendto</span><span class="p">(</span><span class="n">str_msg</span><span class="p">,</span> <span class="p">(</span><span class="s1">&#39;&lt;broadcast&gt;&#39;</span><span class="p">,</span> <span class="n">bcast_port</span><span class="p">))</span>
+        <span class="k">except</span> <span class="n">socket</span><span class="o">.</span><span class="n">error</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;[obci_server] Cannot broadcast obci_server, will try again in 1min:&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">53</span><span class="p">)</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">7</span><span class="p">)</span>
+
+    <span class="n">s</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

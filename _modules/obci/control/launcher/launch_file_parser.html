@@ -1,0 +1,402 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.launcher.launch_file_parser &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.launcher.launch_file_parser</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">configparser</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">warnings</span>
+<span class="kn">import</span> <span class="nn">codecs</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">import</span> <span class="nn">obci.control.peer.peer_config</span> <span class="k">as</span> <span class="nn">peer_config</span>
+<span class="kn">import</span> <span class="nn">obci.control.peer.peer_config_parser</span> <span class="k">as</span> <span class="nn">peer_config_parser</span>
+<span class="kn">from</span> <span class="nn">obci.control.peer.config_defaults</span> <span class="k">import</span> <span class="n">CONFIG_DEFAULTS</span>
+<span class="kn">from</span> <span class="nn">obci.control.launcher.system_config</span> <span class="k">import</span> <span class="n">OBCISystemConfigError</span>
+<span class="kn">from</span> <span class="nn">obci.control.launcher.launcher_tools</span> <span class="k">import</span> <span class="n">expand_path</span><span class="p">,</span> <span class="n">default_config_path</span>
+
+<span class="n">PEERS</span> <span class="o">=</span> <span class="s2">&quot;peers&quot;</span>
+<span class="n">CONFIG_SRCS</span> <span class="o">=</span> <span class="s2">&quot;config_sources&quot;</span>
+<span class="n">LAUNCH_DEPS</span> <span class="o">=</span> <span class="s2">&quot;launch_dependencies&quot;</span>
+<span class="n">SYS_SECTIONS</span> <span class="o">=</span> <span class="p">[</span><span class="n">PEERS</span><span class="p">]</span>
+
+
+<div class="viewcode-block" id="ScenarioParser"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launch_file_parser.ScenarioParser">[docs]</a><span class="k">class</span> <span class="nc">ScenarioParser</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+<div class="viewcode-block" id="ScenarioParser.parse"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launch_file_parser.ScenarioParser.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_file</span><span class="p">,</span> <span class="n">p_config_obj</span><span class="p">,</span> <span class="n">apply_globals</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prepare</span><span class="p">(</span><span class="n">p_file</span><span class="p">,</span> <span class="n">p_config_obj</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_parse</span><span class="p">(</span><span class="n">apply_globals</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+    <span class="k">def</span> <span class="nf">_do_parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">apply_globals</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_apply_globals</span> <span class="o">=</span> <span class="n">apply_globals</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_sections</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_general_settings</span><span class="p">()</span>
+        <span class="n">peer_sections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_peer_sections</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_peer_ids</span><span class="p">(</span><span class="n">peer_sections</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_load_launch_data</span><span class="p">(</span><span class="n">peer_sections</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_sources</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_set_launch_deps</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">peer_sec</span> <span class="ow">in</span> <span class="n">peer_sections</span><span class="p">:</span>
+            <span class="c1"># print self.config.peers[self._peer_id(peer_sec)].config</span>
+            <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_load_peer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">peer_items</span><span class="p">):</span>
+        <span class="c1"># FIXME rewrite cleaner</span>
+
+        <span class="n">machine_set</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">config_section_contents</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="n">peer_path</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+
+        <span class="k">for</span> <span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span> <span class="ow">in</span> <span class="n">peer_items</span><span class="p">:</span>
+            <span class="c1"># print &#39;- - -&#39;, param, value, peer_id</span>
+            <span class="k">if</span> <span class="n">param</span> <span class="o">==</span> <span class="s2">&quot;path&quot;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_peer_path</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+                <span class="n">peer_path</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">path</span>
+                <span class="n">full</span> <span class="o">=</span> <span class="n">expand_path</span><span class="p">(</span><span class="n">peer_path</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">full</span><span class="p">):</span>
+                    <span class="k">raise</span> <span class="n">OBCISystemConfigError</span><span class="p">(</span><span class="s2">&quot;Path to peer executable not found! Path defined: &quot;</span> <span class="o">+</span>
+                                                <span class="n">value</span> <span class="o">+</span> <span class="s2">&quot;   full path:  &quot;</span> <span class="o">+</span> <span class="n">expand_path</span><span class="p">(</span><span class="n">peer_path</span><span class="p">))</span>
+            <span class="k">elif</span> <span class="n">param</span> <span class="o">==</span> <span class="s2">&quot;config&quot;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scenario_dir</span><span class="p">:</span>
+                    <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span><span class="s2">&quot;Choosing </span><span class="si">{0}</span><span class="s2"> for </span><span class="si">{1}</span><span class="s2"> config</span><span class="se">\</span>
+<span class="s2"> instead of a file in scenario dir </span><span class="si">{2}</span><span class="s2">!!!&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">value</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scenario_dir</span><span class="p">))</span>
+                <span class="n">config_section_contents</span> <span class="o">=</span> <span class="n">value</span>
+
+            <span class="k">elif</span> <span class="n">param</span> <span class="o">==</span> <span class="s2">&quot;machine&quot;</span><span class="p">:</span>
+                <span class="n">machine_set</span> <span class="o">=</span> <span class="kc">True</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_set_peer_machine</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">pass</span>
+                <span class="c1"># raise OBCISystemConfigError(&quot;Unrecognized launch file option {0}&quot;.format(param))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">machine_set</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_set_peer_machine</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">config_section_contents</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scenario_dir</span><span class="p">:</span>
+                <span class="n">config_section_contents</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scenario_dir</span><span class="p">,</span> <span class="n">peer_id</span> <span class="o">+</span> <span class="s1">&#39;.ini&#39;</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># well, then we&#39;ll try to load default .ini for this peer or,</span>
+                <span class="c1"># if default config does not exist, leave config empty</span>
+                <span class="k">pass</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">peer_path</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OBCISystemConfigError</span><span class="p">(</span><span class="s2">&quot;No program path defined for peer_id </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">peer_id</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_peer_config_section</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">config_section_contents</span><span class="p">,</span> <span class="n">peer_path</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="LaunchFileParser"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launch_file_parser.LaunchFileParser">[docs]</a><span class="k">class</span> <span class="nc">LaunchFileParser</span><span class="p">(</span><span class="n">ScenarioParser</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obci_base_dir</span><span class="p">,</span> <span class="n">scenario_base_dir</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span> <span class="o">=</span> <span class="n">obci_base_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scenario_dir</span> <span class="o">=</span> <span class="n">scenario_base_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span> <span class="ow">or</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;LaunchFileParser&quot;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_file</span><span class="p">,</span> <span class="n">p_config_obj</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">RawConfigParser</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">readfp</span><span class="p">(</span><span class="n">p_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">p_config_obj</span>
+
+    <span class="k">def</span> <span class="nf">_check_sections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">sections</span><span class="p">():</span>
+            <span class="n">main_s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__main_section</span><span class="p">(</span><span class="n">section</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">main_s</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">SYS_SECTIONS</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">OBCISystemConfigError</span><span class="p">(</span><span class="s2">&quot;Unrecognized launch file section: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">main_s</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_load_general_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">has_option</span><span class="p">(</span><span class="n">PEERS</span><span class="p">,</span> <span class="s1">&#39;mx&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">mx</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">PEERS</span><span class="p">,</span> <span class="s1">&#39;mx&#39;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">has_option</span><span class="p">(</span><span class="n">PEERS</span><span class="p">,</span> <span class="s1">&#39;scenario_dir&#39;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scenario_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">PEERS</span><span class="p">,</span> <span class="s1">&#39;scenario_dir&#39;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scenario_dir</span> <span class="o">=</span> <span class="n">expand_path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scenario_dir</span><span class="p">,</span> <span class="n">base_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scenario_dir</span><span class="p">)</span>
+            <span class="c1"># print &quot;scenario dir: &quot;, self.config.scenario_dir, self.scenario_dir</span>
+
+    <span class="k">def</span> <span class="nf">_load_peer_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_sections</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="n">peer_sections</span><span class="p">:</span>
+            <span class="n">peer_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_peer_id</span><span class="p">(</span><span class="n">section</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">add_peer</span><span class="p">(</span><span class="n">peer_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_load_launch_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_sections</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">peer_sections</span><span class="p">:</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="n">sec</span><span class="p">)</span>
+            <span class="n">peer_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_peer_id</span><span class="p">(</span><span class="n">sec</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_load_peer</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">items</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_parse_peer_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">config_path</span><span class="p">,</span> <span class="n">peer_program_path</span><span class="p">):</span>
+        <span class="n">peer_cfg</span><span class="p">,</span> <span class="n">peer_parser</span> <span class="o">=</span> <span class="n">parse_peer_default_config</span><span class="p">(</span>
+            <span class="n">peer_id</span><span class="p">,</span> <span class="n">peer_program_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_apply_globals</span><span class="p">)</span>
+        <span class="c1"># print &quot;Trying to parse {0} for {1}&quot;.format(config_path, peer_id)</span>
+        <span class="k">if</span> <span class="n">config_path</span><span class="p">:</span>
+            <span class="k">with</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">config_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;parsing _custom_ config for peer </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2"> &quot;</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">config_path</span><span class="p">)</span>
+                <span class="n">peer_parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">peer_cfg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_peer_config</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">peer_cfg</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_parse_peer_config_section</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">peer_config_section</span><span class="p">,</span> <span class="n">peer_path</span><span class="p">):</span>
+        <span class="n">peer_config_file</span> <span class="o">=</span> <span class="n">expand_path</span><span class="p">(</span><span class="n">peer_config_section</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_peer_config</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">peer_config_file</span><span class="p">,</span> <span class="n">peer_path</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">src_sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__config_src_sections</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">src_name</span><span class="p">,</span> <span class="n">src_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="n">src_sec</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_config_source</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_peer_id</span><span class="p">(</span><span class="n">src_sec</span><span class="p">),</span>
+                                              <span class="n">src_name</span><span class="p">,</span>
+                                              <span class="n">src_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_launch_deps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">dep_sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">__launch_dep_sections</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">dep_name</span><span class="p">,</span> <span class="n">dep_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="n">dep_sec</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_launch_dependency</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_peer_id</span><span class="p">(</span><span class="n">dep_sec</span><span class="p">),</span>
+                                                  <span class="n">dep_name</span><span class="p">,</span>
+                                                  <span class="n">dep_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_peer_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">machine_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_peer_machine</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">machine_name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_peer_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf_section</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">conf_section</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__main_section</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">conf_section</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">conf_section</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">,</span> <span class="mi">1</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_peer_sections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">sec</span> <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">sections</span><span class="p">()</span> <span class="k">if</span>
+                <span class="n">sec</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">PEERS</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="nb">len</span><span class="p">(</span><span class="n">sec</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s1">&#39;.&#39;</span><span class="p">))</span> <span class="o">==</span> <span class="mi">2</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">__config_src_sections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">sec</span> <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">sections</span><span class="p">()</span> <span class="k">if</span>
+                <span class="n">sec</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">PEERS</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="n">sec</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">CONFIG_SRCS</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">__launch_dep_sections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">sec</span> <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">sections</span><span class="p">()</span> <span class="k">if</span>
+                <span class="n">sec</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">PEERS</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span><span class="p">)</span> <span class="ow">and</span>
+                <span class="n">sec</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="n">LAUNCH_DEPS</span><span class="p">)]</span></div>
+
+
+<div class="viewcode-block" id="LaunchJSONParser"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launch_file_parser.LaunchJSONParser">[docs]</a><span class="k">class</span> <span class="nc">LaunchJSONParser</span><span class="p">(</span><span class="n">ScenarioParser</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obci_base_dir</span><span class="p">,</span> <span class="n">scenario_base_dir</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">base_dir</span> <span class="o">=</span> <span class="n">obci_base_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scenario_dir</span> <span class="o">=</span> <span class="n">scenario_base_dir</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span> <span class="ow">or</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;LaunchJSONParser&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load</span> <span class="o">=</span> <span class="p">{}</span>
+
+<div class="viewcode-block" id="LaunchJSONParser.parse"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launch_file_parser.LaunchJSONParser.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_file</span><span class="p">,</span> <span class="n">p_config_obj</span><span class="p">,</span> <span class="n">apply_globals</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prepare</span><span class="p">(</span><span class="n">p_file</span><span class="p">,</span> <span class="n">p_config_obj</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_parse</span><span class="p">(</span><span class="n">apply_globals</span><span class="p">)</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+    <span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_file</span><span class="p">,</span> <span class="n">p_config_obj</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">p_file</span><span class="p">)</span>  <span class="c1"># , encoding=&#39;ascii&#39;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">p_config_obj</span>
+
+    <span class="k">def</span> <span class="nf">_peer_sections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">[</span><span class="n">PEERS</span><span class="p">]</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span>
+        <span class="k">if</span> <span class="s1">&#39;scenario_dir&#39;</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+            <span class="n">items</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;scenario_dir&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">items</span>
+
+    <span class="k">def</span> <span class="nf">_check_sections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">section</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">section</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">SYS_SECTIONS</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">OBCISystemConfigError</span><span class="p">(</span><span class="s2">&quot;Unrecognized launch file section: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">section</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_load_general_settings</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">items</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">[</span><span class="n">PEERS</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="s1">&#39;scenario_dir&#39;</span> <span class="ow">in</span> <span class="n">items</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scenario_dir</span> <span class="o">=</span> <span class="n">items</span><span class="p">[</span><span class="s1">&#39;scenario_dir&#39;</span><span class="p">]</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scenario_dir</span> <span class="o">=</span> <span class="n">expand_path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">scenario_dir</span><span class="p">,</span> <span class="n">base_dir</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">scenario_dir</span><span class="p">)</span>
+            <span class="c1"># print &quot;scenario dir: &quot;, self.config.scenario_dir, self.scenario_dir</span>
+
+    <span class="k">def</span> <span class="nf">_load_peer_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_sections</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">peer_id</span> <span class="ow">in</span> <span class="n">peer_sections</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;adding peer </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">add_peer</span><span class="p">(</span><span class="n">peer_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_load_launch_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_sections</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">peer_sections</span><span class="p">:</span>
+            <span class="n">items</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">[</span><span class="n">PEERS</span><span class="p">][</span><span class="n">sec</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">())</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_load_peer</span><span class="p">(</span><span class="n">sec</span><span class="p">,</span> <span class="n">items</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_parse_peer_config_section</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">peer_config_section</span><span class="p">,</span> <span class="n">peer_path</span><span class="p">):</span>
+        <span class="c1"># we do not apply globals when parsing JSON - we just assume</span>
+        <span class="c1"># the globals are already in the JSON config</span>
+        <span class="c1"># TODO! apply them if parameter _apply_globals is set</span>
+        <span class="c1"># and they are not present in the config</span>
+
+        <span class="n">peer_cfg</span><span class="p">,</span> <span class="n">peer_parser</span> <span class="o">=</span> <span class="n">parse_peer_default_config</span><span class="p">(</span>
+            <span class="n">peer_id</span><span class="p">,</span> <span class="n">peer_path</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">)</span>
+        <span class="n">config</span> <span class="o">=</span> <span class="n">peer_config_section</span>
+        <span class="k">if</span> <span class="n">config</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;parsing _custom_ JSON config &quot;</span>
+                             <span class="s2">&quot;for peer </span><span class="si">%s</span><span class="s2">. </span><span class="si">%s</span><span class="s2"> &quot;</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">config</span><span class="p">))</span>
+            <span class="n">json_parser</span> <span class="o">=</span> <span class="n">peer_config_parser</span><span class="o">.</span><span class="n">parser</span><span class="p">(</span><span class="s2">&quot;python&quot;</span><span class="p">)</span>
+            <span class="n">json_parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">config</span><span class="p">,</span> <span class="n">peer_cfg</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_peer_config</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">peer_cfg</span><span class="p">)</span>
+        <span class="n">peer_sec</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">[</span><span class="n">PEERS</span><span class="p">][</span><span class="n">peer_id</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">CONFIG_SRCS</span> <span class="ow">in</span> <span class="n">peer_sec</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">src_name</span><span class="p">,</span> <span class="n">src_id</span> <span class="ow">in</span> <span class="n">peer_sec</span><span class="p">[</span><span class="n">CONFIG_SRCS</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_config_source</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">src_name</span><span class="p">,</span> <span class="n">src_id</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">LAUNCH_DEPS</span> <span class="ow">in</span> <span class="n">peer_sec</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">dep_name</span><span class="p">,</span> <span class="n">dep_id</span> <span class="ow">in</span> <span class="n">peer_sec</span><span class="p">[</span><span class="n">LAUNCH_DEPS</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_launch_dependency</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">dep_name</span><span class="p">,</span> <span class="n">dep_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_set_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_set_launch_deps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_set_peer_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">machine_name</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_peer_machine</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">machine_name</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_peer_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">section</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">section</span></div>
+
+
+<div class="viewcode-block" id="parse_peer_default_config"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launch_file_parser.parse_peer_default_config">[docs]</a><span class="k">def</span> <span class="nf">parse_peer_default_config</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">peer_program_path</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">apply_globals</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+    <span class="c1"># print &quot;Trying to find default config for {0}, path: {1}&quot;.format(</span>
+    <span class="c1">#                                            peer_id, peer_program_path)</span>
+    <span class="n">peer_parser</span> <span class="o">=</span> <span class="n">peer_config_parser</span><span class="o">.</span><span class="n">parser</span><span class="p">(</span><span class="s2">&quot;ini&quot;</span><span class="p">)</span>
+    <span class="n">peer_cfg</span> <span class="o">=</span> <span class="n">peer_config</span><span class="o">.</span><span class="n">PeerConfig</span><span class="p">(</span><span class="n">peer_id</span><span class="p">)</span>
+    <span class="n">conf_path</span> <span class="o">=</span> <span class="n">default_config_path</span><span class="p">(</span><span class="n">peer_program_path</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">apply_globals</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">param</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">CONFIG_DEFAULTS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+            <span class="n">peer_cfg</span><span class="o">.</span><span class="n">add_local_param</span><span class="p">(</span><span class="n">param</span><span class="p">,</span> <span class="n">value</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">conf_path</span><span class="p">:</span>
+
+        <span class="k">with</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">conf_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">logger</span><span class="p">:</span>
+                <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;parsing default config &quot;</span>
+                            <span class="s2">&quot;for peer </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2"> &quot;</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">conf_path</span><span class="p">)</span>
+            <span class="n">peer_parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">peer_cfg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">peer_cfg</span><span class="p">,</span> <span class="n">peer_parser</span></div>
+
+
+<div class="viewcode-block" id="extend_experiment_config"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.launch_file_parser.extend_experiment_config">[docs]</a><span class="k">def</span> <span class="nf">extend_experiment_config</span><span class="p">(</span><span class="n">exp_config</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">peer_path</span><span class="p">,</span>
+                             <span class="n">config_sources</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">launch_deps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">custom_config_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">param_overwrites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                             <span class="n">machine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">apply_globals</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+    <span class="n">peer_cfg</span><span class="p">,</span> <span class="n">cfg_parser</span> <span class="o">=</span> <span class="n">parse_peer_default_config</span><span class="p">(</span>
+        <span class="n">peer_id</span><span class="p">,</span> <span class="n">peer_path</span><span class="p">,</span> <span class="n">apply_globals</span><span class="o">=</span><span class="n">apply_globals</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">custom_config_path</span><span class="p">:</span>
+        <span class="k">with</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">custom_config_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;parsing _custom_ config for peer  &quot;</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">custom_config_path</span><span class="p">)</span>
+            <span class="n">cfg_parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">peer_cfg</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">exp_config</span><span class="o">.</span><span class="n">extend_with_peer</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">peer_path</span><span class="p">,</span> <span class="n">peer_cfg</span><span class="p">,</span>
+                                       <span class="n">config_sources</span><span class="p">,</span> <span class="n">launch_deps</span><span class="p">,</span>
+                                       <span class="n">param_overwrites</span><span class="p">,</span> <span class="n">machine</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

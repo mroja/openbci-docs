@@ -1,0 +1,829 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.peer package &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../index.html" />
+    <link rel="up" title="obci.control package" href="obci.control.html" />
+    <link rel="next" title="obci.core package" href="obci.core.html" />
+    <link rel="prev" title="obci.control.launcher package" href="obci.control.launcher.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="obci-control-peer-package">
+<h1>obci.control.peer package<a class="headerlink" href="#obci-control-peer-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-obci.control.peer.config_defaults">
+<span id="obci-control-peer-config-defaults-module"></span><h2>obci.control.peer.config_defaults module<a class="headerlink" href="#module-obci.control.peer.config_defaults" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-obci.control.peer.config_server">
+<span id="obci-control-peer-config-server-module"></span><h2>obci.control.peer.config_server module<a class="headerlink" href="#module-obci.control.peer.config_server" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.control.peer.config_server.ConfigServer">
+<em class="property">class </em><code class="descclassname">obci.control.peer.config_server.</code><code class="descname">ConfigServer</code><span class="sig-paren">(</span><em>addresses</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/config_server.html#ConfigServer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.config_server.ConfigServer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="obci.mx_legacy.html#obci.mx_legacy.clients.BaseMultiplexerServer" title="obci.mx_legacy.clients.BaseMultiplexerServer"><code class="xref py py-class docutils literal"><span class="pre">obci.mx_legacy.clients.BaseMultiplexerServer</span></code></a></p>
+<dl class="method">
+<dt id="obci.control.peer.config_server.ConfigServer.handle_get_config_params">
+<code class="descname">handle_get_config_params</code><span class="sig-paren">(</span><em>message_obj</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/config_server.html#ConfigServer.handle_get_config_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.config_server.ConfigServer.handle_get_config_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.config_server.ConfigServer.handle_launcher_command">
+<code class="descname">handle_launcher_command</code><span class="sig-paren">(</span><em>message_obj</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/config_server.html#ConfigServer.handle_launcher_command"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.config_server.ConfigServer.handle_launcher_command" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.config_server.ConfigServer.handle_message">
+<code class="descname">handle_message</code><span class="sig-paren">(</span><em>mxmsg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/config_server.html#ConfigServer.handle_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.config_server.ConfigServer.handle_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.config_server.ConfigServer.handle_peer_ready">
+<code class="descname">handle_peer_ready</code><span class="sig-paren">(</span><em>message_obj</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/config_server.html#ConfigServer.handle_peer_ready"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.config_server.ConfigServer.handle_peer_ready" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.config_server.ConfigServer.handle_peers_ready_query">
+<code class="descname">handle_peers_ready_query</code><span class="sig-paren">(</span><em>message_obj</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/config_server.html#ConfigServer.handle_peers_ready_query"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.config_server.ConfigServer.handle_peers_ready_query" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.config_server.ConfigServer.handle_register_peer_config">
+<code class="descname">handle_register_peer_config</code><span class="sig-paren">(</span><em>message_obj</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/config_server.html#ConfigServer.handle_register_peer_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.config_server.ConfigServer.handle_register_peer_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.config_server.ConfigServer.handle_unregister_peer_config">
+<code class="descname">handle_unregister_peer_config</code><span class="sig-paren">(</span><em>message_obj</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/config_server.html#ConfigServer.handle_unregister_peer_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.config_server.ConfigServer.handle_unregister_peer_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.config_server.ConfigServer.handle_update_params">
+<code class="descname">handle_update_params</code><span class="sig-paren">(</span><em>message_obj</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/config_server.html#ConfigServer.handle_update_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.config_server.ConfigServer.handle_update_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.peer.configured_client">
+<span id="obci-control-peer-configured-client-module"></span><h2>obci.control.peer.configured_client module<a class="headerlink" href="#module-obci.control.peer.configured_client" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.control.peer.configured_client.ConfiguredClient">
+<em class="property">class </em><code class="descclassname">obci.control.peer.configured_client.</code><code class="descname">ConfiguredClient</code><span class="sig-paren">(</span><em>addresses</em>, <em>type</em>, <em>external_config_file=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/configured_client.html#ConfiguredClient"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.configured_client.ConfiguredClient" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="obci.control.peer.configured_client.ConfiguredClient.get_param">
+<code class="descname">get_param</code><span class="sig-paren">(</span><em>param_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/configured_client.html#ConfiguredClient.get_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.configured_client.ConfiguredClient.get_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.configured_client.ConfiguredClient.params_changed">
+<code class="descname">params_changed</code><span class="sig-paren">(</span><em>params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/configured_client.html#ConfiguredClient.params_changed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.configured_client.ConfiguredClient.params_changed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.configured_client.ConfiguredClient.ready">
+<code class="descname">ready</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/configured_client.html#ConfiguredClient.ready"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.configured_client.ConfiguredClient.ready" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.configured_client.ConfiguredClient.set_param">
+<code class="descname">set_param</code><span class="sig-paren">(</span><em>param_name</em>, <em>param_value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/configured_client.html#ConfiguredClient.set_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.configured_client.ConfiguredClient.set_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.configured_client.ConfiguredClient.validate_params">
+<code class="descname">validate_params</code><span class="sig-paren">(</span><em>params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/configured_client.html#ConfiguredClient.validate_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.configured_client.ConfiguredClient.validate_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.peer.configured_multiplexer_server">
+<span id="obci-control-peer-configured-multiplexer-server-module"></span><h2>obci.control.peer.configured_multiplexer_server module<a class="headerlink" href="#module-obci.control.peer.configured_multiplexer_server" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer">
+<em class="property">class </em><code class="descclassname">obci.control.peer.configured_multiplexer_server.</code><code class="descname">ConfiguredMultiplexerServer</code><span class="sig-paren">(</span><em>addresses</em>, <em>type=None</em>, <em>external_config_file=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/configured_multiplexer_server.html#ConfiguredMultiplexerServer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="obci.mx_legacy.html#obci.mx_legacy.clients.BaseMultiplexerServer" title="obci.mx_legacy.clients.BaseMultiplexerServer"><code class="xref py py-class docutils literal"><span class="pre">obci.mx_legacy.clients.BaseMultiplexerServer</span></code></a></p>
+<dl class="method">
+<dt id="obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer.bad_initialization_result">
+<code class="descname">bad_initialization_result</code><span class="sig-paren">(</span><em>result</em>, <em>details</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/configured_multiplexer_server.html#ConfiguredMultiplexerServer.bad_initialization_result"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer.bad_initialization_result" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer.clean_up">
+<code class="descname">clean_up</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/configured_multiplexer_server.html#ConfiguredMultiplexerServer.clean_up"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer.clean_up" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer.get_param">
+<code class="descname">get_param</code><span class="sig-paren">(</span><em>param_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/configured_multiplexer_server.html#ConfiguredMultiplexerServer.get_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer.get_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer.loop">
+<code class="descname">loop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/configured_multiplexer_server.html#ConfiguredMultiplexerServer.loop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer.loop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer.params_changed">
+<code class="descname">params_changed</code><span class="sig-paren">(</span><em>params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/configured_multiplexer_server.html#ConfiguredMultiplexerServer.params_changed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer.params_changed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer.ready">
+<code class="descname">ready</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/configured_multiplexer_server.html#ConfiguredMultiplexerServer.ready"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer.ready" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer.set_param">
+<code class="descname">set_param</code><span class="sig-paren">(</span><em>param_name</em>, <em>param_value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/configured_multiplexer_server.html#ConfiguredMultiplexerServer.set_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer.set_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer.shut_down">
+<code class="descname">shut_down</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/configured_multiplexer_server.html#ConfiguredMultiplexerServer.shut_down"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer.shut_down" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer.validate_params">
+<code class="descname">validate_params</code><span class="sig-paren">(</span><em>params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/configured_multiplexer_server.html#ConfiguredMultiplexerServer.validate_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer.validate_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.peer.peer_cmd">
+<span id="obci-control-peer-peer-cmd-module"></span><h2>obci.control.peer.peer_cmd module<a class="headerlink" href="#module-obci.control.peer.peer_cmd" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.control.peer.peer_cmd.BasePeerCmdParser">
+<em class="property">class </em><code class="descclassname">obci.control.peer.peer_cmd.</code><code class="descname">BasePeerCmdParser</code><span class="sig-paren">(</span><em>add_help=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_cmd.html#BasePeerCmdParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_cmd.BasePeerCmdParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="obci.control.peer.peer_cmd.BasePeerCmdParser.configure_argparser">
+<code class="descname">configure_argparser</code><span class="sig-paren">(</span><em>parser</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_cmd.html#BasePeerCmdParser.configure_argparser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_cmd.BasePeerCmdParser.configure_argparser" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_cmd.BasePeerCmdParser.parse_cmd">
+<code class="descname">parse_cmd</code><span class="sig-paren">(</span><em>some_args=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_cmd.html#BasePeerCmdParser.parse_cmd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_cmd.BasePeerCmdParser.parse_cmd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.peer.peer_cmd.ConfigSourceAction">
+<em class="property">class </em><code class="descclassname">obci.control.peer.peer_cmd.</code><code class="descname">ConfigSourceAction</code><span class="sig-paren">(</span><em>option_strings</em>, <em>dest</em>, <em>nargs=None</em>, <em>const=None</em>, <em>default=None</em>, <em>type=None</em>, <em>choices=None</em>, <em>required=False</em>, <em>help=None</em>, <em>metavar=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_cmd.html#ConfigSourceAction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_cmd.ConfigSourceAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_cmd.PeerParamAction" title="obci.control.peer.peer_cmd.PeerParamAction"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_cmd.PeerParamAction</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.peer.peer_cmd.ExtParamAction">
+<em class="property">class </em><code class="descclassname">obci.control.peer.peer_cmd.</code><code class="descname">ExtParamAction</code><span class="sig-paren">(</span><em>option_strings</em>, <em>dest</em>, <em>nargs=None</em>, <em>const=None</em>, <em>default=None</em>, <em>type=None</em>, <em>choices=None</em>, <em>required=False</em>, <em>help=None</em>, <em>metavar=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_cmd.html#ExtParamAction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_cmd.ExtParamAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_cmd.PeerParamAction" title="obci.control.peer.peer_cmd.PeerParamAction"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_cmd.PeerParamAction</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.peer.peer_cmd.LaunchDepAction">
+<em class="property">class </em><code class="descclassname">obci.control.peer.peer_cmd.</code><code class="descname">LaunchDepAction</code><span class="sig-paren">(</span><em>option_strings</em>, <em>dest</em>, <em>nargs=None</em>, <em>const=None</em>, <em>default=None</em>, <em>type=None</em>, <em>choices=None</em>, <em>required=False</em>, <em>help=None</em>, <em>metavar=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_cmd.html#LaunchDepAction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_cmd.LaunchDepAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_cmd.PeerParamAction" title="obci.control.peer.peer_cmd.PeerParamAction"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_cmd.PeerParamAction</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.peer.peer_cmd.LocParamAction">
+<em class="property">class </em><code class="descclassname">obci.control.peer.peer_cmd.</code><code class="descname">LocParamAction</code><span class="sig-paren">(</span><em>option_strings</em>, <em>dest</em>, <em>nargs=None</em>, <em>const=None</em>, <em>default=None</em>, <em>type=None</em>, <em>choices=None</em>, <em>required=False</em>, <em>help=None</em>, <em>metavar=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_cmd.html#LocParamAction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_cmd.LocParamAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_cmd.PeerParamAction" title="obci.control.peer.peer_cmd.PeerParamAction"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_cmd.PeerParamAction</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.peer.peer_cmd.PeerCmd">
+<em class="property">class </em><code class="descclassname">obci.control.peer.peer_cmd.</code><code class="descname">PeerCmd</code><span class="sig-paren">(</span><em>add_help=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_cmd.html#PeerCmd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_cmd.PeerCmd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_cmd.BasePeerCmdParser" title="obci.control.peer.peer_cmd.BasePeerCmdParser"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_cmd.BasePeerCmdParser</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.peer.peer_cmd.PeerParamAction">
+<em class="property">class </em><code class="descclassname">obci.control.peer.peer_cmd.</code><code class="descname">PeerParamAction</code><span class="sig-paren">(</span><em>option_strings</em>, <em>dest</em>, <em>nargs=None</em>, <em>const=None</em>, <em>default=None</em>, <em>type=None</em>, <em>choices=None</em>, <em>required=False</em>, <em>help=None</em>, <em>metavar=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_cmd.html#PeerParamAction"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_cmd.PeerParamAction" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/argparse.html#argparse.Action" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">argparse.Action</span></code></a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="obci.control.peer.peer_cmd.path_to_file">
+<code class="descclassname">obci.control.peer.peer_cmd.</code><code class="descname">path_to_file</code><span class="sig-paren">(</span><em>string</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_cmd.html#path_to_file"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_cmd.path_to_file" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="obci.control.peer.peer_cmd.peer_args">
+<code class="descclassname">obci.control.peer.peer_cmd.</code><code class="descname">peer_args</code><span class="sig-paren">(</span><em>vals</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_cmd.html#peer_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_cmd.peer_args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="obci.control.peer.peer_cmd.peer_overwrites_cmd">
+<code class="descclassname">obci.control.peer.peer_cmd.</code><code class="descname">peer_overwrites_cmd</code><span class="sig-paren">(</span><em>pack</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_cmd.html#peer_overwrites_cmd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_cmd.peer_overwrites_cmd" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="obci.control.peer.peer_cmd.peer_overwrites_pack">
+<code class="descclassname">obci.control.peer.peer_cmd.</code><code class="descname">peer_overwrites_pack</code><span class="sig-paren">(</span><em>args</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_cmd.html#peer_overwrites_pack"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_cmd.peer_overwrites_pack" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.peer.peer_config">
+<span id="obci-control-peer-peer-config-module"></span><h2>obci.control.peer.peer_config module<a class="headerlink" href="#module-obci.control.peer.peer_config" title="Permalink to this headline">¶</a></h2>
+<dl class="exception">
+<dt id="obci.control.peer.peer_config.ConfigOverwriteWarning">
+<em class="property">exception </em><code class="descclassname">obci.control.peer.peer_config.</code><code class="descname">ConfigOverwriteWarning</code><span class="sig-paren">(</span><em>value=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#ConfigOverwriteWarning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.ConfigOverwriteWarning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_config.ConfigWarning" title="obci.control.peer.peer_config.ConfigWarning"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_config.ConfigWarning</span></code></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="obci.control.peer.peer_config.ConfigWarning">
+<em class="property">exception </em><code class="descclassname">obci.control.peer.peer_config.</code><code class="descname">ConfigWarning</code><span class="sig-paren">(</span><em>value=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#ConfigWarning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.ConfigWarning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Warning" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">Warning</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.peer.peer_config.PeerConfig">
+<em class="property">class </em><code class="descclassname">obci.control.peer.peer_config.</code><code class="descname">PeerConfig</code><span class="sig-paren">(</span><em>peer_id=None</em>, <em>warn_overwrite=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>This class represents core configuration of an OpenBCI peer. It is
+meant to be used both as an output of a config parser and as
+a configuration holder for the running peer (wrapped in a controller
+with networking capabilities).</p>
+<p>Peer configuration consists of local parameters, external parameters,
+config sources definitions and launch dependencies.</p>
+<dl class="docutils">
+<dt>Local parameters:</dt>
+<dd>param_name : value</dd>
+</dl>
+<p>are owned by the peer itself, whereas external parameters have to be
+obtained from other peers.</p>
+<dl class="docutils">
+<dt>External parameter definition:</dt>
+<dd>local_parameter_name : config_source_name.parameter_name</dd>
+</dl>
+<p>Config source names are symbolic names for dependencies.
+In run time real peer ID&#8217;s are assingned to those names; parameter_name
+is the remote parameter that is requested from source.</p>
+<p>Launch dependencies are similar to config sources: the definitions
+are identical and symbolic name pool is common with config source names
+i.e. all names are global in the configuration file.
+Launch dependencies are used when we want to delay peer start
+until all dependncies report that they are ready to work.</p>
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.add_external_param_def">
+<code class="descname">add_external_param_def</code><span class="sig-paren">(</span><em>param_name</em>, <em>reference</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.add_external_param_def"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.add_external_param_def" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store an external parameter definition. param_name is the
+local name of the parameter, reference is a string
+&#8216;source_name.remote_param_name&#8217;.
+Warns about overwriting definitions, especially when a
+previously local parameter becomes external.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.add_local_param">
+<code class="descname">add_local_param</code><span class="sig-paren">(</span><em>param_name</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.add_local_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.add_local_param" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store a value of a local parameter.
+Warn when a parameter is overwritten, especially when a previously
+external parameter becomes local.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.assign_id_to_name">
+<code class="descname">assign_id_to_name</code><span class="sig-paren">(</span><em>sym_name</em>, <em>peer_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.assign_id_to_name"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.assign_id_to_name" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.config_ready">
+<code class="descname">config_ready</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.config_ready"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.config_ready" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if the configuration is usable, i.e. all used
+config sources have peer ID&#8217;s assigned and all external parameter
+values are already obtained.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.peer.peer_config.PeerConfig.config_sources">
+<code class="descname">config_sources</code><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.config_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Configuration sources&#8217; symbolic names and their assigned real peer IDs.
+(A dictionary)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.config_sources_ready">
+<code class="descname">config_sources_ready</code><span class="sig-paren">(</span><em>details=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.config_sources_ready"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.config_sources_ready" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return  True if all used config sources have peer ID&#8217;s assigned.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.peer.peer_config.PeerConfig.dep_ids">
+<code class="descname">dep_ids</code><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.dep_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Peer ID&#8217;s of the launch dependencies and lists of their symbolic names.
+(A dictionary)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.peer.peer_config.PeerConfig.ext_param_defs">
+<code class="descname">ext_param_defs</code><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.ext_param_defs" title="Permalink to this definition">¶</a></dt>
+<dd><p>External parameter definitions. A definition consists of a local
+parameter name and a reference: pair of symbolic source name and
+remote parameter name.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.external_params_ready">
+<code class="descname">external_params_ready</code><span class="sig-paren">(</span><em>details=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.external_params_ready"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.external_params_ready" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True if the values of all external parameters have been
+successfully obtained.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.get_param">
+<code class="descname">get_param</code><span class="sig-paren">(</span><em>param_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.get_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.get_param" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return value of a parameter param_name. Parameter may be local
+or external.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.has_param">
+<code class="descname">has_param</code><span class="sig-paren">(</span><em>param_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.has_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.has_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.peer.peer_config.PeerConfig.launch_deps">
+<code class="descname">launch_deps</code><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.launch_deps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Launch dependencies&#8217; symbolic names and their assigned real peer IDs.
+(A dictionary)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.launch_deps_ready">
+<code class="descname">launch_deps_ready</code><span class="sig-paren">(</span><em>details=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.launch_deps_ready"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.launch_deps_ready" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return  True if all launch deps have peer ID&#8217;s assigned.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.peer.peer_config.PeerConfig.local_params">
+<code class="descname">local_params</code><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.local_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>Local parameters and values (dict)</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.peer.peer_config.PeerConfig.param_values">
+<code class="descname">param_values</code><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.param_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>A dictionary of all parameter values.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.params_for_source">
+<code class="descname">params_for_source</code><span class="sig-paren">(</span><em>p_src</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.params_for_source"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.params_for_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of parameters coming from this source (symbolic name).</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.peer.peer_config.PeerConfig.ready_ext_params">
+<code class="descname">ready_ext_params</code><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.ready_ext_params" title="Permalink to this definition">¶</a></dt>
+<dd><p>External parameters with values succesfully obtained from sources.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.set_config_source">
+<code class="descname">set_config_source</code><span class="sig-paren">(</span><em>source_name</em>, <em>peer_id=''</em>, <em>_set_dep=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.set_config_source"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.set_config_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store a configuration symbolic source name and its real peer_id.
+Default ID is empty and can be updated later.
+Warns on overwrite.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.set_launch_dependency">
+<code class="descname">set_launch_dependency</code><span class="sig-paren">(</span><em>dep_name</em>, <em>peer_id=''</em>, <em>_set_src=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.set_launch_dependency"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.set_launch_dependency" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.set_param">
+<code class="descname">set_param</code><span class="sig-paren">(</span><em>param_name</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.set_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.set_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.set_param_from_source">
+<code class="descname">set_param_from_source</code><span class="sig-paren">(</span><em>src_id</em>, <em>src_param</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.set_param_from_source"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.set_param_from_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>Store a value of a remote parameter.
+src_id - peer ID of the source
+src_param - remote parameter name
+value - parameter value</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.peer.peer_config.PeerConfig.source_ids">
+<code class="descname">source_ids</code><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.source_ids" title="Permalink to this definition">¶</a></dt>
+<dd><p>Peer ID&#8217;s of the config sources and lists of their symbolic names.
+(A dictionary)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.unassigned_config_sources">
+<code class="descname">unassigned_config_sources</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.unassigned_config_sources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.unassigned_config_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of configuration source names which do not have real
+peer ID assigned.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.unassigned_launch_deps">
+<code class="descname">unassigned_launch_deps</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.unassigned_launch_deps"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.unassigned_launch_deps" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of launch dependency names which do not have real
+peer ID assigned.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.unset_params_for_source">
+<code class="descname">unset_params_for_source</code><span class="sig-paren">(</span><em>p_src</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.unset_params_for_source"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.unset_params_for_source" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of parameters coming from this source (symbolic name)
+which are not yet set.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.unused_config_sources">
+<code class="descname">unused_config_sources</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.unused_config_sources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.unused_config_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of symbolic source names which are NOT referenced in
+external parameter definitions.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.update_external_param_def">
+<code class="descname">update_external_param_def</code><span class="sig-paren">(</span><em>param_name</em>, <em>reference</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.update_external_param_def"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.update_external_param_def" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update external parameter definition. Works as add_external_param_def()
+but the definition should already be stored in PeerConfig. Otherwise
+raises ValueError.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.update_local_param">
+<code class="descname">update_local_param</code><span class="sig-paren">(</span><em>param_name</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.update_local_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.update_local_param" title="Permalink to this definition">¶</a></dt>
+<dd><p>Update local parameter. Works like add_local_param()
+but the parameter should already exist in PeerConfig.
+Otherwise raise ValueError.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config.PeerConfig.used_config_sources">
+<code class="descname">used_config_sources</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config.html#PeerConfig.used_config_sources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config.PeerConfig.used_config_sources" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return a list of symbolic source names which are referenced in
+external parameter definitions.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.peer.peer_config_parser">
+<span id="obci-control-peer-peer-config-parser-module"></span><h2>obci.control.peer.peer_config_parser module<a class="headerlink" href="#module-obci.control.peer.peer_config_parser" title="Permalink to this headline">¶</a></h2>
+<dl class="exception">
+<dt id="obci.control.peer.peer_config_parser.ConfigSourceError">
+<em class="property">exception </em><code class="descclassname">obci.control.peer.peer_config_parser.</code><code class="descname">ConfigSourceError</code><a class="reference internal" href="../_modules/obci/control/peer/peer_config_parser.html#ConfigSourceError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_parser.ConfigSourceError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_config_parser.PeerConfigParserError" title="obci.control.peer.peer_config_parser.PeerConfigParserError"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_config_parser.PeerConfigParserError</span></code></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="obci.control.peer.peer_config_parser.IncompleteConfigSections">
+<em class="property">exception </em><code class="descclassname">obci.control.peer.peer_config_parser.</code><code class="descname">IncompleteConfigSections</code><a class="reference internal" href="../_modules/obci/control/peer/peer_config_parser.html#IncompleteConfigSections"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_parser.IncompleteConfigSections" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_config_parser.PeerConfigParserError" title="obci.control.peer.peer_config_parser.PeerConfigParserError"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_config_parser.PeerConfigParserError</span></code></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="obci.control.peer.peer_config_parser.ParserNotFoundError">
+<em class="property">exception </em><code class="descclassname">obci.control.peer.peer_config_parser.</code><code class="descname">ParserNotFoundError</code><a class="reference internal" href="../_modules/obci/control/peer/peer_config_parser.html#ParserNotFoundError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_parser.ParserNotFoundError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_config_parser.PeerConfigParserError" title="obci.control.peer.peer_config_parser.PeerConfigParserError"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_config_parser.PeerConfigParserError</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.peer.peer_config_parser.PeerConfigParser">
+<em class="property">class </em><code class="descclassname">obci.control.peer.peer_config_parser.</code><code class="descname">PeerConfigParser</code><a class="reference internal" href="../_modules/obci/control/peer/peer_config_parser.html#PeerConfigParser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_parser.PeerConfigParser" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="obci.control.peer.peer_config_parser.PeerConfigParser.check_complete">
+<code class="descname">check_complete</code><span class="sig-paren">(</span><em>p_config</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config_parser.html#PeerConfigParser.check_complete"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_parser.PeerConfigParser.check_complete" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.peer.peer_config_parser.PeerConfigParser.config_parts">
+<code class="descname">config_parts</code><em class="property"> = ['config_sources', 'external_params', 'local_params', 'launch_dependencies']</em><a class="headerlink" href="#obci.control.peer.peer_config_parser.PeerConfigParser.config_parts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config_parser.PeerConfigParser.parse">
+<code class="descname">parse</code><span class="sig-paren">(</span><em>p_file</em>, <em>p_config_obj</em>, <em>update=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config_parser.html#PeerConfigParser.parse"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_parser.PeerConfigParser.parse" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.peer.peer_config_parser.PeerConfigParserDict">
+<em class="property">class </em><code class="descclassname">obci.control.peer.peer_config_parser.</code><code class="descname">PeerConfigParserDict</code><a class="reference internal" href="../_modules/obci/control/peer/peer_config_parser.html#PeerConfigParserDict"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_parser.PeerConfigParserDict" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_config_parser.PeerConfigParserJSON" title="obci.control.peer.peer_config_parser.PeerConfigParserJSON"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_config_parser.PeerConfigParserJSON</span></code></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="obci.control.peer.peer_config_parser.PeerConfigParserError">
+<em class="property">exception </em><code class="descclassname">obci.control.peer.peer_config_parser.</code><code class="descname">PeerConfigParserError</code><a class="reference internal" href="../_modules/obci/control/peer/peer_config_parser.html#PeerConfigParserError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_parser.PeerConfigParserError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.peer.peer_config_parser.PeerConfigParserINI">
+<em class="property">class </em><code class="descclassname">obci.control.peer.peer_config_parser.</code><code class="descname">PeerConfigParserINI</code><a class="reference internal" href="../_modules/obci/control/peer/peer_config_parser.html#PeerConfigParserINI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_parser.PeerConfigParserINI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_config_parser.PeerConfigParser" title="obci.control.peer.peer_config_parser.PeerConfigParser"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_config_parser.PeerConfigParser</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.peer.peer_config_parser.PeerConfigParserJSON">
+<em class="property">class </em><code class="descclassname">obci.control.peer.peer_config_parser.</code><code class="descname">PeerConfigParserJSON</code><a class="reference internal" href="../_modules/obci/control/peer/peer_config_parser.html#PeerConfigParserJSON"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_parser.PeerConfigParserJSON" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_config_parser.PeerConfigParser" title="obci.control.peer.peer_config_parser.PeerConfigParser"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_config_parser.PeerConfigParser</span></code></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="obci.control.peer.peer_config_parser.UnknownConfigSection">
+<em class="property">exception </em><code class="descclassname">obci.control.peer.peer_config_parser.</code><code class="descname">UnknownConfigSection</code><a class="reference internal" href="../_modules/obci/control/peer/peer_config_parser.html#UnknownConfigSection"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_parser.UnknownConfigSection" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_config_parser.PeerConfigParserError" title="obci.control.peer.peer_config_parser.PeerConfigParserError"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_config_parser.PeerConfigParserError</span></code></a></p>
+</dd></dl>
+
+<dl class="function">
+<dt id="obci.control.peer.peer_config_parser.parser">
+<code class="descclassname">obci.control.peer.peer_config_parser.</code><code class="descname">parser</code><span class="sig-paren">(</span><em>parser_type</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config_parser.html#parser"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_parser.parser" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.peer.peer_config_serializer">
+<span id="obci-control-peer-peer-config-serializer-module"></span><h2>obci.control.peer.peer_config_serializer module<a class="headerlink" href="#module-obci.control.peer.peer_config_serializer" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.control.peer.peer_config_serializer.PeerConfigSerializer">
+<em class="property">class </em><code class="descclassname">obci.control.peer.peer_config_serializer.</code><code class="descname">PeerConfigSerializer</code><a class="reference internal" href="../_modules/obci/control/peer/peer_config_serializer.html#PeerConfigSerializer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_serializer.PeerConfigSerializer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="attribute">
+<dt id="obci.control.peer.peer_config_serializer.PeerConfigSerializer.config_parts">
+<code class="descname">config_parts</code><em class="property"> = ['config_sources', 'launch_dependencies', 'external_params', 'local_params']</em><a class="headerlink" href="#obci.control.peer.peer_config_serializer.PeerConfigSerializer.config_parts" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config_serializer.PeerConfigSerializer.difference">
+<code class="descname">difference</code><span class="sig-paren">(</span><em>p_base_config</em>, <em>p_config</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config_serializer.html#PeerConfigSerializer.difference"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_serializer.PeerConfigSerializer.difference" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config_serializer.PeerConfigSerializer.serialize">
+<code class="descname">serialize</code><span class="sig-paren">(</span><em>p_config</em>, <em>p_file_obj</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config_serializer.html#PeerConfigSerializer.serialize"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_serializer.PeerConfigSerializer.serialize" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_config_serializer.PeerConfigSerializer.serialize_diff">
+<code class="descname">serialize_diff</code><span class="sig-paren">(</span><em>p_base_config</em>, <em>p_config</em>, <em>p_file_obj</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_config_serializer.html#PeerConfigSerializer.serialize_diff"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_serializer.PeerConfigSerializer.serialize_diff" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.peer.peer_config_serializer.PeerConfigSerializerCmd">
+<em class="property">class </em><code class="descclassname">obci.control.peer.peer_config_serializer.</code><code class="descname">PeerConfigSerializerCmd</code><a class="reference internal" href="../_modules/obci/control/peer/peer_config_serializer.html#PeerConfigSerializerCmd"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_serializer.PeerConfigSerializerCmd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_config_serializer.PeerConfigSerializer" title="obci.control.peer.peer_config_serializer.PeerConfigSerializer"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_config_serializer.PeerConfigSerializer</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.peer.peer_config_serializer.PeerConfigSerializerINI">
+<em class="property">class </em><code class="descclassname">obci.control.peer.peer_config_serializer.</code><code class="descname">PeerConfigSerializerINI</code><a class="reference internal" href="../_modules/obci/control/peer/peer_config_serializer.html#PeerConfigSerializerINI"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_serializer.PeerConfigSerializerINI" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_config_serializer.PeerConfigSerializer" title="obci.control.peer.peer_config_serializer.PeerConfigSerializer"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_config_serializer.PeerConfigSerializer</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.peer.peer_config_serializer.PeerConfigSerializerJSON">
+<em class="property">class </em><code class="descclassname">obci.control.peer.peer_config_serializer.</code><code class="descname">PeerConfigSerializerJSON</code><a class="reference internal" href="../_modules/obci/control/peer/peer_config_serializer.html#PeerConfigSerializerJSON"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_serializer.PeerConfigSerializerJSON" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_config_serializer.PeerConfigSerializer" title="obci.control.peer.peer_config_serializer.PeerConfigSerializer"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_config_serializer.PeerConfigSerializer</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.peer.peer_config_serializer.PeerConfigSerializerProtobuf">
+<em class="property">class </em><code class="descclassname">obci.control.peer.peer_config_serializer.</code><code class="descname">PeerConfigSerializerProtobuf</code><a class="reference internal" href="../_modules/obci/control/peer/peer_config_serializer.html#PeerConfigSerializerProtobuf"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_config_serializer.PeerConfigSerializerProtobuf" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_config_serializer.PeerConfigSerializer" title="obci.control.peer.peer_config_serializer.PeerConfigSerializer"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_config_serializer.PeerConfigSerializer</span></code></a></p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.peer.peer_control">
+<span id="obci-control-peer-peer-control-module"></span><h2>obci.control.peer.peer_control module<a class="headerlink" href="#module-obci.control.peer.peer_control" title="Permalink to this headline">¶</a></h2>
+<dl class="exception">
+<dt id="obci.control.peer.peer_control.ConfigNotReadyError">
+<em class="property">exception </em><code class="descclassname">obci.control.peer.peer_control.</code><code class="descname">ConfigNotReadyError</code><span class="sig-paren">(</span><em>value=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_control.html#ConfigNotReadyError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_control.ConfigNotReadyError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_control.PeerConfigControlError" title="obci.control.peer.peer_control.PeerConfigControlError"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_control.PeerConfigControlError</span></code></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="obci.control.peer.peer_control.NoPeerError">
+<em class="property">exception </em><code class="descclassname">obci.control.peer.peer_control.</code><code class="descname">NoPeerError</code><span class="sig-paren">(</span><em>value=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_control.html#NoPeerError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_control.NoPeerError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_control.PeerConfigControlError" title="obci.control.peer.peer_control.PeerConfigControlError"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_control.PeerConfigControlError</span></code></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="obci.control.peer.peer_control.PeerConfigControlError">
+<em class="property">exception </em><code class="descclassname">obci.control.peer.peer_control.</code><code class="descname">PeerConfigControlError</code><span class="sig-paren">(</span><em>value=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_control.html#PeerConfigControlError"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_control.PeerConfigControlError" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></a></p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="obci.control.peer.peer_control.PeerConfigControlWarning">
+<em class="property">exception </em><code class="descclassname">obci.control.peer.peer_control.</code><code class="descname">PeerConfigControlWarning</code><a class="reference internal" href="../_modules/obci/control/peer/peer_control.html#PeerConfigControlWarning"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_control.PeerConfigControlWarning" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Warning" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">Warning</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.peer.peer_control.PeerControl">
+<em class="property">class </em><code class="descclassname">obci.control.peer.peer_control.</code><code class="descname">PeerControl</code><span class="sig-paren">(</span><em>peer=None</em>, <em>connection=None</em>, <em>param_validate_method=None</em>, <em>param_change_method=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_control.html#PeerControl"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_control.PeerControl" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="obci.control.peer.peer_control.PeerControl.config_ready">
+<code class="descname">config_ready</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_control.html#PeerControl.config_ready"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_control.PeerControl.config_ready" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_control.PeerControl.get_param">
+<code class="descname">get_param</code><span class="sig-paren">(</span><em>p_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_control.html#PeerControl.get_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_control.PeerControl.get_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_control.PeerControl.handle_config_message">
+<code class="descname">handle_config_message</code><span class="sig-paren">(</span><em>mxmsg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_control.html#PeerControl.handle_config_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_control.PeerControl.handle_config_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_control.PeerControl.has_param">
+<code class="descname">has_param</code><span class="sig-paren">(</span><em>p_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_control.html#PeerControl.has_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_control.PeerControl.has_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_control.PeerControl.initialize_config">
+<code class="descname">initialize_config</code><span class="sig-paren">(</span><em>connection</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_control.html#PeerControl.initialize_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_control.PeerControl.initialize_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_control.PeerControl.initialize_config_locally">
+<code class="descname">initialize_config_locally</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_control.html#PeerControl.initialize_config_locally"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_control.PeerControl.initialize_config_locally" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_control.PeerControl.param_values">
+<code class="descname">param_values</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_control.html#PeerControl.param_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_control.PeerControl.param_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_control.PeerControl.process_command_line">
+<code class="descname">process_command_line</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_control.html#PeerControl.process_command_line"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_control.PeerControl.process_command_line" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_control.PeerControl.register_config">
+<code class="descname">register_config</code><span class="sig-paren">(</span><em>connection</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_control.html#PeerControl.register_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_control.PeerControl.register_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_control.PeerControl.send_peer_ready">
+<code class="descname">send_peer_ready</code><span class="sig-paren">(</span><em>connection</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_control.html#PeerControl.send_peer_ready"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_control.PeerControl.send_peer_ready" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_control.PeerControl.set_param">
+<code class="descname">set_param</code><span class="sig-paren">(</span><em>p_name</em>, <em>p_value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_control.html#PeerControl.set_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_control.PeerControl.set_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.peer.peer_control.PeerControl.true_val">
+<code class="descname">true_val</code><span class="sig-paren">(</span><em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/peer/peer_control.html#PeerControl.true_val"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_control.PeerControl.true_val" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="exception">
+<dt id="obci.control.peer.peer_control.UnsupportedMessageType">
+<em class="property">exception </em><code class="descclassname">obci.control.peer.peer_control.</code><code class="descname">UnsupportedMessageType</code><a class="reference internal" href="../_modules/obci/control/peer/peer_control.html#UnsupportedMessageType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.peer.peer_control.UnsupportedMessageType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.peer.peer_control.PeerConfigControlWarning" title="obci.control.peer.peer_control.PeerConfigControlWarning"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.peer_control.PeerConfigControlWarning</span></code></a></p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.peer">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-obci.control.peer" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">obci</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="obci.html">obci package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="obci.acquisition.html">obci.acquisition package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.analysis.html">obci.analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.benchmark.html">obci.benchmark package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.cmd.html">obci.cmd package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.configs.html">obci.configs package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="obci.control.html">obci.control package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.core.html">obci.core package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.drivers.html">obci.drivers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.gui.html">obci.gui package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.mx_legacy.html">obci.mx_legacy package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.peers.html">obci.peers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.scenarios.html">obci.scenarios package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.utils.html">obci.utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">obci</a><ul>
+  <li><a href="obci.html">obci package</a><ul>
+  <li><a href="obci.control.html">obci.control package</a><ul>
+      <li>Previous: <a href="obci.control.launcher.html" title="previous chapter">obci.control.launcher package</a></li>
+      <li>Next: <a href="obci.core.html" title="next chapter">obci.core package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/apidoc/obci.control.peer.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

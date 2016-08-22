@@ -1,0 +1,159 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.core.messages.protobuf_serializer &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="obci.core.messages" href="../messages.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.core.messages.protobuf_serializer</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">from</span> <span class="nn">obci.core.messages</span> <span class="k">import</span> <span class="n">Message</span><span class="p">,</span> <span class="n">MessageSerializer</span>
+<span class="kn">from</span> <span class="nn">obci.configs</span> <span class="k">import</span> <span class="n">variables_pb2</span> <span class="k">as</span> <span class="n">proto</span>
+
+
+<div class="viewcode-block" id="ProtobufMessageSerializerBase"><a class="viewcode-back" href="../../../../apidoc/obci.core.messages.html#obci.core.messages.protobuf_serializer.ProtobufMessageSerializerBase">[docs]</a><span class="k">class</span> <span class="nc">ProtobufMessageSerializerBase</span><span class="p">(</span><span class="n">MessageSerializer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Serializer for protobuf objects.</span>
+
+<span class="sd">    Deserializer will be created dynamically using</span>
+<span class="sd">    `gen_deserialize_func` function.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="ProtobufMessageSerializerBase.serialize"><a class="viewcode-back" href="../../../../apidoc/obci.core.messages.html#obci.core.messages.protobuf_serializer.ProtobufMessageSerializerBase.serialize">[docs]</a>    <span class="k">def</span> <span class="nf">serialize</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">data</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">()</span></div>
+
+    <span class="nd">@staticmethod</span>
+<div class="viewcode-block" id="ProtobufMessageSerializerBase.deserialize"><a class="viewcode-back" href="../../../../apidoc/obci.core.messages.html#obci.core.messages.protobuf_serializer.ProtobufMessageSerializerBase.deserialize">[docs]</a>    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;must be implemented in derived classes&quot;</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="gen_deserialize_func"><a class="viewcode-back" href="../../../../apidoc/obci.core.messages.html#obci.core.messages.protobuf_serializer.gen_deserialize_func">[docs]</a><span class="k">def</span> <span class="nf">gen_deserialize_func</span><span class="p">(</span><span class="n">ProtoClass</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate deserialize for specified protobuf class.</span>
+
+<span class="sd">    :param ProtoClass: protobuf class</span>
+<span class="sd">    :return: deserializer function</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">def</span> <span class="nf">deserialize</span><span class="p">(</span><span class="n">data</span><span class="p">):</span>
+        <span class="n">obj</span> <span class="o">=</span> <span class="n">ProtoClass</span><span class="p">()</span>
+        <span class="n">obj</span><span class="o">.</span><span class="n">ParseFromString</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">obj</span>
+    <span class="k">return</span> <span class="n">deserialize</span></div>
+
+
+<div class="viewcode-block" id="generate_protobuf_serializer"><a class="viewcode-back" href="../../../../apidoc/obci.core.messages.html#obci.core.messages.protobuf_serializer.generate_protobuf_serializer">[docs]</a><span class="k">def</span> <span class="nf">generate_protobuf_serializer</span><span class="p">(</span><span class="n">proto_class</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Generate serializer for specified protobuf class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="s1">&#39;</span><span class="si">{}</span><span class="s1">_</span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">proto_class</span><span class="o">.</span><span class="n">__name__</span><span class="p">,</span> <span class="s1">&#39;ProtobufMessageSerializer&#39;</span><span class="p">),</span>
+                <span class="p">(</span><span class="n">ProtobufMessageSerializerBase</span><span class="p">,),</span>
+                <span class="p">{</span><span class="s1">&#39;deserialize&#39;</span><span class="p">:</span> <span class="nb">staticmethod</span><span class="p">(</span><span class="n">gen_deserialize_func</span><span class="p">(</span><span class="n">proto_class</span><span class="p">))})</span></div>
+
+
+<div class="viewcode-block" id="register_serializers"><a class="viewcode-back" href="../../../../apidoc/obci.core.messages.html#obci.core.messages.protobuf_serializer.register_serializers">[docs]</a><span class="k">def</span> <span class="nf">register_serializers</span><span class="p">()</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Register serializers for all protobuf objects.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">for</span> <span class="n">proto_name</span> <span class="ow">in</span> <span class="n">proto</span><span class="o">.</span><span class="n">DESCRIPTOR</span><span class="o">.</span><span class="n">message_types_by_name</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
+        <span class="n">Message</span><span class="o">.</span><span class="n">register_serializer</span><span class="p">(</span><span class="n">proto_name</span><span class="p">,</span> <span class="n">generate_protobuf_serializer</span><span class="p">(</span><span class="nb">getattr</span><span class="p">(</span><span class="n">proto</span><span class="p">,</span> <span class="n">proto_name</span><span class="p">)))</span></div>
+
+
+<span class="n">register_serializers</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  <li><a href="../messages.html">obci.core.messages</a><ul>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

@@ -1,0 +1,496 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.launcher.system_config &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.launcher.system_config</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+
+<span class="kn">import</span> <span class="nn">codecs</span>
+<span class="kn">import</span> <span class="nn">logging</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.common.config_helpers</span> <span class="k">import</span> <span class="p">(</span><span class="n">CONFIG_SOURCES</span><span class="p">,</span>
+                                                <span class="n">LAUNCH_DEPENDENCIES</span><span class="p">,</span>
+                                                <span class="n">LOCAL_PARAMS</span><span class="p">,</span>
+                                                <span class="n">EXT_PARAMS</span><span class="p">)</span>
+<span class="kn">import</span> <span class="nn">obci.control.launcher.launcher_tools</span> <span class="k">as</span> <span class="nn">launcher_tools</span>
+<span class="kn">from</span> <span class="nn">obci.control.peer.peer_config_serializer</span> <span class="k">import</span> <span class="n">PeerConfigSerializerCmd</span>
+<span class="kn">from</span> <span class="nn">obci.control</span> <span class="k">import</span> <span class="n">peer</span>
+<span class="kn">from</span> <span class="nn">obci.control.peer.peer_config</span> <span class="k">import</span> <span class="n">PeerConfig</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.common.graph</span> <span class="k">import</span> <span class="n">Graph</span><span class="p">,</span> <span class="n">Vertex</span>
+
+
+<div class="viewcode-block" id="OBCIExperimentConfig"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig">[docs]</a><span class="k">class</span> <span class="nc">OBCIExperimentConfig</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">launch_file_path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">uuid</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">origin_machine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span> <span class="o">=</span> <span class="n">uuid</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">launch_file_path</span> <span class="o">=</span> <span class="n">launch_file_path</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">origin_machine</span> <span class="o">=</span> <span class="n">origin_machine</span> <span class="k">if</span> <span class="n">origin_machine</span> <span class="k">else</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">scenario_dir</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mx</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peers</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span> <span class="ow">or</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;ObciExperimentConfig&quot;</span><span class="p">)</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span> <span class="nf">launch_file_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_launch_file_path</span>
+
+    <span class="nd">@launch_file_path</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span> <span class="nf">launch_file_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_launch_file_path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="k">if</span> <span class="n">path</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_launch_file_path</span> <span class="o">=</span> <span class="n">launcher_tools</span><span class="o">.</span><span class="n">obci_root_relative</span><span class="p">(</span><span class="n">path</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.peer_config"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.peer_config">[docs]</a>    <span class="k">def</span> <span class="nf">peer_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">config</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.update_local_param"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.update_local_param">[docs]</a>    <span class="k">def</span> <span class="nf">update_local_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">p_name</span><span class="p">,</span> <span class="n">p_value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">peer_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OBCISystemConfigError</span><span class="p">(</span><span class="s2">&quot;Peer ID </span><span class="si">{0}</span><span class="s2"> not in peer list&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">peer_id</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update_local_param</span><span class="p">(</span><span class="n">p_name</span><span class="p">,</span> <span class="n">p_value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.update_external_param"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.update_external_param">[docs]</a>    <span class="k">def</span> <span class="nf">update_external_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">p_name</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">src_param</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">peer_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OBCISystemConfigError</span><span class="p">(</span><span class="s2">&quot;Peer ID </span><span class="si">{0}</span><span class="s2"> not in peer list&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">peer_id</span><span class="p">))</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update_external_param_def</span><span class="p">(</span><span class="n">p_name</span><span class="p">,</span> <span class="n">src</span> <span class="o">+</span> <span class="s1">&#39;.&#39;</span> <span class="o">+</span> <span class="n">src_param</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.update_peer_config"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.update_peer_config">[docs]</a>    <span class="k">def</span> <span class="nf">update_peer_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">config_dict</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">peer_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OBCISystemConfigError</span><span class="p">(</span><span class="s2">&quot;Peer ID </span><span class="si">{0}</span><span class="s2"> not in peer list&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">peer_id</span><span class="p">))</span>
+        <span class="n">conf</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">config</span>
+        <span class="n">dictparser</span> <span class="o">=</span> <span class="n">peer</span><span class="o">.</span><span class="n">peer_config_parser</span><span class="o">.</span><span class="n">parser</span><span class="p">(</span><span class="s1">&#39;python&#39;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">dictparser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">config_dict</span><span class="p">,</span> <span class="n">conf</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.file_update_peer_config"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.file_update_peer_config">[docs]</a>    <span class="k">def</span> <span class="nf">file_update_peer_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">file_path</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">peer_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OBCISystemConfigError</span><span class="p">(</span><span class="s2">&quot;Peer ID </span><span class="si">{0}</span><span class="s2"> not in peer list&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">peer_id</span><span class="p">))</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">peer</span><span class="o">.</span><span class="n">peer_config_parser</span><span class="o">.</span><span class="n">parser</span><span class="p">(</span><span class="s1">&#39;ini&#39;</span><span class="p">)</span>
+        <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">file_path</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.peer_path"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.peer_path">[docs]</a>    <span class="k">def</span> <span class="nf">peer_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">path</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.peer_machine"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.peer_machine">[docs]</a>    <span class="k">def</span> <span class="nf">peer_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">machine</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.update_peer_machine"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.update_peer_machine">[docs]</a>    <span class="k">def</span> <span class="nf">update_peer_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">machine_ip</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">machine</span> <span class="o">=</span> <span class="n">machine_ip</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.extend_with_peer"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.extend_with_peer">[docs]</a>    <span class="k">def</span> <span class="nf">extend_with_peer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">peer_path</span><span class="p">,</span> <span class="n">peer_cfg</span><span class="p">,</span>
+                         <span class="n">config_sources</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">launch_deps</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                         <span class="n">param_overwrites</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">machine</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">override</span> <span class="o">=</span> <span class="n">peer_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span>
+        <span class="n">machine</span> <span class="o">=</span> <span class="n">machine</span> <span class="ow">or</span> <span class="s2">&quot;&quot;</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">add_peer</span><span class="p">(</span><span class="n">peer_id</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_peer_config</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">peer_cfg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_peer_path</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">peer_path</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_peer_machine</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">machine</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">config_sources</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">src_name</span><span class="p">,</span> <span class="n">src_id</span> <span class="ow">in</span> <span class="n">config_sources</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_config_source</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">src_name</span><span class="p">,</span> <span class="n">src_id</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">src</span> <span class="ow">in</span> <span class="n">peer_cfg</span><span class="o">.</span><span class="n">config_sources</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">src</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">set_config_source</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">src</span><span class="p">,</span> <span class="n">src</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">launch_deps</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">dep_name</span><span class="p">,</span> <span class="n">dep_id</span> <span class="ow">in</span> <span class="n">launch_deps</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">set_launch_dependency</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">dep_name</span><span class="p">,</span> <span class="n">dep_id</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">dep</span> <span class="ow">in</span> <span class="n">peer_cfg</span><span class="o">.</span><span class="n">launch_deps</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">dep</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">set_launch_dependency</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">dep</span><span class="p">,</span> <span class="n">dep</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">param_overwrites</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">par</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">param_overwrites</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">update_local_param</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">override</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.add_peer"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.add_peer">[docs]</a>    <span class="k">def</span> <span class="nf">add_peer</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">PeerConfigDescription</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.set_peer_config"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.set_peer_config">[docs]</a>    <span class="k">def</span> <span class="nf">set_peer_config</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">peer_config</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">peer_config</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.set_peer_path"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.set_peer_path">[docs]</a>    <span class="k">def</span> <span class="nf">set_peer_path</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">path</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.set_config_source"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.set_config_source">[docs]</a>    <span class="k">def</span> <span class="nf">set_config_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">src_name</span><span class="p">,</span> <span class="n">src_peer_id</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">src_peer_id</span> <span class="ow">and</span> <span class="n">src_peer_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OBCISystemConfigError</span><span class="p">(</span><span class="s2">&quot;(src) Peer ID </span><span class="si">{0}</span><span class="s2"> not in peer list&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">src_peer_id</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">peer_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OBCISystemConfigError</span><span class="p">(</span><span class="s2">&quot;Peer ID </span><span class="si">{0}</span><span class="s2"> not in peer list&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">peer_id</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OBCISystemConfigError</span><span class="p">(</span><span class="s2">&quot;Configuration for peer ID </span><span class="si">{0}</span><span class="s2"> does not exist&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">peer_id</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_config_source</span><span class="p">(</span><span class="n">src_name</span><span class="p">,</span> <span class="n">src_peer_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.set_launch_dependency"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.set_launch_dependency">[docs]</a>    <span class="k">def</span> <span class="nf">set_launch_dependency</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">dep_name</span><span class="p">,</span> <span class="n">dep_peer_id</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">dep_peer_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OBCISystemConfigError</span><span class="p">(</span><span class="s2">&quot;(dep) Peer ID </span><span class="si">{0}</span><span class="s2"> not in peer list&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">dep_peer_id</span><span class="p">))</span>
+        <span class="k">if</span> <span class="n">peer_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OBCISystemConfigError</span><span class="p">(</span><span class="s2">&quot;Peer ID </span><span class="si">{0}</span><span class="s2"> not in peer list&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">peer_id</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OBCISystemConfigError</span><span class="p">(</span><span class="s2">&quot;Configuration for peer ID </span><span class="si">{0}</span><span class="s2"> does not exist&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">peer_id</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_launch_dependency</span><span class="p">(</span><span class="n">dep_name</span><span class="p">,</span> <span class="n">dep_peer_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.set_peer_machine"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.set_peer_machine">[docs]</a>    <span class="k">def</span> <span class="nf">set_peer_machine</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">machine_name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">peer_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OBCISystemConfigError</span><span class="p">(</span><span class="s2">&quot;Peer ID </span><span class="si">{0}</span><span class="s2"> not in peer list&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">peer_id</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">machine</span> <span class="o">=</span> <span class="n">machine_name</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.all_param_values"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.all_param_values">[docs]</a>    <span class="k">def</span> <span class="nf">all_param_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">):</span>
+
+        <span class="k">if</span> <span class="n">peer_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OBCISystemConfigError</span><span class="p">(</span><span class="s2">&quot;Peer ID </span><span class="si">{0}</span><span class="s2"> not in peer list&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">peer_id</span><span class="p">))</span>
+
+        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">config</span>
+        <span class="n">not_fresh</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">param_values</span>
+        <span class="n">vals</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="n">not_fresh</span><span class="p">:</span>
+            <span class="n">vals</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_param_value</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">key</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">vals</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.local_params"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.local_params">[docs]</a>    <span class="k">def</span> <span class="nf">local_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">local_params</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.param_value"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.param_value">[docs]</a>    <span class="k">def</span> <span class="nf">param_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">param_name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">peer_id</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OBCISystemConfigError</span><span class="p">(</span><span class="s2">&quot;Peer ID </span><span class="si">{0}</span><span class="s2"> not in peer list&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">peer_id</span><span class="p">))</span>
+
+        <span class="n">config</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">config</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_param_value</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">config</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_param_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">param_name</span><span class="p">,</span> <span class="n">config</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">param_name</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">local_params</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">config</span><span class="o">.</span><span class="n">local_params</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span>
+        <span class="k">elif</span> <span class="n">param_name</span> <span class="ow">in</span> <span class="n">config</span><span class="o">.</span><span class="n">ext_param_defs</span><span class="p">:</span>
+            <span class="n">peer</span><span class="p">,</span> <span class="n">param</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">ext_param_defs</span><span class="p">[</span><span class="n">param_name</span><span class="p">]</span>
+            <span class="n">source</span> <span class="o">=</span> <span class="n">config</span><span class="o">.</span><span class="n">config_sources</span><span class="p">[</span><span class="n">peer</span><span class="p">]</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">param_value</span><span class="p">(</span><span class="n">source</span><span class="p">,</span> <span class="n">param</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OBCISystemConfigError</span><span class="p">(</span><span class="s2">&quot;Param </span><span class="si">{0}</span><span class="s2"> does not exist in </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">param_name</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">))</span>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.config_ready"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.config_ready">[docs]</a>    <span class="k">def</span> <span class="nf">config_ready</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">details</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">details</span>
+
+        <span class="k">for</span> <span class="n">peer_state</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">peer_state</span><span class="o">.</span><span class="n">ready</span><span class="p">(</span><span class="n">details</span><span class="p">):</span>
+                <span class="k">return</span> <span class="kc">False</span><span class="p">,</span> <span class="n">details</span>
+
+        <span class="n">res</span><span class="p">,</span> <span class="n">det</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">launch_deps_graph_ok</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">res</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">res</span><span class="p">,</span> <span class="n">det</span>
+        <span class="n">res</span><span class="p">,</span> <span class="n">det</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_sources_graph_ok</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">res</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">res</span><span class="p">,</span> <span class="n">det</span>
+
+        <span class="k">return</span> <span class="kc">True</span><span class="p">,</span> <span class="p">{}</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.launch_deps_graph_ok"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.launch_deps_graph_ok">[docs]</a>    <span class="k">def</span> <span class="nf">launch_deps_graph_ok</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">gr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer_graph</span><span class="p">(</span><span class="s1">&#39;list_launch_deps&#39;</span><span class="p">)</span>
+        <span class="n">res</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">topo_sort</span><span class="p">()</span>
+        <span class="n">details</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">res</span> <span class="k">else</span> <span class="p">{</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="s2">&quot;Launch dependencies graph contains a cycle!!!&quot;</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">res</span><span class="p">,</span> <span class="n">details</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.config_sources_graph_ok"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.config_sources_graph_ok">[docs]</a>    <span class="k">def</span> <span class="nf">config_sources_graph_ok</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">gr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer_graph</span><span class="p">(</span><span class="s1">&#39;list_config_sources&#39;</span><span class="p">)</span>
+        <span class="n">res</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">topo_sort</span><span class="p">()</span>
+        <span class="n">details</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">res</span> <span class="k">else</span> <span class="p">{</span><span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="s2">&quot;Config sources graph contains a cycle!!!&quot;</span><span class="p">}</span>
+        <span class="k">return</span> <span class="n">res</span><span class="p">,</span> <span class="n">details</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.status"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.status">[docs]</a>    <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">status_obj</span><span class="p">):</span>
+        <span class="n">ready</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_ready</span><span class="p">()</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">launcher_tools</span><span class="o">.</span><span class="n">READY_TO_LAUNCH</span> <span class="k">if</span> <span class="n">ready</span> <span class="k">else</span> <span class="n">launcher_tools</span><span class="o">.</span><span class="n">NOT_READY</span>
+
+        <span class="n">status_obj</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="n">details</span><span class="p">)</span>
+        <span class="c1"># TODO details, e.g. info about cycles</span>
+
+        <span class="k">for</span> <span class="n">peer_id</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">:</span>
+            <span class="n">pst</span> <span class="o">=</span> <span class="n">status_obj</span><span class="o">.</span><span class="n">peers_status</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">launcher_tools</span><span class="o">.</span><span class="n">PeerStatus</span><span class="p">(</span><span class="n">peer_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span><span class="o">.</span><span class="n">status</span><span class="p">(</span><span class="n">pst</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.peer_machines"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.peer_machines">[docs]</a>    <span class="k">def</span> <span class="nf">peer_machines</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">machines</span> <span class="o">=</span> <span class="nb">set</span><span class="p">([</span><span class="bp">self</span><span class="o">.</span><span class="n">origin_machine</span><span class="p">])</span>
+        <span class="k">for</span> <span class="n">peer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="k">if</span> <span class="n">peer</span><span class="o">.</span><span class="n">machine</span><span class="p">:</span>
+                <span class="n">machines</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">peer</span><span class="o">.</span><span class="n">machine</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="n">machines</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.launch_data"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.launch_data">[docs]</a>    <span class="k">def</span> <span class="nf">launch_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_machine</span><span class="p">):</span>
+        <span class="n">ldata</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">peer</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">machine</span> <span class="o">=</span> <span class="n">peer</span><span class="o">.</span><span class="n">machine</span> <span class="k">if</span> <span class="n">peer</span><span class="o">.</span><span class="n">machine</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">origin_machine</span>
+            <span class="k">if</span> <span class="n">machine</span> <span class="o">==</span> <span class="n">peer_machine</span><span class="p">:</span>
+                <span class="n">ldata</span><span class="p">[</span><span class="n">peer</span><span class="o">.</span><span class="n">peer_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">peer</span><span class="o">.</span><span class="n">launch_data</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">ldata</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.peer_graph"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.peer_graph">[docs]</a>    <span class="k">def</span> <span class="nf">peer_graph</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neighbours_method</span><span class="p">):</span>
+        <span class="n">gr</span> <span class="o">=</span> <span class="n">Graph</span><span class="p">(</span><span class="n">bidirectional</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="n">vs</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="c1"># print &quot;vertices: &quot;, vs</span>
+            <span class="n">meth</span> <span class="o">=</span> <span class="nb">getattr</span><span class="p">(</span><span class="n">p</span><span class="p">,</span> <span class="n">neighbours_method</span><span class="p">)</span>
+            <span class="n">ngs</span> <span class="o">=</span> <span class="n">meth</span><span class="p">()</span>
+            <span class="c1"># print &quot;$$$$$$$$$$$$$$$$$$&quot;, p.peer_id, ngs, neighbours_method</span>
+            <span class="c1"># print p.config</span>
+            <span class="k">if</span> <span class="n">p</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vs</span><span class="p">:</span>
+                <span class="c1"># print &quot;create vertex for &quot;, p.peer_id,</span>
+                <span class="n">ver_p</span> <span class="o">=</span> <span class="n">Vertex</span><span class="p">(</span><span class="n">gr</span><span class="p">,</span> <span class="n">p</span><span class="p">)</span>
+                <span class="n">vs</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="n">ver_p</span>
+                <span class="n">gr</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">ver_p</span><span class="p">)</span>
+                <span class="c1"># print &quot;vvvv:    &quot;, gr.vertices()</span>
+            <span class="k">for</span> <span class="n">ne</span> <span class="ow">in</span> <span class="n">ngs</span><span class="p">:</span>
+                <span class="n">pr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">ne</span><span class="p">]</span>
+                <span class="k">if</span> <span class="n">pr</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">vs</span><span class="p">:</span>
+                    <span class="c1"># print &quot;create second vertex for&quot;, pr.peer_id,</span>
+                    <span class="n">ver_ng</span> <span class="o">=</span> <span class="n">Vertex</span><span class="p">(</span><span class="n">gr</span><span class="p">,</span> <span class="n">pr</span><span class="p">)</span>
+                    <span class="n">vs</span><span class="p">[</span><span class="n">pr</span><span class="p">]</span> <span class="o">=</span> <span class="n">ver_ng</span>
+                    <span class="n">gr</span><span class="o">.</span><span class="n">add_vertex</span><span class="p">(</span><span class="n">ver_ng</span><span class="p">)</span>
+                    <span class="c1"># print &quot;vvvvvv2  &quot;, gr.vertices()</span>
+                <span class="n">gr</span><span class="o">.</span><span class="n">add_edge</span><span class="p">(</span><span class="n">vs</span><span class="p">[</span><span class="n">p</span><span class="p">],</span> <span class="n">vs</span><span class="p">[</span><span class="n">pr</span><span class="p">])</span>
+                <span class="c1"># print &quot;vvvvv after edge:   &quot;, ver_p, ver_ng, &quot;::::&quot;, gr.vertices()</span>
+        <span class="k">return</span> <span class="n">gr</span></div>
+
+    <span class="k">def</span> <span class="nf">_topo_sort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">neighbours_method</span><span class="p">):</span>
+        <span class="n">gr</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer_graph</span><span class="p">(</span><span class="n">neighbours_method</span><span class="p">)</span>
+        <span class="n">res</span><span class="p">,</span> <span class="n">order</span> <span class="o">=</span> <span class="n">gr</span><span class="o">.</span><span class="n">topo_sort</span><span class="p">()</span>
+        <span class="n">ret_order</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">part</span> <span class="ow">in</span> <span class="n">order</span><span class="p">:</span>
+            <span class="n">ret_order</span><span class="o">.</span><span class="n">append</span><span class="p">([</span><span class="n">v</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">peer_id</span> <span class="k">for</span> <span class="n">v</span> <span class="ow">in</span> <span class="n">part</span><span class="p">])</span>
+        <span class="k">return</span> <span class="n">ret_order</span>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.peer_order"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.peer_order">[docs]</a>    <span class="k">def</span> <span class="nf">peer_order</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">order</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topo_sort</span><span class="p">(</span><span class="s1">&#39;list_launch_deps&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">order</span><span class="p">:</span>
+            <span class="n">part1</span> <span class="o">=</span> <span class="n">order</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">if</span> <span class="s1">&#39;mx&#39;</span> <span class="ow">in</span> <span class="n">part1</span><span class="p">:</span>
+                <span class="n">part1</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;mx&#39;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;config_server&#39;</span> <span class="ow">in</span> <span class="n">part1</span><span class="p">:</span>
+                <span class="n">part1</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="s1">&#39;config_server&#39;</span><span class="p">)</span>
+            <span class="n">order</span> <span class="o">=</span> <span class="p">[[</span><span class="s1">&#39;mx&#39;</span><span class="p">],</span> <span class="p">[</span><span class="s1">&#39;config_server&#39;</span><span class="p">]]</span> <span class="o">+</span> <span class="n">order</span>
+        <span class="k">return</span> <span class="n">order</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.peers_info"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.peers_info">[docs]</a>    <span class="k">def</span> <span class="nf">peers_info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">peers</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">:</span>
+            <span class="n">peers</span><span class="p">[</span><span class="n">p</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers</span><span class="p">[</span><span class="n">p</span><span class="p">]</span><span class="o">.</span><span class="n">info</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">peers</span></div>
+
+<div class="viewcode-block" id="OBCIExperimentConfig.info"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCIExperimentConfig.info">[docs]</a>    <span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">exp</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">exp</span><span class="p">[</span><span class="s2">&quot;uuid&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">uuid</span>
+        <span class="n">exp</span><span class="p">[</span><span class="s2">&quot;origin_machine&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">origin_machine</span>
+        <span class="n">exp</span><span class="p">[</span><span class="s2">&quot;launch_file_path&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">launch_file_path</span>
+        <span class="n">peers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">peers_info</span><span class="p">()</span>
+        <span class="n">exp</span><span class="p">[</span><span class="s2">&quot;peers&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">peers</span>
+        <span class="k">return</span> <span class="n">exp</span></div></div>
+
+
+<div class="viewcode-block" id="PeerConfigDescription"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.PeerConfigDescription">[docs]</a><span class="k">class</span> <span class="nc">PeerConfigDescription</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">experiment_id</span><span class="p">,</span> <span class="n">config</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">path</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">machine</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span> <span class="o">=</span> <span class="n">peer_id</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">experiment_id</span> <span class="o">=</span> <span class="n">experiment_id</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">PeerConfig</span><span class="p">(</span><span class="n">peer_id</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="o">=</span> <span class="n">path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">machine</span> <span class="o">=</span> <span class="n">machine</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">public_params</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">logger</span> <span class="ow">or</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;ObciExperimentConfig.peer_id&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">del_after_stop</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">__str__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span>
+
+<div class="viewcode-block" id="PeerConfigDescription.ready"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.PeerConfigDescription.ready">[docs]</a>    <span class="k">def</span> <span class="nf">ready</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">loc_det</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">ready</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">path</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>\
+            <span class="bp">self</span><span class="o">.</span><span class="n">machine</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span>\
+            <span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ready</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">ready</span>
+        <span class="n">ready</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">config_sources_ready</span><span class="p">(</span><span class="n">loc_det</span><span class="p">)</span> <span class="ow">and</span> <span class="n">ready</span>
+        <span class="n">ready</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">launch_deps_ready</span><span class="p">(</span><span class="n">loc_det</span><span class="p">)</span> <span class="ow">and</span> <span class="n">ready</span>
+        <span class="k">if</span> <span class="n">details</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">details</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">loc_det</span>
+        <span class="k">return</span> <span class="n">ready</span></div>
+
+<div class="viewcode-block" id="PeerConfigDescription.list_config_sources"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.PeerConfigDescription.list_config_sources">[docs]</a>    <span class="k">def</span> <span class="nf">list_config_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">val</span> <span class="k">for</span> <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">config_sources</span><span class="o">.</span><span class="n">values</span><span class="p">()</span> <span class="k">if</span>
+                <span class="n">val</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">used_config_sources</span><span class="p">()]</span></div>
+
+<div class="viewcode-block" id="PeerConfigDescription.list_launch_deps"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.PeerConfigDescription.list_launch_deps">[docs]</a>    <span class="k">def</span> <span class="nf">list_launch_deps</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">launch_deps</span><span class="o">.</span><span class="n">values</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="PeerConfigDescription.status"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.PeerConfigDescription.status">[docs]</a>    <span class="k">def</span> <span class="nf">status</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_status_obj</span><span class="p">):</span>
+        <span class="n">det</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="n">ready</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ready</span><span class="p">(</span><span class="n">det</span><span class="p">)</span>
+        <span class="n">st</span> <span class="o">=</span> <span class="n">launcher_tools</span><span class="o">.</span><span class="n">READY_TO_LAUNCH</span> <span class="k">if</span> <span class="n">ready</span> <span class="k">else</span> <span class="n">launcher_tools</span><span class="o">.</span><span class="n">NOT_READY</span>
+
+        <span class="n">peer_status_obj</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="n">st</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="n">det</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="PeerConfigDescription.peer_type"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.PeerConfigDescription.peer_type">[docs]</a>    <span class="k">def</span> <span class="nf">peer_type</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;mx&#39;</span><span class="p">):</span>
+            <span class="k">return</span> <span class="s1">&#39;multiplexer&#39;</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="s1">&#39;obci_peer&#39;</span></div>
+
+<div class="viewcode-block" id="PeerConfigDescription.launch_data"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.PeerConfigDescription.launch_data">[docs]</a>    <span class="k">def</span> <span class="nf">launch_data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ser</span> <span class="o">=</span> <span class="n">PeerConfigSerializerCmd</span><span class="p">()</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span><span class="p">]</span>
+        <span class="n">peer_parser</span> <span class="o">=</span> <span class="n">peer</span><span class="o">.</span><span class="n">peer_config_parser</span><span class="o">.</span><span class="n">parser</span><span class="p">(</span><span class="s2">&quot;ini&quot;</span><span class="p">)</span>
+        <span class="n">base_config</span> <span class="o">=</span> <span class="n">PeerConfig</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span><span class="p">)</span>
+        <span class="n">conf_path</span> <span class="o">=</span> <span class="n">launcher_tools</span><span class="o">.</span><span class="n">default_config_path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">conf_path</span><span class="p">:</span>
+
+            <span class="k">with</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">conf_path</span><span class="p">,</span> <span class="s2">&quot;r&quot;</span><span class="p">,</span> <span class="s2">&quot;utf8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;parsing default config for peer </span><span class="si">%s</span><span class="s2">, </span><span class="si">%s</span><span class="s2"> &quot;</span><span class="p">,</span>
+                                 <span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">conf_path</span><span class="p">)</span>
+                <span class="n">peer_parser</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">f</span><span class="p">,</span> <span class="n">base_config</span><span class="p">)</span>
+
+        <span class="n">ser</span><span class="o">.</span><span class="n">serialize_diff</span><span class="p">(</span><span class="n">base_config</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">,</span> <span class="n">args</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="nb">dict</span><span class="p">(</span><span class="n">peer_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">experiment_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">experiment_id</span><span class="p">,</span>
+                    <span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">machine</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="p">,</span>
+                    <span class="n">args</span><span class="o">=</span><span class="n">args</span><span class="p">,</span> <span class="n">peer_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">peer_type</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="PeerConfigDescription.info"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.PeerConfigDescription.info">[docs]</a>    <span class="k">def</span> <span class="nf">info</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">detailed</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">info</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">peer_id</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">peer_id</span><span class="p">,</span>
+                    <span class="n">path</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">path</span><span class="p">,</span> <span class="n">machine</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">machine</span><span class="p">,</span> <span class="n">peer_type</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">peer_type</span><span class="p">()</span>
+                    <span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">info</span>
+
+        <span class="n">info</span><span class="p">[</span><span class="n">CONFIG_SOURCES</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">config_sources</span>
+        <span class="n">info</span><span class="p">[</span><span class="n">LAUNCH_DEPENDENCIES</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">launch_deps</span>
+
+        <span class="k">if</span> <span class="n">detailed</span><span class="p">:</span>
+            <span class="n">info</span><span class="p">[</span><span class="n">LOCAL_PARAMS</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">local_params</span>
+            <span class="n">info</span><span class="p">[</span><span class="n">EXT_PARAMS</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">ext_param_defs</span>
+        <span class="k">return</span> <span class="n">info</span></div></div>
+
+
+<div class="viewcode-block" id="OBCISystemConfigError"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCISystemConfigError">[docs]</a><span class="k">class</span> <span class="nc">OBCISystemConfigError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="OBCISystemConfigWarning"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.system_config.OBCISystemConfigWarning">[docs]</a><span class="k">class</span> <span class="nc">OBCISystemConfigWarning</span><span class="p">(</span><span class="ne">Warning</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

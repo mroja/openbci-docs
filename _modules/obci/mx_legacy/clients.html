@@ -1,0 +1,618 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.mx_legacy.clients &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.mx_legacy.clients</h1><div class="highlight"><pre>
+<span></span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">traceback</span>
+
+<span class="kn">from</span> <span class="nn">obci.configs.settings</span> <span class="k">import</span> <span class="n">MULTIPLEXER_ADDRESSES</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Only two functions from this file are used around the code:</span>
+<span class="sd">__all__ = [&#39;connect_client&#39;, &#39;BaseMultiplexerServer&#39;]</span>
+
+<span class="sd">connect_client and BaseMultiplexerServer are used in:</span>
+
+<span class="sd"> * BaseMultiplexerServer:</span>
+<span class="sd">   - AcquisitionControl class from OBCI2mx/obci/acquisition/acquisition_control.py</span>
+<span class="sd">     - uses handle_message</span>
+
+<span class="sd">   - ConfiguredMultiplexerServer class from OBCI2mx/obci/control/peer/configured_multiplexer_server.py</span>
+<span class="sd">     -</span>
+
+<span class="sd">   - ConfigServer from OBCI2mx/obci/control/peer/config_server.py</span>
+
+<span class="sd"> * connect_client function (and therefore Client class):</span>
+<span class="sd">   - used in self.conn in OBCI2mx/obci/control/peer/configured_client.py</span>
+<span class="sd">     &#39;self.conn = connect_client(addresses=addresses, type=type)&#39;</span>
+
+<span class="sd">   - used in self.conn in OBCI2mx/obci/control/peer/peer_control.py</span>
+<span class="sd">     &#39;self.query_conn = conn = connect_client(type=peers.CONFIGURER,</span>
+<span class="sd">                                              addresses=settings.MULTIPLEXER_ADDRESSES)&#39;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    class_&lt;PythonClient/*, boost::shared_ptr&lt;PythonClient&gt;*/ &gt;(</span>
+<span class="sd">        &quot;Client&quot;,</span>
+<span class="sd">        &quot;Client object providing Multiplexer services for python.\n&quot;</span>
+<span class="sd">        &quot;Client.__init__(self, Asio_IoService, int) -&gt;\n&quot;</span>
+<span class="sd">        &quot;    construct a new object bound to the given Asio_IoService\n&quot;</span>
+<span class="sd">        &quot;    of specified type\n&quot;,</span>
+<span class="sd">        init&lt;boost::asio::io_service&amp;, boost::uint32_t&gt;()</span>
+<span class="sd">        )</span>
+
+<span class="sd">    .def(&quot;_get_instance_id&quot;,    &amp;PythonClient::instance_id)</span>
+
+<span class="sd">    .def(&quot;async_connect&quot;,       (ConnectionWrapper (PythonClient::*)</span>
+<span class="sd">                                        (const std::string&amp;, boost::uint16_t))</span>
+<span class="sd">                                            &amp;PythonClient::async_connect)</span>
+
+<span class="sd">    .def(&quot;connect&quot;,         (ConnectionWrapper (PythonClient::*)</span>
+<span class="sd">                                        (const std::string&amp;, boost::uint16_t,</span>
+<span class="sd">                                         float)) &amp;PythonClient::connect)</span>
+
+<span class="sd">    .def(&quot;wait_for_connection&quot;, &amp;PythonClient::wait_for_connection)</span>
+<span class="sd">    .def(&quot;connections_count&quot;,   &amp;PythonClient::connections_count)</span>
+<span class="sd">    .def(&quot;shutdown&quot;,        &amp;PythonClient::shutdown)</span>
+
+<span class="sd">    .def(&quot;read_message&quot;,        &amp;PythonClient::read_message)</span>
+
+<span class="sd">    .def(&quot;schedule_one&quot;,        (ScheduledMessageTracker (PythonClient::*)</span>
+<span class="sd">                                        (std::string))</span>
+<span class="sd">                                            &amp;PythonClient::schedule_one)</span>
+
+<span class="sd">    .def(&quot;schedule_one&quot;,        (ScheduledMessageTracker (PythonClient::*)</span>
+<span class="sd">                                        (std::string, ConnectionWrapper, float))</span>
+<span class="sd">                                            &amp;PythonClient::schedule_one)</span>
+
+<span class="sd">    .def(&quot;schedule_all&quot;,        &amp;PythonClient::schedule_all)</span>
+
+<span class="sd">    .def(&quot;flush&quot;,           (void (PythonClient::*)</span>
+<span class="sd">                                        (ScheduledMessageTracker, float) const)</span>
+<span class="sd">                                            &amp;PythonClient::flush)</span>
+
+<span class="sd">    .def(&quot;flush_all&quot;,       &amp;PythonClient::flush_all)</span>
+
+<span class="sd">    .def(&quot;random&quot;,          &amp;PythonClient::random64)</span>
+<span class="sd">    ;</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="k">class</span> <span class="nc">CppClient</span><span class="p">:</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">OperationFailed</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span>
+
+
+<span class="k">class</span> <span class="nc">MxClientClient</span><span class="p">(</span><span class="n">CppClient</span><span class="p">):</span>
+
+    <span class="n">DEFAULT_TIMEOUT</span> <span class="o">=</span> <span class="mf">10.0</span>
+    <span class="n">ONE</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">ALL</span> <span class="o">=</span> <span class="mi">1</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">client_type</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;initialize a client with given client (peer) type&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_client_type</span> <span class="o">=</span> <span class="n">client_type</span>
+
+    <span class="k">def</span> <span class="nf">connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            synchronous connect</span>
+<span class="sd">            endpoint is e.g. (&quot;localhost&quot;, 1980)</span>
+<span class="sd">            return ConnectionWrapper</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">ip4</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostbyname</span><span class="p">(</span><span class="n">endpoint</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Client</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">ip4</span><span class="p">,</span> <span class="n">endpoint</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">timeout</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">wait_for_connection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">connwrap</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;wait for connection initiated with async_connect&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Client</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">wait_for_connection</span><span class="p">(</span><span class="n">connwrap</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__receive_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            blocking read from all the sockets (or from incoming message queue)</span>
+<span class="sd">            returns (MultiplexerMessage, ConnectionWrapper)</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">next</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">Client</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">read_message</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="nb">next</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="nb">bytes</span><span class="p">)</span>
+        <span class="n">mxmsg</span> <span class="o">=</span> <span class="n">parse_message</span><span class="p">(</span><span class="n">MultiplexerMessage</span><span class="p">,</span> <span class="nb">next</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">mxmsg</span><span class="p">,</span> <span class="nb">next</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="k">def</span> <span class="nf">receive_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=-</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__receive_message</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">handle_drop</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mxmsg</span><span class="p">,</span> <span class="n">connwrap</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;overide in subclass if you want to get hold on every message</span>
+<span class="sd">           dropped&quot;&quot;&quot;</span>
+        <span class="n">log</span><span class="p">(</span><span class="n">WARNING</span><span class="p">,</span> <span class="n">HIGHVERBOSITY</span><span class="p">,</span>
+            <span class="n">text</span><span class="o">=</span><span class="s2">&quot;dropping message </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="nb">dict</span><span class="p">(</span><span class="nb">id</span><span class="o">=</span><span class="n">mxmsg</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">mxmsg</span><span class="o">.</span><span class="n">type</span><span class="p">,</span>
+                                              <span class="n">to</span><span class="o">=</span><span class="n">mxmsg</span><span class="o">.</span><span class="n">to</span><span class="p">,</span> <span class="n">from_</span><span class="o">=</span><span class="n">mxmsg</span><span class="o">.</span><span class="n">from_</span><span class="p">,</span>
+                                              <span class="n">references</span><span class="o">=</span><span class="n">mxmsg</span><span class="o">.</span><span class="n">references</span><span class="p">,</span> <span class="nb">len</span><span class="o">=</span><span class="nb">len</span><span class="p">(</span><span class="n">mxmsg</span><span class="o">.</span><span class="n">message</span><span class="p">))</span>
+            <span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_type</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">exc</span><span class="o">=</span><span class="n">OperationFailed</span><span class="p">):</span>
+        <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">MultiplexerMessage</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">message</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="nb">type</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">exc</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_unpack</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="nb">type</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">parse_message</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span> <span class="n">message</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">event</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;send message through all active MX connections (arguments same as</span>
+<span class="sd">           for send_message)&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">multiplexer</span><span class="o">=</span><span class="n">Client</span><span class="o">.</span><span class="n">ALL</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Reliably ask for the response.</span>
+
+<span class="sd">            Send a request `message&#39; with type `type&#39; through one MX</span>
+<span class="sd">            connection.  If there is no response within `timeout&#39; seconds,</span>
+<span class="sd">            query all connected MX servers, to find working backend that will</span>
+<span class="sd">            handle the request. If such a backend is found within `timeout&#39;</span>
+<span class="sd">            seconds, repeat the request directly to the working backend through</span>
+<span class="sd">            the working MX connection.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">assert</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">MultiplexerMessage</span><span class="p">)</span>
+        <span class="n">query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_message</span><span class="p">(</span><span class="nb">type</span><span class="o">=</span><span class="nb">type</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">)</span>
+        <span class="n">first_request_delivery_errored</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">response</span><span class="p">,</span> <span class="n">connwrap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_and_receive</span><span class="p">(</span><span class="n">query</span><span class="p">,</span>
+                                                       <span class="n">multiplexer</span><span class="o">=</span><span class="n">Client</span><span class="o">.</span><span class="n">ONE</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+                                                       <span class="n">ignore_types</span><span class="o">=</span><span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">REQUEST_RECEIVED</span><span class="p">,))</span>
+            <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">!=</span> <span class="n">types</span><span class="o">.</span><span class="n">DELIVERY_ERROR</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">response</span>
+            <span class="n">first_request_delivery_errored</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">except</span> <span class="n">OperationTimedOut</span><span class="p">:</span>
+            <span class="k">pass</span>
+
+        <span class="c1"># find working backends</span>
+        <span class="n">search</span> <span class="o">=</span> <span class="n">BackendForPacketSearch</span><span class="p">()</span>
+        <span class="n">search</span><span class="o">.</span><span class="n">packet_type</span> <span class="o">=</span> <span class="nb">type</span>
+        <span class="n">mxmsg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_message</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">search</span><span class="p">,</span>
+                                 <span class="nb">type</span><span class="o">=</span><span class="n">types</span><span class="o">.</span><span class="n">BACKEND_FOR_PACKET_SEARCH</span><span class="p">)</span>
+        <span class="n">response</span><span class="p">,</span> <span class="n">connwrap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_and_receive</span><span class="p">(</span><span class="n">mxmsg</span><span class="p">,</span>
+                                                   <span class="n">accept_ids</span><span class="o">=</span><span class="p">[</span><span class="n">query</span><span class="o">.</span><span class="n">id</span><span class="p">],</span> <span class="n">multiplexer</span><span class="o">=</span><span class="n">Client</span><span class="o">.</span><span class="n">ALL</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span>
+                                                   <span class="n">handle_delivery_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                                                   <span class="n">ignore_types</span><span class="o">=</span><span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">REQUEST_RECEIVED</span><span class="p">,))</span>
+
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">DELIVERY_ERROR</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">first_request_delivery_errored</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">OperationFailed</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">receive</span><span class="p">(</span><span class="n">accept_ids</span><span class="o">=</span><span class="p">[</span><span class="n">query</span><span class="o">.</span><span class="n">id</span><span class="p">],</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">references</span> <span class="o">==</span> <span class="n">query</span><span class="o">.</span><span class="n">id</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">response</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_type</span><span class="p">(</span><span class="n">response</span><span class="p">,</span> <span class="n">types</span><span class="o">.</span><span class="n">PING</span><span class="p">)</span>
+
+        <span class="c1"># resent original query directly to the working backend</span>
+        <span class="n">direct_query</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_message</span><span class="p">(</span><span class="n">to</span><span class="o">=</span><span class="n">response</span><span class="o">.</span><span class="n">from_</span><span class="p">,</span> <span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">,</span>
+                                        <span class="nb">type</span><span class="o">=</span><span class="nb">type</span><span class="p">)</span>
+        <span class="k">assert</span> <span class="n">direct_query</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="nb">type</span>
+        <span class="k">assert</span> <span class="nb">type</span>
+        <span class="n">response</span><span class="p">,</span> <span class="n">connwrap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_and_receive</span><span class="p">(</span><span class="n">direct_query</span><span class="p">,</span>
+                                                   <span class="n">accept_ids</span><span class="o">=</span><span class="p">[</span><span class="n">query</span><span class="o">.</span><span class="n">id</span><span class="p">],</span> <span class="n">ignore_ids</span><span class="o">=</span><span class="p">[</span><span class="n">mxmsg</span><span class="o">.</span><span class="n">id</span><span class="p">],</span>
+                                                   <span class="n">multiplexer</span><span class="o">=</span><span class="n">connwrap</span><span class="p">,</span>
+                                                   <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">,</span> <span class="n">ignore_types</span><span class="o">=</span><span class="p">(</span><span class="n">types</span><span class="o">.</span><span class="n">REQUEST_RECEIVED</span><span class="p">,))</span>
+
+        <span class="k">if</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">DELIVERY_ERROR</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">OperationFailed</span>
+
+        <span class="k">return</span> <span class="n">response</span>
+
+    <span class="k">def</span> <span class="nf">send_and_receive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">accept_ids</span><span class="o">=</span><span class="p">[],</span> <span class="n">ignore_ids</span><span class="o">=</span><span class="p">[],</span>
+                         <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">handle_delivery_errors</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+                         <span class="n">ignore_types</span><span class="o">=</span><span class="p">(),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Unreliably ask for the response.</span>
+
+<span class="sd">            Sends a request `message&#39; and wait until `timeout&#39; second pass or a</span>
+<span class="sd">            response to message or one of accept_ids is received.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="n">timeout_ticker</span> <span class="o">=</span> <span class="n">TimeoutTicker</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="nb">id</span><span class="p">,</span> <span class="n">tracker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout_ticker</span><span class="p">(),</span>
+                                        <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tracker</span><span class="p">,</span> <span class="n">ScheduledMessageTracker</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flush</span><span class="p">(</span><span class="n">tracker</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout_ticker</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tracker</span><span class="p">,</span> <span class="nb">int</span><span class="p">)</span>
+            <span class="k">assert</span> <span class="n">tracker</span> <span class="o">&gt;=</span> <span class="mi">0</span>
+
+        <span class="n">accept_ids</span> <span class="o">=</span> <span class="p">[</span><span class="nb">id</span><span class="p">]</span> <span class="o">+</span> <span class="n">accept_ids</span>
+        <span class="k">while</span> <span class="n">timeout_ticker</span><span class="o">.</span><span class="n">permit</span><span class="p">():</span>
+            <span class="n">mxmsg</span><span class="p">,</span> <span class="n">connwrap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">receive</span><span class="p">(</span><span class="n">accept_ids</span><span class="o">=</span><span class="n">accept_ids</span><span class="p">,</span>
+                                           <span class="n">ignore_ids</span><span class="o">=</span><span class="n">ignore_ids</span><span class="p">,</span> <span class="n">ignore_types</span><span class="o">=</span><span class="n">ignore_types</span><span class="p">,</span>
+                                           <span class="n">timeout_ticker</span><span class="o">=</span><span class="n">timeout_ticker</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">mxmsg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">DELIVERY_ERROR</span> <span class="ow">and</span> \
+                    <span class="n">handle_delivery_errors</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tracker</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+                <span class="c1"># event was sent and we don&#39;t want to stop on first</span>
+                <span class="c1"># DELIVERY_ERROR received</span>
+                <span class="n">tracker</span> <span class="o">-=</span> <span class="mi">1</span>
+                <span class="k">if</span> <span class="n">tracker</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+                    <span class="k">continue</span>
+            <span class="k">return</span> <span class="n">mxmsg</span><span class="p">,</span> <span class="n">connwrap</span>
+
+        <span class="k">raise</span> <span class="n">OperationTimedOut</span>
+
+    <span class="k">def</span> <span class="nf">receive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">accept_ids</span><span class="p">,</span> <span class="n">ignore_ids</span><span class="o">=</span><span class="p">[],</span> <span class="n">ignore_types</span><span class="o">=</span><span class="p">(),</span>
+                <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="n">timeout_ticker</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            like send_and_receive but without sending anything</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">timeout_ticker</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">timeout_ticker</span> <span class="o">=</span> <span class="n">TimeoutTicker</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="n">timeout_ticker</span><span class="o">.</span><span class="n">permit</span><span class="p">():</span>
+            <span class="n">mxmsg</span><span class="p">,</span> <span class="n">connwrap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">__receive_message</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">timeout_ticker</span><span class="p">())</span>
+            <span class="k">if</span> <span class="n">mxmsg</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="n">ignore_types</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="k">if</span> <span class="n">mxmsg</span><span class="o">.</span><span class="n">references</span> <span class="ow">in</span> <span class="n">accept_ids</span><span class="p">:</span>
+                <span class="k">return</span> <span class="p">(</span><span class="n">mxmsg</span><span class="p">,</span> <span class="n">connwrap</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="n">mxmsg</span><span class="o">.</span><span class="n">references</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">ignore_ids</span><span class="p">:</span>
+                <span class="c1"># unexpected message received</span>
+                <span class="n">log</span><span class="p">(</span><span class="n">WARNING</span><span class="p">,</span> <span class="n">HIGHVERBOSITY</span><span class="p">,</span>
+                    <span class="n">text</span><span class="o">=</span><span class="s2">&quot;message (id=</span><span class="si">%d</span><span class="s2">, type=</span><span class="si">%d</span><span class="s2">, from=</span><span class="si">%d</span><span class="s2">, references=</span><span class="si">%d</span><span class="s2">) &quot;</span>
+                    <span class="s2">&quot;while waiting for reply for </span><span class="si">%r</span><span class="s2">&quot;</span> <span class="o">%</span>
+                    <span class="p">(</span><span class="n">mxmsg</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">mxmsg</span><span class="o">.</span><span class="n">type</span><span class="p">,</span> <span class="n">mxmsg</span><span class="o">.</span><span class="n">from_</span><span class="p">,</span>
+                     <span class="n">mxmsg</span><span class="o">.</span><span class="n">references</span><span class="p">,</span> <span class="n">accept_ids</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">handle_drop</span><span class="p">(</span><span class="n">mxmsg</span><span class="p">,</span> <span class="n">connwrap</span><span class="p">)</span>
+
+        <span class="k">raise</span> <span class="n">OperationTimedOut</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">send_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            sends a message through one or more MX servers; usually</span>
+<span class="sd">            non-blocking</span>
+
+<span class="sd">            returns (message_id, message_tracker)</span>
+
+<span class="sd">            :Parameters:</span>
+<span class="sd">                - `message`: MultiplexerMessage or something that will become a</span>
+<span class="sd">                  message body (string, PorotocolBuffer Message) (if embed is</span>
+<span class="sd">                  True, message will become final message&#39;s body without</span>
+<span class="sd">                  checking types)</span>
+<span class="sd">                - `embed`: (keyword-only) force creating new</span>
+<span class="sd">                  MultiplexerMessage, don&#39;t check `message&#39; type</span>
+<span class="sd">                - `multiplexer`: (keyword-only) [ ONE | ALL | Connwrap ] -- use</span>
+<span class="sd">                  specific (set of) MX, default = ONE</span>
+<span class="sd">                - `flush`: (keyword-only) wait until message is passed to the</span>
+<span class="sd">                  socket layer (kernel)</span>
+<span class="sd">                - `timeout`: (keyword-only) timeout</span>
+<span class="sd">                - `kwargs`: will be used in construting MultiplexerMessage</span>
+<span class="sd">                  where `embed&#39; or message is not instance of</span>
+<span class="sd">                  MultiplexerMessage</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">__send_message</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">__send_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">message</span><span class="p">,</span> <span class="n">embed</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">multiplexer</span><span class="o">=</span><span class="n">ONE</span><span class="p">,</span>
+                       <span class="n">flush</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+
+        <span class="n">timeout_ticker</span> <span class="o">=</span> <span class="n">TimeoutTicker</span><span class="p">(</span><span class="n">timeout</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">embed</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">message</span><span class="p">,</span> <span class="n">MultiplexerMessage</span><span class="p">):</span>
+            <span class="n">mxmsg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">new_message</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="n">message</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">mxmsg</span> <span class="o">=</span> <span class="n">message</span>
+
+        <span class="n">raw</span> <span class="o">=</span> <span class="n">mxmsg</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">multiplexer</span> <span class="ow">is</span> <span class="n">Client</span><span class="o">.</span><span class="n">ONE</span><span class="p">:</span>
+            <span class="n">tracker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule_one</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">multiplexer</span> <span class="ow">is</span> <span class="n">Client</span><span class="o">.</span><span class="n">ALL</span><span class="p">:</span>
+            <span class="n">tracker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule_all</span><span class="p">(</span><span class="n">raw</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">multiplexer</span><span class="p">,</span> <span class="n">ConnectionWrapper</span><span class="p">):</span>
+            <span class="n">tracker</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">schedule_one</span><span class="p">(</span><span class="n">raw</span><span class="p">,</span> <span class="n">multiplexer</span><span class="p">,</span> <span class="n">timeout_ticker</span><span class="p">())</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;selecting multiplexer with </span><span class="si">%r</span><span class="s2"> is not supported&quot;</span> <span class="o">%</span>
+                                      <span class="n">multiplexer</span><span class="p">)</span>
+
+        <span class="c1"># handle flush</span>
+        <span class="k">if</span> <span class="n">flush</span> <span class="ow">and</span> <span class="n">tracker</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">multiplexer</span> <span class="ow">is</span> <span class="n">Client</span><span class="o">.</span><span class="n">ALL</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;Flushing when sending to multiple peers is &quot;</span>
+                                          <span class="s2">&quot;not implemented.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">flush</span><span class="p">(</span><span class="n">tracker</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout_ticker</span><span class="p">())</span>
+
+        <span class="k">return</span> <span class="p">(</span><span class="n">mxmsg</span><span class="o">.</span><span class="n">id</span><span class="p">,</span> <span class="n">tracker</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">flush</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tracker</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">DEFAULT_TIMEOUT</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;ensure that message tracked by tracker is either sent or dropped&quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">Client</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">flush</span><span class="p">(</span><span class="n">tracker</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    def flush_all(self, timeout=DEFAULT_TIMEOUT):</span>
+<span class="sd">        &quot;&quot;try to empty all outgoing messages buffers within timeout seconds&quot;&quot;</span>
+<span class="sd">        super(Client, self).flush_all(timeout)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">read_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;shortcut for receiving a message and ingoring connection used&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">receive_message</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+
+    <span class="c1"># helper functions</span>
+    <span class="k">def</span> <span class="nf">random</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;returns random uint64&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">(</span><span class="n">Client</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">random</span><span class="p">()</span>
+
+    <span class="n">message_defaults</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">new_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;creates new MultiplexerMessage with some predefined values&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">message_defaults</span><span class="p">:</span>
+            <span class="n">kwargs</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">message_defaults</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+        <span class="c1"># defaults</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;id&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">random</span><span class="p">())</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;from&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">instance_id</span><span class="p">)</span>
+
+        <span class="c1"># special handling of some values</span>
+
+        <span class="k">if</span> <span class="s1">&#39;message&#39;</span> <span class="ow">in</span> <span class="n">kwargs</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">],</span> <span class="nb">bytes</span><span class="p">):</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">],</span> <span class="nb">str</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;message must be a binary string&#39;</span><span class="p">)</span>
+            <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">kwargs</span><span class="p">[</span><span class="s1">&#39;message&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="n">make_message</span><span class="p">(</span><span class="n">MultiplexerMessage</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">BasicClient</span><span class="p">(</span><span class="n">MxClientClient</span><span class="p">):</span>
+
+    <span class="c1"># TODO consider inclusion of this functionality in mxclient.Client</span>
+
+    <span class="k">def</span> <span class="nf">receive_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;wrapper around mxclient.Client.send_and_receive&quot;&quot;&quot;</span>
+        <span class="n">mxmsg</span><span class="p">,</span> <span class="n">connwrap</span> <span class="o">=</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">receive_message</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mxmsg</span><span class="p">,</span> <span class="n">connwrap</span>
+
+    <span class="k">def</span> <span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">mxmsg</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">BasicClient</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">query</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">mxmsg</span>
+
+    <span class="k">def</span> <span class="nf">send_and_receive</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;ignore_function&#39;</span><span class="p">,</span>
+                          <span class="k">lambda</span> <span class="n">mxmsg</span><span class="p">,</span> <span class="n">connwrap</span><span class="p">:</span> <span class="n">mxmsg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">REQUEST_RECEIVED</span><span class="p">)</span>
+        <span class="k">return</span> <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">send_and_receive</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+
+
+<span class="k">class</span> <span class="nc">Client</span><span class="p">(</span><span class="n">BasicClient</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addresses</span><span class="o">=</span><span class="n">MULTIPLEXER_ADDRESSES</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># arguments are in this order to preserve compatibility</span>
+        <span class="k">if</span> <span class="nb">type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span>
+        <span class="nb">super</span><span class="p">()</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="nb">type</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">host</span><span class="p">,</span> <span class="n">port</span> <span class="ow">in</span> <span class="n">addresses</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">((</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="connect_client"><a class="viewcode-back" href="../../../apidoc/obci.mx_legacy.html#obci.mx_legacy.clients.connect_client">[docs]</a><span class="k">def</span> <span class="nf">connect_client</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">Client</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+
+<span class="k">class</span> <span class="nc">MultiplexerPeer</span><span class="p">:</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addresses</span><span class="o">=</span><span class="n">MULTIPLEXER_ADDRESSES</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Constructor.</span>
+
+<span class="sd">        :Parameters:</span>
+<span class="sd">            host</span>
+<span class="sd">                Host of multiplexer.</span>
+<span class="sd">            addresses</span>
+<span class="sd">                list of (host, port) pairs</span>
+<span class="sd">            type : multiplexer.multiplexer_constants.peers.* constant</span>
+<span class="sd">                Type of client to create</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="nb">type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;no type provided&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="nb">type</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="n">BasicClient</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">type</span><span class="p">)</span>
+        <span class="k">for</span> <span class="p">(</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span> <span class="ow">in</span> <span class="n">addresses</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">connect</span><span class="p">((</span><span class="n">host</span><span class="p">,</span> <span class="n">port</span><span class="p">))</span>
+
+
+<div class="viewcode-block" id="BaseMultiplexerServer"><a class="viewcode-back" href="../../../apidoc/obci.mx_legacy.html#obci.mx_legacy.clients.BaseMultiplexerServer">[docs]</a><span class="k">class</span> <span class="nc">BaseMultiplexerServer</span><span class="p">(</span><span class="n">MultiplexerPeer</span><span class="p">):</span>
+    <span class="sd">&quot;&quot;&quot;Abstract multiplexer server functionality.&quot;&quot;&quot;</span>
+
+    <span class="c1"># time when the instance was initilized</span>
+    <span class="n">_start_time</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addresses</span><span class="o">=</span><span class="n">MULTIPLEXER_ADDRESSES</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">            Constructor.</span>
+<span class="sd">            See docstring for MultiplexerPeer.__init__ for meaning of</span>
+<span class="sd">            parameters.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">BaseMultiplexerServer</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">addresses</span><span class="p">,</span> <span class="nb">type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">working</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">last_mxmsg</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span> <span class="o">=</span> <span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()</span>
+
+    <span class="n">start_time</span> <span class="o">=</span> <span class="nb">property</span><span class="p">(</span><span class="k">lambda</span> <span class="bp">self</span><span class="p">:</span> <span class="bp">self</span><span class="o">.</span><span class="n">_start_time</span><span class="p">,</span>
+                          <span class="n">doc</span><span class="o">=</span><span class="s2">&quot;Time when the instance was instantiated&quot;</span><span class="p">)</span>
+
+<div class="viewcode-block" id="BaseMultiplexerServer.loop"><a class="viewcode-back" href="../../../apidoc/obci.mx_legacy.html#obci.mx_legacy.clients.BaseMultiplexerServer.loop">[docs]</a>    <span class="k">def</span> <span class="nf">loop</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Serve forever.&quot;&quot;&quot;</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">working</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">last_mxmsg</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_connwrap</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">receive_message</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">__handle_message</span><span class="p">()</span></div>
+
+    <span class="n">serve_forever</span> <span class="o">=</span> <span class="n">loop</span>
+
+    <span class="k">def</span> <span class="nf">__handle_message</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_has_sent_response</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_private_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_mxmsg</span><span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_handle_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_mxmsg</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">handle_message</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">last_mxmsg</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_sent_response</span><span class="p">:</span>
+                <span class="n">log</span><span class="p">(</span><span class="n">WARNING</span><span class="p">,</span> <span class="n">LOWVERBOSITY</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="s2">&quot;handle_message() &quot;</span>
+                    <span class="s2">&quot;finished w/o exception and w/o any response&quot;</span><span class="p">)</span>
+
+        <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="c1"># report exception</span>
+            <span class="n">traceback</span><span class="o">.</span><span class="n">print_exc</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_has_sent_response</span><span class="p">:</span>
+                <span class="n">log</span><span class="p">(</span><span class="n">DEBUG</span><span class="p">,</span> <span class="n">MEDIUMVERBOSITY</span><span class="p">,</span> <span class="n">text</span><span class="o">=</span><span class="k">lambda</span><span class="p">:</span> <span class="s2">&quot;sending &quot;</span>
+                    <span class="s2">&quot;BACKEND_ERROR notification for Exception </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">e</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">report_error</span><span class="p">(</span><span class="n">message</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">e</span><span class="p">))</span>
+            <span class="n">handled</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">exception_occurred</span><span class="p">(</span><span class="n">e</span><span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">handled</span><span class="p">:</span>
+                <span class="k">raise</span>
+
+<div class="viewcode-block" id="BaseMultiplexerServer.handle_message"><a class="viewcode-back" href="../../../apidoc/obci.mx_legacy.html#obci.mx_legacy.clients.BaseMultiplexerServer.handle_message">[docs]</a>    <span class="k">def</span> <span class="nf">handle_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mxmsg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method should be overriden in child classes.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_is_private_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mxmsg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method may be overriden in subclass to enable</span>
+<span class="sd">        handling of private but not mx-specific messages&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_handle_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mxmsg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;This method should be overriden in subclass (also:</span>
+<span class="sd">        _is_private_message()). Handling of private but not mx-specific</span>
+<span class="sd">        messages.&quot;&quot;&quot;</span>
+        <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">()</span>
+
+<div class="viewcode-block" id="BaseMultiplexerServer.parse_message"><a class="viewcode-back" href="../../../apidoc/obci.mx_legacy.html#obci.mx_legacy.clients.BaseMultiplexerServer.parse_message">[docs]</a>    <span class="k">def</span> <span class="nf">parse_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">type</span><span class="p">,</span> <span class="n">mxmsg</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;parse mxmsg.message with new Protobuf message of type `type&#39;&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">parse_message</span><span class="p">(</span><span class="nb">type</span><span class="p">,</span>
+                             <span class="bp">self</span><span class="o">.</span><span class="n">last_mxmsg</span><span class="o">.</span><span class="n">message</span> <span class="k">if</span> <span class="n">mxmsg</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">mxmsg</span><span class="o">.</span><span class="n">message</span><span class="p">)</span></div>
+
+    <span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    def notify_start(self):</span>
+<span class="sd">        assert not self._has_sent_response, &quot;If you use notify_start(), &quot; \</span>
+<span class="sd">                &quot;place it as a first function in your handle_message() code&quot;</span>
+<span class="sd">        self.send_message(</span>
+<span class="sd">                message=&quot;&quot;,</span>
+<span class="sd">                type=types.REQUEST_RECEIVED,</span>
+<span class="sd">                # references, workflow -- set by send_message</span>
+<span class="sd">            )</span>
+<span class="sd">        self._has_sent_response = False</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="BaseMultiplexerServer.send_message"><a class="viewcode-back" href="../../../apidoc/obci.mx_legacy.html#obci.mx_legacy.clients.BaseMultiplexerServer.send_message">[docs]</a>    <span class="k">def</span> <span class="nf">send_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_mxmsg</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_has_sent_response</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;multiplexer&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_connwrap</span><span class="p">)</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;references&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_mxmsg</span><span class="o">.</span><span class="n">id</span><span class="p">)</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;workflow&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_mxmsg</span><span class="o">.</span><span class="n">workflow</span><span class="p">)</span>
+            <span class="n">kwargs</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="s1">&#39;to&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_mxmsg</span><span class="o">.</span><span class="n">from_</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span><span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="BaseMultiplexerServer.no_response"><a class="viewcode-back" href="../../../apidoc/obci.mx_legacy.html#obci.mx_legacy.clients.BaseMultiplexerServer.no_response">[docs]</a>    <span class="k">def</span> <span class="nf">no_response</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_has_sent_response</span> <span class="o">=</span> <span class="kc">True</span></div>
+
+<div class="viewcode-block" id="BaseMultiplexerServer.close"><a class="viewcode-back" href="../../../apidoc/obci.mx_legacy.html#obci.mx_legacy.clients.BaseMultiplexerServer.close">[docs]</a>    <span class="k">def</span> <span class="nf">close</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;In case we ever what to finish.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">shutdown</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span> <span class="o">=</span> <span class="kc">None</span></div></div>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;connect_client&#39;</span><span class="p">,</span> <span class="s1">&#39;BaseMultiplexerServer&#39;</span><span class="p">]</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

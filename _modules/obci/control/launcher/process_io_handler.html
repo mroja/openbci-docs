@@ -1,0 +1,302 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.launcher.process_io_handler &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.launcher.process_io_handler</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+
+<span class="kn">from</span> <span class="nn">collections</span> <span class="k">import</span> <span class="n">deque</span>
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">queue</span> <span class="k">import</span> <span class="n">Queue</span><span class="p">,</span> <span class="n">Empty</span><span class="p">,</span> <span class="n">Full</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">queue</span> <span class="k">import</span> <span class="n">Queue</span><span class="p">,</span> <span class="n">Empty</span><span class="p">,</span> <span class="n">Full</span>  <span class="c1"># python 3.x</span>
+
+
+<span class="n">STDIO_QUEUE_MAX_SIZE</span> <span class="o">=</span> <span class="mi">8192</span>
+<span class="n">STDIO_TAIL_LEN</span> <span class="o">=</span> <span class="mi">128</span>
+<span class="n">DEFAULT_TAIL_RQ</span> <span class="o">=</span> <span class="mi">10</span>
+
+<span class="n">LINES_TO_GET</span> <span class="o">=</span> <span class="mi">5</span>
+<span class="n">IO_WAIT</span> <span class="o">=</span> <span class="mf">0.5</span>
+
+
+<div class="viewcode-block" id="start_stdio_handler"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process_io_handler.start_stdio_handler">[docs]</a><span class="k">def</span> <span class="nf">start_stdio_handler</span><span class="p">(</span><span class="n">popen_obj</span><span class="p">,</span> <span class="n">stdio_actions</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span>
+                        <span class="n">stdout_log</span><span class="p">,</span> <span class="n">stderr_log</span><span class="p">):</span>
+    <span class="n">io_handler</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">stdio_actions</span> <span class="o">!=</span> <span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">):</span>
+        <span class="n">out</span><span class="p">,</span> <span class="n">err</span><span class="p">,</span> <span class="n">stdin</span> <span class="o">=</span> <span class="n">stdio_actions</span>
+        <span class="n">out_handle</span> <span class="o">=</span> <span class="n">popen_obj</span><span class="o">.</span><span class="n">stdout</span> <span class="k">if</span> <span class="n">out</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">err</span> <span class="o">==</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">STDOUT</span> <span class="ow">or</span> <span class="n">err</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">err_handle</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">err_handle</span> <span class="o">=</span> <span class="n">popen_obj</span><span class="o">.</span><span class="n">stderr</span>
+
+        <span class="n">in_handle</span> <span class="o">=</span> <span class="n">popen_obj</span><span class="o">.</span><span class="n">stdin</span> <span class="k">if</span> <span class="n">stdin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="kc">None</span>
+
+        <span class="n">io_handler</span> <span class="o">=</span> <span class="n">ProcessIOHandler</span><span class="p">(</span>
+            <span class="n">name</span><span class="o">=</span><span class="n">name</span><span class="p">,</span>
+            <span class="n">stdout</span><span class="o">=</span><span class="n">out_handle</span><span class="p">,</span>
+            <span class="n">stderr</span><span class="o">=</span><span class="n">err_handle</span><span class="p">,</span>
+            <span class="n">stdin</span><span class="o">=</span><span class="n">in_handle</span><span class="p">,</span>
+            <span class="n">out_log</span><span class="o">=</span><span class="n">stdout_log</span><span class="p">,</span> <span class="n">err_log</span><span class="o">=</span><span class="n">stderr_log</span><span class="p">)</span>
+        <span class="n">io_handler</span><span class="o">.</span><span class="n">start_output_handler</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">io_handler</span></div>
+
+
+<div class="viewcode-block" id="ProcessIOHandler"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process_io_handler.ProcessIOHandler">[docs]</a><span class="k">class</span> <span class="nc">ProcessIOHandler</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;Processes data from descriptors (stdout, stderr) in separate threads.</span>
+<span class="sd">    Access to the tail is available through attributes *out_tail* and *err_tail*.</span>
+<span class="sd">    Communication through stdin, if given, is possible by *communicate()* method.</span>
+<span class="sd">    Data is saved to log files if the handles were given in init.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">stdin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">out_log</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">err_log</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">name</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span> <span class="o">=</span> <span class="n">stdout</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stdin</span> <span class="o">=</span> <span class="n">stdin</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stderr</span> <span class="o">=</span> <span class="n">stderr</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_handler_thread</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_out_q</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stdout_thread</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_out_log</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">__init_io</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="n">out_log</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">out_tail</span> <span class="o">=</span> <span class="n">deque</span><span class="p">(</span><span class="n">maxlen</span><span class="o">=</span><span class="n">STDIO_TAIL_LEN</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">err_tail</span> <span class="o">=</span> <span class="n">deque</span><span class="p">(</span><span class="n">maxlen</span><span class="o">=</span><span class="n">STDIO_TAIL_LEN</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_err_q</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stderr_thread</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_err_log</span> <span class="o">=</span> \
+            <span class="bp">self</span><span class="o">.</span><span class="n">__init_io</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="n">err_log</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_start_background_io_reading</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">__init_io</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="n">log_name</span><span class="p">):</span>
+
+        <span class="n">q</span><span class="p">,</span> <span class="n">thr</span><span class="p">,</span> <span class="n">log</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="k">if</span> <span class="n">stream</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">q</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">(</span><span class="n">maxsize</span><span class="o">=</span><span class="n">STDIO_QUEUE_MAX_SIZE</span><span class="p">)</span>
+            <span class="n">thr</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_read</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">q</span><span class="p">))</span>
+            <span class="n">thr</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="k">if</span> <span class="n">log_name</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">log</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="n">log_name</span><span class="p">,</span> <span class="s1">&#39;w&#39;</span><span class="p">,</span> <span class="n">buffering</span><span class="o">=</span><span class="mi">0</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">IOError</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">{0}</span><span class="s2"> : Could not open log </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">log_name</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">q</span><span class="p">,</span> <span class="n">thr</span><span class="p">,</span> <span class="n">log</span>
+
+<div class="viewcode-block" id="ProcessIOHandler.communicate"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process_io_handler.ProcessIOHandler.communicate">[docs]</a>    <span class="k">def</span> <span class="nf">communicate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="nb">input</span><span class="p">,</span> <span class="n">response_timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># TODO :)</span>
+        <span class="k">return</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="ProcessIOHandler.tail_stdout"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process_io_handler.ProcessIOHandler.tail_stdout">[docs]</a>    <span class="k">def</span> <span class="nf">tail_stdout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="p">):</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">out_tail</span><span class="o">.</span><span class="n">pop</span><span class="p">())</span>
+            <span class="k">except</span> <span class="ne">IndexError</span><span class="p">:</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="nb">reversed</span><span class="p">(</span><span class="n">data</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="ProcessIOHandler.process_output"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process_io_handler.ProcessIOHandler.process_output">[docs]</a>    <span class="k">def</span> <span class="nf">process_output</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Check if there is data from stdout and stderr (if it is monitored).</span>
+<span class="sd">        Update tail and save data to logs, if they were given in init.</span>
+<span class="sd">        Timeout (s) means blocking queue reads, no timeout - non blocking.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_stdout</span><span class="p">(</span><span class="n">lines</span><span class="o">=</span><span class="n">lines</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_stderr</span><span class="p">(</span><span class="n">lines</span><span class="o">=</span><span class="n">lines</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ProcessIOHandler.start_output_handler"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process_io_handler.ProcessIOHandler.start_output_handler">[docs]</a>    <span class="k">def</span> <span class="nf">start_output_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_handler_thread</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span>
+            <span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">_output_handler</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_handler_thread</span><span class="o">.</span><span class="n">deamon</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_handler_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ProcessIOHandler.stop_output_handler"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process_io_handler.ProcessIOHandler.stop_output_handler">[docs]</a>    <span class="k">def</span> <span class="nf">stop_output_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_output_handler_thread</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stdout_thread</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stderr_thread</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">finished</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ProcessIOHandler.is_running"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process_io_handler.ProcessIOHandler.is_running">[docs]</a>    <span class="k">def</span> <span class="nf">is_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span> <span class="ow">is</span> <span class="kc">False</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">__io_readers_alive</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ProcessIOHandler.finished"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.process_io_handler.ProcessIOHandler.finished">[docs]</a>    <span class="k">def</span> <span class="nf">finished</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">__io_readers_alive</span><span class="p">())</span> <span class="ow">and</span> \
+            <span class="p">(</span><span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_output_handler_thread</span><span class="o">.</span><span class="n">is_alive</span><span class="p">())</span></div>
+
+    <span class="k">def</span> <span class="nf">__io_readers_alive</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">alive</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">:</span>
+            <span class="n">alive</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stdout_thread</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">:</span>
+            <span class="n">alive</span> <span class="o">=</span> <span class="n">alive</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stderr_thread</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">alive</span>
+
+    <span class="k">def</span> <span class="nf">_output_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">__io_readers_alive</span><span class="p">()</span> <span class="ow">and</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">process_output</span><span class="p">(</span><span class="n">lines</span><span class="o">=</span><span class="n">LINES_TO_GET</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">IO_WAIT</span><span class="p">)</span>
+            <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>  <span class="c1"># IO_WAIT)</span>
+
+    <span class="k">def</span> <span class="nf">_start_background_io_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stdout_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_stderr_thread</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_read</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="n">queue</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;reading... &quot;</span><span class="p">,</span> <span class="n">stream</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="n">stream</span><span class="o">.</span><span class="n">readline</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop</span><span class="p">:</span>
+                    <span class="k">break</span>
+            <span class="k">except</span> <span class="n">Full</span><span class="p">:</span>
+                <span class="c1"># drop it :/</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Queue full for stream </span><span class="si">{0}</span><span class="s2"> of </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">))</span>
+                <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Dropping line.&quot;</span><span class="p">)</span>
+
+        <span class="n">stream</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_get_lines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">lines</span> <span class="o">=</span> <span class="n">lines</span> <span class="k">if</span> <span class="n">lines</span> <span class="k">else</span> <span class="mi">1</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">num</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">lines</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">timeout</span><span class="p">:</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="n">timeout</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">line</span> <span class="o">=</span> <span class="n">q</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">block</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">Empty</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">out</span>
+            <span class="k">else</span><span class="p">:</span>  <span class="c1"># got line</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">def</span> <span class="nf">_handle_stdout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_handle_stdio</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_out_q</span><span class="p">,</span>
+                           <span class="bp">self</span><span class="o">.</span><span class="n">_out_log</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">out_tail</span><span class="p">,</span> <span class="n">lines</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_handle_stdio</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">stream</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">log</span><span class="p">,</span> <span class="n">tail</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_lines</span><span class="p">(</span><span class="n">stream</span><span class="p">,</span> <span class="n">q</span><span class="p">,</span> <span class="n">lines</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span>
+        <span class="n">tail</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">log</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">log</span><span class="o">.</span><span class="n">writelines</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="p">,</span> <span class="n">e</span><span class="o">.</span><span class="n">args</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_handle_stderr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_handle_stdio</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_err_q</span><span class="p">,</span>
+                           <span class="bp">self</span><span class="o">.</span><span class="n">_err_log</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">err_tail</span><span class="p">,</span> <span class="n">lines</span><span class="p">,</span> <span class="n">timeout</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

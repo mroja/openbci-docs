@@ -1,0 +1,70 @@
+obci.analysis.obci_signal_processing.tags package
+=================================================
+
+Submodules
+----------
+
+obci.analysis.obci_signal_processing.tags.read_tags_source module
+-----------------------------------------------------------------
+
+.. automodule:: obci.analysis.obci_signal_processing.tags.read_tags_source
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.analysis.obci_signal_processing.tags.smart_tag module
+----------------------------------------------------------
+
+.. automodule:: obci.analysis.obci_signal_processing.tags.smart_tag
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.analysis.obci_signal_processing.tags.smart_tag_definition module
+---------------------------------------------------------------------
+
+.. automodule:: obci.analysis.obci_signal_processing.tags.smart_tag_definition
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.analysis.obci_signal_processing.tags.tag_utils module
+----------------------------------------------------------
+
+.. automodule:: obci.analysis.obci_signal_processing.tags.tag_utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.analysis.obci_signal_processing.tags.tags_file_reader module
+-----------------------------------------------------------------
+
+.. automodule:: obci.analysis.obci_signal_processing.tags.tags_file_reader
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.analysis.obci_signal_processing.tags.tags_file_writer module
+-----------------------------------------------------------------
+
+.. automodule:: obci.analysis.obci_signal_processing.tags.tags_file_writer
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.analysis.obci_signal_processing.tags.tags_logging module
+-------------------------------------------------------------
+
+.. automodule:: obci.analysis.obci_signal_processing.tags.tags_logging
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.analysis.obci_signal_processing.tags
+    :members:
+    :undoc-members:
+    :show-inheritance:

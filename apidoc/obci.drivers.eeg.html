@@ -1,0 +1,1408 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.drivers.eeg package &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../index.html" />
+    <link rel="up" title="obci.drivers package" href="obci.drivers.html" />
+    <link rel="next" title="obci.drivers.eeg.driver_discovery package" href="obci.drivers.eeg.driver_discovery.html" />
+    <link rel="prev" title="obci.drivers package" href="obci.drivers.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="obci-drivers-eeg-package">
+<h1>obci.drivers.eeg package<a class="headerlink" href="#obci-drivers-eeg-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="subpackages">
+<h2>Subpackages<a class="headerlink" href="#subpackages" title="Permalink to this headline">¶</a></h2>
+<div class="toctree-wrapper compound">
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="obci.drivers.eeg.driver_discovery.html">obci.drivers.eeg.driver_discovery package</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="obci.drivers.eeg.driver_discovery.html#submodules">Submodules</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.drivers.eeg.driver_discovery.html#module-obci.drivers.eeg.driver_discovery.amplifier_tmsi_bt_discovery">obci.drivers.eeg.driver_discovery.amplifier_tmsi_bt_discovery module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.drivers.eeg.driver_discovery.html#module-obci.drivers.eeg.driver_discovery.amplifier_tmsi_usb_discovery">obci.drivers.eeg.driver_discovery.amplifier_tmsi_usb_discovery module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.drivers.eeg.driver_discovery.html#module-obci.drivers.eeg.driver_discovery.amplifier_virtual_discovery">obci.drivers.eeg.driver_discovery.amplifier_virtual_discovery module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.drivers.eeg.driver_discovery.html#module-obci.drivers.eeg.driver_discovery.driver_discovery">obci.drivers.eeg.driver_discovery.driver_discovery module</a></li>
+<li class="toctree-l2"><a class="reference internal" href="obci.drivers.eeg.driver_discovery.html#module-obci.drivers.eeg.driver_discovery">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-obci.drivers.eeg.amplifier_file">
+<span id="obci-drivers-eeg-amplifier-file-module"></span><h2>obci.drivers.eeg.amplifier_file module<a class="headerlink" href="#module-obci.drivers.eeg.amplifier_file" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.drivers.eeg.amplifier_file.AmplifierFile">
+<em class="property">class </em><code class="descclassname">obci.drivers.eeg.amplifier_file.</code><code class="descname">AmplifierFile</code><span class="sig-paren">(</span><em>addresses</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/amplifier_file.html#AmplifierFile"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.amplifier_file.AmplifierFile" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.drivers.eeg.binary_driver_wrapper.BinaryDriverWrapper" title="obci.drivers.eeg.binary_driver_wrapper.BinaryDriverWrapper"><code class="xref py py-class docutils literal"><span class="pre">obci.drivers.eeg.binary_driver_wrapper.BinaryDriverWrapper</span></code></a></p>
+<dl class="method">
+<dt id="obci.drivers.eeg.amplifier_file.AmplifierFile.do_sampling">
+<code class="descname">do_sampling</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/amplifier_file.html#AmplifierFile.do_sampling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.amplifier_file.AmplifierFile.do_sampling" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.amplifier_file.AmplifierFile.get_run_args">
+<code class="descname">get_run_args</code><span class="sig-paren">(</span><em>multiplexer_address</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/amplifier_file.html#AmplifierFile.get_run_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.amplifier_file.AmplifierFile.get_run_args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.amplifier_file.AmplifierFile.got_trigger">
+<code class="descname">got_trigger</code><span class="sig-paren">(</span><em>ts</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/amplifier_file.html#AmplifierFile.got_trigger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.amplifier_file.AmplifierFile.got_trigger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Got trigger from the drivers.
+Let`s send next tag (or other message)
+with ts as its realtime timestamp</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.amplifier_file.AmplifierFile.set_driver_params">
+<code class="descname">set_driver_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/amplifier_file.html#AmplifierFile.set_driver_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.amplifier_file.AmplifierFile.set_driver_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.amplifier_file.AmplifierFile.set_tags">
+<code class="descname">set_tags</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/amplifier_file.html#AmplifierFile.set_tags"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.amplifier_file.AmplifierFile.set_tags" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.amplifier_file.AmplifierFile.store_driver_description">
+<code class="descname">store_driver_description</code><span class="sig-paren">(</span><em>driver_output</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/amplifier_file.html#AmplifierFile.store_driver_description"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.amplifier_file.AmplifierFile.store_driver_description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.drivers.eeg.amplifier_virtual">
+<span id="obci-drivers-eeg-amplifier-virtual-module"></span><h2>obci.drivers.eeg.amplifier_virtual module<a class="headerlink" href="#module-obci.drivers.eeg.amplifier_virtual" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.drivers.eeg.amplifier_virtual.AmplifierVirtual">
+<em class="property">class </em><code class="descclassname">obci.drivers.eeg.amplifier_virtual.</code><code class="descname">AmplifierVirtual</code><span class="sig-paren">(</span><em>addresses</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/amplifier_virtual.html#AmplifierVirtual"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.amplifier_virtual.AmplifierVirtual" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.drivers.eeg.binary_driver_wrapper.BinaryDriverWrapper" title="obci.drivers.eeg.binary_driver_wrapper.BinaryDriverWrapper"><code class="xref py py-class docutils literal"><span class="pre">obci.drivers.eeg.binary_driver_wrapper.BinaryDriverWrapper</span></code></a></p>
+<dl class="method">
+<dt id="obci.drivers.eeg.amplifier_virtual.AmplifierVirtual.get_run_args">
+<code class="descname">get_run_args</code><span class="sig-paren">(</span><em>multiplexer_address</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/amplifier_virtual.html#AmplifierVirtual.get_run_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.amplifier_virtual.AmplifierVirtual.get_run_args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.drivers.eeg.binary_driver_wrapper">
+<span id="obci-drivers-eeg-binary-driver-wrapper-module"></span><h2>obci.drivers.eeg.binary_driver_wrapper module<a class="headerlink" href="#module-obci.drivers.eeg.binary_driver_wrapper" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.drivers.eeg.binary_driver_wrapper.BinaryDriverWrapper">
+<em class="property">class </em><code class="descclassname">obci.drivers.eeg.binary_driver_wrapper.</code><code class="descname">BinaryDriverWrapper</code><span class="sig-paren">(</span><em>addresses</em>, <em>type</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/binary_driver_wrapper.html#BinaryDriverWrapper"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.binary_driver_wrapper.BinaryDriverWrapper" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="obci.control.peer.html#obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer" title="obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer</span></code></a>, <a class="reference internal" href="#obci.drivers.eeg.driver_comm.DriverComm" title="obci.drivers.eeg.driver_comm.DriverComm"><code class="xref py py-class docutils literal"><span class="pre">obci.drivers.eeg.driver_comm.DriverComm</span></code></a></p>
+<p>A wrapper around c++ amplifier binaries with INI configuration support.</p>
+<p>Do:
+1) run super constructor to receive configs
+2) run DriverComm constructor that fires binary driver
+3) get json description from the driver (desc_params are required)
+4) store that description in self.configs to share it with other modules
+5) if autostart is set to true:
+6) set driver params from config (sampling_rate and active_channels)
+7) start sampling</p>
+<dl class="method">
+<dt id="obci.drivers.eeg.binary_driver_wrapper.BinaryDriverWrapper.abort">
+<code class="descname">abort</code><span class="sig-paren">(</span><em>error_msg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/binary_driver_wrapper.html#BinaryDriverWrapper.abort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.binary_driver_wrapper.BinaryDriverWrapper.abort" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.binary_driver_wrapper.BinaryDriverWrapper.desc_params">
+<code class="descname">desc_params</code><em class="property"> = {'physical_channels_no': 'physical_channels', 'sampling_rates': 'sampling_rates', 'amplifier_name': 'name', 'channels_info': 'channels'}</em><a class="headerlink" href="#obci.drivers.eeg.binary_driver_wrapper.BinaryDriverWrapper.desc_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.binary_driver_wrapper.BinaryDriverWrapper.handle_message">
+<code class="descname">handle_message</code><span class="sig-paren">(</span><em>mxmsg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/binary_driver_wrapper.html#BinaryDriverWrapper.handle_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.binary_driver_wrapper.BinaryDriverWrapper.handle_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.binary_driver_wrapper.BinaryDriverWrapper.store_driver_description">
+<code class="descname">store_driver_description</code><span class="sig-paren">(</span><em>driver_output</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/binary_driver_wrapper.html#BinaryDriverWrapper.store_driver_description"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.binary_driver_wrapper.BinaryDriverWrapper.store_driver_description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.binary_driver_wrapper.BinaryDriverWrapper.validate_params">
+<code class="descname">validate_params</code><span class="sig-paren">(</span><em>params</em>, <em>amp_params_received=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/binary_driver_wrapper.html#BinaryDriverWrapper.validate_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.binary_driver_wrapper.BinaryDriverWrapper.validate_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.drivers.eeg.driver_comm">
+<span id="obci-drivers-eeg-driver-comm-module"></span><h2>obci.drivers.eeg.driver_comm module<a class="headerlink" href="#module-obci.drivers.eeg.driver_comm" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.drivers.eeg.driver_comm.DriverComm">
+<em class="property">class </em><code class="descclassname">obci.drivers.eeg.driver_comm.</code><code class="descname">DriverComm</code><span class="sig-paren">(</span><em>peer_config, mx_addresses=[('localhost', 41921)], catch_signals=True, context={'logger': &lt;logging.Logger object&gt;}</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/driver_comm.html#DriverComm"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.driver_comm.DriverComm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Start, stop and communicate with amplifier driver binaries.
+Note: To run amplifier as OBCI experiment peer, use subclasses of BinaryDriverWrapper
+which fully support INI file configuration.</p>
+<p>Example:
+&gt;&gt;&gt; from obci.control.peer.peer_config import PeerConfig
+&gt;&gt;&gt; import json</p>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">conf</span> <span class="o">=</span> <span class="n">PeerConfig</span><span class="p">(</span><span class="s1">&#39;amplifier&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">conf</span><span class="o">.</span><span class="n">add_local_param</span><span class="p">(</span><span class="s1">&#39;driver_executable&#39;</span><span class="p">,</span> <span class="s1">&#39;dummy_amplifier&#39;</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">conf</span><span class="o">.</span><span class="n">add_local_param</span><span class="p">(</span><span class="s1">&#39;samples_per_packet&#39;</span><span class="p">,</span> <span class="s1">&#39;4&#39;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">driv</span> <span class="o">=</span> <span class="n">DriverComm</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+<span class="go">dummy_amplifier</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">descr</span> <span class="o">=</span> <span class="n">driv</span><span class="o">.</span><span class="n">get_driver_description</span><span class="p">()</span> <span class="c1"># channels_info</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">dic</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">descr</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">driv</span><span class="o">.</span><span class="n">start_sampling</span><span class="p">()</span>
+<span class="go">start OK</span>
+
+<span class="gp">&gt;&gt;&gt; </span><span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">driv</span><span class="o">.</span><span class="n">terminate_driver</span><span class="p">()</span>
+</pre></div>
+</div>
+<p><em>peer_config</em> - parameter provider. Should respond to get_param(param_name, value)
+and has_param(param_name) calls. PeerConfig and PeerControl objects are suitable.
+<em>mx_addresses</em> - list of (host, port) pairs. Port value None means using default
+amplifier binary value.</p>
+<dl class="method">
+<dt id="obci.drivers.eeg.driver_comm.DriverComm.abort">
+<code class="descname">abort</code><span class="sig-paren">(</span><em>error_msg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/driver_comm.html#DriverComm.abort"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.driver_comm.DriverComm.abort" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.driver_comm.DriverComm.do_sampling">
+<code class="descname">do_sampling</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/driver_comm.html#DriverComm.do_sampling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.driver_comm.DriverComm.do_sampling" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.driver_comm.DriverComm.do_samplingg">
+<code class="descname">do_samplingg</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/driver_comm.html#DriverComm.do_samplingg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.driver_comm.DriverComm.do_samplingg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.driver_comm.DriverComm.driver_is_running">
+<code class="descname">driver_is_running</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/driver_comm.html#DriverComm.driver_is_running"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.driver_comm.DriverComm.driver_is_running" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.driver_comm.DriverComm.get_driver_description">
+<code class="descname">get_driver_description</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/driver_comm.html#DriverComm.get_driver_description"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.driver_comm.DriverComm.get_driver_description" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.driver_comm.DriverComm.get_run_args">
+<code class="descname">get_run_args</code><span class="sig-paren">(</span><em>multiplexer_address</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/driver_comm.html#DriverComm.get_run_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.driver_comm.DriverComm.get_run_args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.driver_comm.DriverComm.run_driver">
+<code class="descname">run_driver</code><span class="sig-paren">(</span><em>run_args</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/driver_comm.html#DriverComm.run_driver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.driver_comm.DriverComm.run_driver" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.driver_comm.DriverComm.set_active_channels">
+<code class="descname">set_active_channels</code><span class="sig-paren">(</span><em>active_channels</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/driver_comm.html#DriverComm.set_active_channels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.driver_comm.DriverComm.set_active_channels" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.driver_comm.DriverComm.set_driver_params">
+<code class="descname">set_driver_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/driver_comm.html#DriverComm.set_driver_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.driver_comm.DriverComm.set_driver_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.driver_comm.DriverComm.set_sampling_rate">
+<code class="descname">set_sampling_rate</code><span class="sig-paren">(</span><em>sampling_rate</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/driver_comm.html#DriverComm.set_sampling_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.driver_comm.DriverComm.set_sampling_rate" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.driver_comm.DriverComm.signal_handler">
+<code class="descname">signal_handler</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/driver_comm.html#DriverComm.signal_handler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.driver_comm.DriverComm.signal_handler" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.driver_comm.DriverComm.start_sampling">
+<code class="descname">start_sampling</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/driver_comm.html#DriverComm.start_sampling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.driver_comm.DriverComm.start_sampling" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.driver_comm.DriverComm.stop_sampling">
+<code class="descname">stop_sampling</code><span class="sig-paren">(</span><em>_1=None</em>, <em>_2=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/driver_comm.html#DriverComm.stop_sampling"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.driver_comm.DriverComm.stop_sampling" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.driver_comm.DriverComm.terminate_driver">
+<code class="descname">terminate_driver</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/driver_comm.html#DriverComm.terminate_driver"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.driver_comm.DriverComm.terminate_driver" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="obci.drivers.eeg.driver_comm.enqueue_output">
+<code class="descclassname">obci.drivers.eeg.driver_comm.</code><code class="descname">enqueue_output</code><span class="sig-paren">(</span><em>out</em>, <em>queue</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/driver_comm.html#enqueue_output"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.driver_comm.enqueue_output" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-obci.drivers.eeg.tags_to_mxmsg">
+<span id="obci-drivers-eeg-tags-to-mxmsg-module"></span><h2>obci.drivers.eeg.tags_to_mxmsg module<a class="headerlink" href="#module-obci.drivers.eeg.tags_to_mxmsg" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.drivers.eeg.tags_to_mxmsg.BlinkMsg">
+<em class="property">class </em><code class="descclassname">obci.drivers.eeg.tags_to_mxmsg.</code><code class="descname">BlinkMsg</code><span class="sig-paren">(</span><em>index_lambda=&lt;function BlinkMsg.&lt;lambda&gt;&gt;</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tags_to_mxmsg.html#BlinkMsg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tags_to_mxmsg.BlinkMsg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="obci.drivers.eeg.tags_to_mxmsg.BlinkMsg.get_message">
+<code class="descname">get_message</code><span class="sig-paren">(</span><em>tag</em>, <em>ts</em>, <em>mx=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tags_to_mxmsg.html#BlinkMsg.get_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tags_to_mxmsg.BlinkMsg.get_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.drivers.eeg.tags_to_mxmsg.DummyMsg">
+<em class="property">class </em><code class="descclassname">obci.drivers.eeg.tags_to_mxmsg.</code><code class="descname">DummyMsg</code><a class="reference internal" href="../_modules/obci/drivers/eeg/tags_to_mxmsg.html#DummyMsg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tags_to_mxmsg.DummyMsg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="obci.drivers.eeg.tags_to_mxmsg.DummyMsg.get_message">
+<code class="descname">get_message</code><span class="sig-paren">(</span><em>tag</em>, <em>ts</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tags_to_mxmsg.html#DummyMsg.get_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tags_to_mxmsg.DummyMsg.get_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.drivers.eeg.tags_to_mxmsg.TagMsg">
+<em class="property">class </em><code class="descclassname">obci.drivers.eeg.tags_to_mxmsg.</code><code class="descname">TagMsg</code><a class="reference internal" href="../_modules/obci/drivers/eeg/tags_to_mxmsg.html#TagMsg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tags_to_mxmsg.TagMsg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="obci.drivers.eeg.tags_to_mxmsg.TagMsg.get_message">
+<code class="descname">get_message</code><span class="sig-paren">(</span><em>tag</em>, <em>ts</em>, <em>mx=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tags_to_mxmsg.html#TagMsg.get_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tags_to_mxmsg.TagMsg.get_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.drivers.eeg.tags_to_mxmsg.TagsToMxmsg">
+<em class="property">class </em><code class="descclassname">obci.drivers.eeg.tags_to_mxmsg.</code><code class="descname">TagsToMxmsg</code><span class="sig-paren">(</span><em>tags</em>, <em>handle_rules</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tags_to_mxmsg.html#TagsToMxmsg"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tags_to_mxmsg.TagsToMxmsg" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>For every tag in tags find its corresponding
+handler</p>
+<dl class="method">
+<dt id="obci.drivers.eeg.tags_to_mxmsg.TagsToMxmsg.next_message">
+<code class="descname">next_message</code><span class="sig-paren">(</span><em>ts</em>, <em>mx=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tags_to_mxmsg.html#TagsToMxmsg.next_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tags_to_mxmsg.TagsToMxmsg.next_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="obci.drivers.eeg.tags_to_mxmsg.run_test">
+<code class="descclassname">obci.drivers.eeg.tags_to_mxmsg.</code><code class="descname">run_test</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tags_to_mxmsg.html#run_test"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tags_to_mxmsg.run_test" title="Permalink to this definition">¶</a></dt>
+<dd><div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">tags</span> <span class="o">=</span> <span class="p">[{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span><span class="s1">&#39;blink&#39;</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">:{</span><span class="s1">&#39;blink&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">}},</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span><span class="s1">&#39;not-blink&#39;</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">:{</span><span class="s1">&#39;blink_id&#39;</span><span class="p">:</span><span class="mi">2</span><span class="p">}},</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span><span class="s1">&#39;blink&#39;</span><span class="p">,</span>     <span class="s1">&#39;desc&#39;</span><span class="p">:{</span><span class="s1">&#39;blink&#39;</span><span class="p">:</span><span class="mi">11</span><span class="p">}},</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span><span class="s1">&#39;not-blink&#39;</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">:{</span><span class="s1">&#39;blink_id&#39;</span><span class="p">:</span><span class="mi">22</span><span class="p">}},</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span><span class="s1">&#39;dupa&#39;</span><span class="p">,</span> <span class="s1">&#39;start_timestamp&#39;</span><span class="p">:</span><span class="mi">1</span><span class="p">,</span>      <span class="s1">&#39;end_timestamp&#39;</span><span class="p">:</span><span class="mf">1.5</span><span class="p">,</span> <span class="s1">&#39;channels&#39;</span><span class="p">:</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="s1">&#39;desc&#39;</span><span class="p">:</span> <span class="p">{}}]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rules</span> <span class="o">=</span> <span class="nb">str</span><span class="p">([(</span><span class="s1">&#39;blink&#39;</span><span class="p">,</span> <span class="s1">&#39;BlinkMsg()&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;lambda t: &quot;blink_id&quot; in t[&quot;desc&quot;]&#39;</span><span class="p">,</span><span class="s1">&#39;BlinkMsg(lambda t: int(t[&quot;desc&quot;][&quot;blink_id&quot;]))&#39;</span><span class="p">),</span> <span class="p">(</span><span class="s1">&#39;lambda t: True&#39;</span><span class="p">,</span> <span class="s1">&#39;TagMsg()&#39;</span><span class="p">)])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mgr</span> <span class="o">=</span> <span class="n">TagsToMxmsg</span><span class="p">(</span><span class="n">tags</span><span class="p">,</span> <span class="n">rules</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mgr</span><span class="o">.</span><span class="n">next_message</span><span class="p">(</span><span class="mf">10.0</span><span class="p">,</span> <span class="kc">False</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+<span class="go">1</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mgr</span><span class="o">.</span><span class="n">next_message</span><span class="p">(</span><span class="mf">20.0</span><span class="p">,</span> <span class="kc">False</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mgr</span><span class="o">.</span><span class="n">next_message</span><span class="p">(</span><span class="mf">30.0</span><span class="p">,</span> <span class="kc">False</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+<span class="go">11</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mgr</span><span class="o">.</span><span class="n">next_message</span><span class="p">(</span><span class="mf">40.0</span><span class="p">,</span> <span class="kc">False</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+<span class="go">22</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="c1"># because gets new start_timestamp=50.0, has 0.5 len, so end_timestamp is 50.5</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">mgr</span><span class="o">.</span><span class="n">next_message</span><span class="p">(</span><span class="mf">50.0</span><span class="p">,</span> <span class="kc">False</span><span class="p">)[</span><span class="mi">1</span><span class="p">][</span><span class="s1">&#39;end_timestamp&#39;</span><span class="p">]</span>
+<span class="go">50.5</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mgr</span><span class="o">.</span><span class="n">next_message</span><span class="p">(</span><span class="mf">40.0</span><span class="p">,</span> <span class="kc">False</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">rules</span> <span class="o">=</span> <span class="nb">str</span><span class="p">([(</span><span class="s1">&#39;lambda t: &quot;blink_id&quot; in t[&quot;desc&quot;]&#39;</span><span class="p">,</span> <span class="s1">&#39;BlinkMsg(lambda t: int(t[&quot;desc&quot;][&quot;blink_id&quot;]))&#39;</span><span class="p">)])</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mgr</span> <span class="o">=</span> <span class="n">TagsToMxmsg</span><span class="p">(</span><span class="n">tags</span><span class="p">,</span> <span class="n">rules</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mgr</span><span class="o">.</span><span class="n">next_message</span><span class="p">(</span><span class="mf">10.0</span><span class="p">,</span> <span class="kc">False</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+<span class="go">2</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mgr</span><span class="o">.</span><span class="n">next_message</span><span class="p">(</span><span class="mf">20.0</span><span class="p">,</span> <span class="kc">False</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">index</span>
+<span class="go">22</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mgr</span><span class="o">.</span><span class="n">next_message</span><span class="p">(</span><span class="mf">30.0</span><span class="p">,</span> <span class="kc">False</span><span class="p">)[</span><span class="mi">1</span><span class="p">]</span>
+</pre></div>
+</div>
+<div class="highlight-default"><div class="highlight"><pre><span></span><span class="go">&gt;&gt;&gt;</span>
+</pre></div>
+</div>
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.drivers.eeg.tmsi">
+<span id="obci-drivers-eeg-tmsi-module"></span><h2>obci.drivers.eeg.tmsi module<a class="headerlink" href="#module-obci.drivers.eeg.tmsi" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.drivers.eeg.tmsi.Acknowledge">
+<em class="property">class </em><code class="descclassname">obci.drivers.eeg.tmsi.</code><code class="descname">Acknowledge</code><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#Acknowledge"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.Acknowledge" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.drivers.eeg.tmsi.Packet" title="obci.drivers.eeg.tmsi.Packet"><code class="xref py py-class docutils literal"><span class="pre">obci.drivers.eeg.tmsi.Packet</span></code></a></p>
+<p>Represents acknowledge packet.</p>
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.Acknowledge.ERRORS">
+<code class="descname">ERRORS</code><em class="property"> = {1: 'unknown or not implemented blocktype', 2: 'CRC error in received block', 3: &quot;error in command data (can't do that)&quot;, 4: 'wrong blocksize (too large)', 17: 'No external power supplied', 18: 'Not possible because the Front is recording', 19: 'Storage medium is busy', 20: 'Flash memory not present', 21: 'nr of words to read from flash memory out of range', 22: 'flash memory is write protected', 23: 'incorrect value for initial inflation pressure', 24: 'wrong size or values in BP cycle list', 25: 'sample frequency divider out of range (&lt;0, &gt;max)', 26: 'wrong nr of user channels (&lt;=0, &gt;maxUSRchan)', 27: 'adress flash memory out of range', 28: 'Erasing not possible because battery low'}</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.Acknowledge.ERRORS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.Acknowledge.get_error">
+<code class="descname">get_error</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#Acknowledge.get_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.Acknowledge.get_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get error string.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">string or None</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">None if there is no error. Some error text (one from
+values from ERROR dictionary) in the opposite case.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.Acknowledge.get_error_code">
+<code class="descname">get_error_code</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#Acknowledge.get_error_code"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.Acknowledge.get_error_code" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get error code.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">number</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">error code</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.Acknowledge.is_error">
+<code class="descname">is_error</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#Acknowledge.is_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.Acknowledge.is_error" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if there is an error.
+Use get_error method to get error text.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.5)">bool</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True iff there is an error</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.drivers.eeg.tmsi.ChannelData">
+<em class="property">class </em><code class="descclassname">obci.drivers.eeg.tmsi.</code><code class="descname">ChannelData</code><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#ChannelData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.ChannelData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.drivers.eeg.tmsi.Packet" title="obci.drivers.eeg.tmsi.Packet"><code class="xref py py-class docutils literal"><span class="pre">obci.drivers.eeg.tmsi.Packet</span></code></a></p>
+<p>Packet containing channel data NOT encoded using VL Delta compression.</p>
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.ChannelData.BATTERY_LOW">
+<code class="descname">BATTERY_LOW</code><em class="property"> = 64</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.ChannelData.BATTERY_LOW" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.ChannelData.ON_OFF_BUTTON">
+<code class="descname">ON_OFF_BUTTON</code><em class="property"> = 1</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.ChannelData.ON_OFF_BUTTON" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.ChannelData.OVERFLOW">
+<code class="descname">OVERFLOW</code><em class="property"> = 8388608</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.ChannelData.OVERFLOW" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.ChannelData.TRIGGER_ACTIVE">
+<code class="descname">TRIGGER_ACTIVE</code><em class="property"> = 4</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.ChannelData.TRIGGER_ACTIVE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.ChannelData.battery_low">
+<code class="descname">battery_low</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#ChannelData.battery_low"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.ChannelData.battery_low" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if battery is low.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.5)">bool</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True iff battery is low.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.ChannelData.check_digi">
+<code class="descname">check_digi</code><span class="sig-paren">(</span><em>condition</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#ChannelData.check_digi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.ChannelData.check_digi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if flag condition is set in digi channel.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>condition</strong> (<em>number</em>) &#8211; Bit flag representing some state. Valid flags are:
+ON_OFF_BUTTON, TRIGGER_ACTIVE, BATTERY_LOW.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.5)">bool</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">True iff condition is set in digi channel.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.ChannelData.decode">
+<code class="descname">decode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#ChannelData.decode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.ChannelData.decode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decode channel data contained in this packet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list of lists of ints</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">List indexed by channel numbers. Every list contains
+list of values in this channel.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.ChannelData.extract_channel_data">
+<code class="descname">extract_channel_data</code><span class="sig-paren">(</span><em>channel_number</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#ChannelData.extract_channel_data"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.ChannelData.extract_channel_data" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract data of single channel.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>channel_number</strong> (<em>number</em>) &#8211; number of channel we want to extract data from</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">number</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">value of channel_number-th channel data</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.ChannelData.get_digi">
+<code class="descname">get_digi</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#ChannelData.get_digi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.ChannelData.get_digi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Digi channel status.
+This channel contains data such as battery level, on off button status,
+trigger status.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">number</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">byte containing flags (on/off button etc.) set in packet</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.ChannelData.on_off_pressed">
+<code class="descname">on_off_pressed</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#ChannelData.on_off_pressed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.ChannelData.on_off_pressed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if on/off button is pressed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.5)">bool</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True iff on/off button is pressed.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.ChannelData.set_number_of_channels">
+<code class="descname">set_number_of_channels</code><span class="sig-paren">(</span><em>number_of_channels</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#ChannelData.set_number_of_channels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.ChannelData.set_number_of_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set number of channels (obtainted from FrontendInfo).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>number_of_channels</strong> (<em>number</em>) &#8211; number of channels (from FrontendInfo)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.ChannelData.trigger_active">
+<code class="descname">trigger_active</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#ChannelData.trigger_active"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.ChannelData.trigger_active" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if trigger is active.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.5)">bool</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">True iff trigger is active.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.drivers.eeg.tmsi.FrontendInfo">
+<em class="property">class </em><code class="descclassname">obci.drivers.eeg.tmsi.</code><code class="descname">FrontendInfo</code><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#FrontendInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.FrontendInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.drivers.eeg.tmsi.Packet" title="obci.drivers.eeg.tmsi.Packet"><code class="xref py py-class docutils literal"><span class="pre">obci.drivers.eeg.tmsi.Packet</span></code></a></p>
+<p>Represents FrontendInfo packet.</p>
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.FrontendInfo.BASE_SAMPLE_RATE_INDEX">
+<code class="descname">BASE_SAMPLE_RATE_INDEX</code><em class="property"> = 13</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.FrontendInfo.BASE_SAMPLE_RATE_INDEX" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.FrontendInfo.CURRENT_SAMPLE_RATE_INDEX">
+<code class="descname">CURRENT_SAMPLE_RATE_INDEX</code><em class="property"> = 1</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.FrontendInfo.CURRENT_SAMPLE_RATE_INDEX" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.FrontendInfo.MAX_DIVIDER">
+<code class="descname">MAX_DIVIDER</code><em class="property"> = 4</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.FrontendInfo.MAX_DIVIDER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.FrontendInfo.MODE_INDEX">
+<code class="descname">MODE_INDEX</code><em class="property"> = 2</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.FrontendInfo.MODE_INDEX" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.FrontendInfo.MODE_STOP">
+<code class="descname">MODE_STOP</code><em class="property"> = 1</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.FrontendInfo.MODE_STOP" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.FrontendInfo.MODE_STREAM">
+<code class="descname">MODE_STREAM</code><em class="property"> = 0</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.FrontendInfo.MODE_STREAM" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.FrontendInfo.NUMBER_OF_CHANNELS_INDEX">
+<code class="descname">NUMBER_OF_CHANNELS_INDEX</code><em class="property"> = 12</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.FrontendInfo.NUMBER_OF_CHANNELS_INDEX" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.FrontendInfo.NUMBER_OF_HELP_CHANNELS">
+<code class="descname">NUMBER_OF_HELP_CHANNELS</code><em class="property"> = 2</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.FrontendInfo.NUMBER_OF_HELP_CHANNELS" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.FrontendInfo.get_base_sample_rate">
+<code class="descname">get_base_sample_rate</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#FrontendInfo.get_base_sample_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.FrontendInfo.get_base_sample_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract base sample rate frequency from FrontendInfo packet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">number</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">base sample frequency of amplifier</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.FrontendInfo.get_number_of_data_channels">
+<code class="descname">get_number_of_data_channels</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#FrontendInfo.get_number_of_data_channels"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.FrontendInfo.get_number_of_data_channels" title="Permalink to this definition">¶</a></dt>
+<dd><p>Extract number of channels from FrontendInfo packet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">number</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">number of hardware channels in amplifier</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.FrontendInfo.modify_sample_rate">
+<code class="descname">modify_sample_rate</code><span class="sig-paren">(</span><em>frequency</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#FrontendInfo.modify_sample_rate"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.FrontendInfo.modify_sample_rate" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set sample frequency in (obtained from device) FrontendInfo packet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>frequency</strong> (<em>number</em>) &#8211; frequency to be set to</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.FrontendInfo.start">
+<code class="descname">start</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#FrontendInfo.start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.FrontendInfo.start" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modify FrontendInfo packet to enable data streaming.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.FrontendInfo.stop">
+<code class="descname">stop</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#FrontendInfo.stop"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.FrontendInfo.stop" title="Permalink to this definition">¶</a></dt>
+<dd><p>Modify FrontendInfo packet to disable streaming.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.drivers.eeg.tmsi.Header">
+<em class="property">class </em><code class="descclassname">obci.drivers.eeg.tmsi.</code><code class="descname">Header</code><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#Header"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.Header" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Header of data block.
+Does not support packets longer than 254 words (such packets)
+have variable header length.</p>
+<p>TMSi protocol header is in format:
+- 2 start bytes: ªª
+- length byte: number of words in packet
+- 1 byte: type of packet</p>
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.Header.HEADER_SIZE">
+<code class="descname">HEADER_SIZE</code><em class="property"> = 4</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.Header.HEADER_SIZE" title="Permalink to this definition">¶</a></dt>
+<dd><p>size of a header in bytes</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.Header.HEADER_START">
+<code class="descname">HEADER_START</code><em class="property"> = 'ªª'</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.Header.HEADER_START" title="Permalink to this definition">¶</a></dt>
+<dd><p>magic string starting header</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.Header.LENGTH_OFFSET">
+<code class="descname">LENGTH_OFFSET</code><em class="property"> = 2</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.Header.LENGTH_OFFSET" title="Permalink to this definition">¶</a></dt>
+<dd><p>byte offset in header of packet length indicator</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.Header.MAX_PACKET_LENGTH">
+<code class="descname">MAX_PACKET_LENGTH</code><em class="property"> = 254</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.Header.MAX_PACKET_LENGTH" title="Permalink to this definition">¶</a></dt>
+<dd><p>maximal supported packet length</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.Header.TYPE_OFFSET">
+<code class="descname">TYPE_OFFSET</code><em class="property"> = 3</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.Header.TYPE_OFFSET" title="Permalink to this definition">¶</a></dt>
+<dd><p>byte offset in header of packet type indicator</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="obci.drivers.eeg.tmsi.Header.construct">
+<em class="property">classmethod </em><code class="descname">construct</code><span class="sig-paren">(</span><em>packet_type</em>, <em>length</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#Header.construct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.Header.construct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct packet header based on packet type and packet length.
+Set raw representation of header based on given parameters.
+Validate given packet type against list of all supported packet types.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>packet_type</strong> (<em>number (one of PACKET_TYPE constants)</em>) &#8211; type of a packet for which we are creating header</li>
+<li><strong>length</strong> (<em>number</em>) &#8211; length of a packet (in bytes)</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#obci.drivers.eeg.tmsi.Header" title="obci.drivers.eeg.tmsi.Header">Header</a></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">new Header instance.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="obci.drivers.eeg.tmsi.Header.read_one">
+<em class="property">classmethod </em><code class="descname">read_one</code><span class="sig-paren">(</span><em>stream</em>, <em>search=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#Header.read_one"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.Header.read_one" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads one header from stream and returns new Header instance.
+If search options is present then search for header start in the stream
+by dropping &#8220;bad&#8221; characters.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>stream</strong> (<em>object with read(int) method (some file or stream)</em>) &#8211; Stream containing header data.</li>
+<li><strong>search</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.5)"><em>bool</em></a>) &#8211; True iff bytes not starting header should be dropped
+from the beginning of the stream.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#obci.drivers.eeg.tmsi.Header" title="obci.drivers.eeg.tmsi.Header">Header</a></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">new Header instance.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.drivers.eeg.tmsi.Packet">
+<em class="property">class </em><code class="descclassname">obci.drivers.eeg.tmsi.</code><code class="descname">Packet</code><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#Packet"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.Packet" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Wire packet base class.</p>
+<p>This class is the base of all packet classes. It provides common options
+related functionaility.</p>
+<p>TMSi protocol packet is in format:
+- 4 byte header: if packet is shorter than 254 words (other are unsupported)
+- packet data
+- 2 byte checksum</p>
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.Packet.CHECKSUM_SIZE">
+<code class="descname">CHECKSUM_SIZE</code><em class="property"> = 2</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.Packet.CHECKSUM_SIZE" title="Permalink to this definition">¶</a></dt>
+<dd><p>size of a checksum field</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.Packet.check_type">
+<code class="descname">check_type</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#Packet.check_type"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.Packet.check_type" title="Permalink to this definition">¶</a></dt>
+<dd><p>Check if packet has packet type coherent with declared packet type
+(if any).</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="obci.drivers.eeg.tmsi.Packet.construct">
+<em class="property">classmethod </em><code class="descname">construct</code><span class="sig-paren">(</span><em>packet_type</em>, <em>data=''</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#Packet.construct"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.Packet.construct" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct packet based on packet type and packet data.
+Calculate checksum of a packet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>packet_type</strong> (<em>number (one of PACKET_TYPE constants)</em>) &#8211; type of a packet for which we are creating header</li>
+<li><strong>length</strong> &#8211; data inside a packet</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#obci.drivers.eeg.tmsi.Packet" title="obci.drivers.eeg.tmsi.Packet">Packet</a></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">new Packet instance.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.Packet.get_raw">
+<code class="descname">get_raw</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#Packet.get_raw"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.Packet.get_raw" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get raw packet data.
+Serialize packet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/string.html#module-string" title="(in Python v3.5)">string</a></td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">raw representation of packet (header, data, checksum)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.Packet.get_word">
+<code class="descname">get_word</code><span class="sig-paren">(</span><em>index</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#Packet.get_word"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.Packet.get_word" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get number represented by index-th word of packet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>index</strong> (<em>number</em>) &#8211; index of word (in word-size units)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">number</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">value represented by index-th word of packet</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="obci.drivers.eeg.tmsi.Packet.read_one">
+<em class="property">classmethod </em><code class="descname">read_one</code><span class="sig-paren">(</span><em>stream</em>, <em>search=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#Packet.read_one"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.Packet.read_one" title="Permalink to this definition">¶</a></dt>
+<dd><p>Reads one data packet from stream and returns Packet instance.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first simple">
+<li><strong>stream</strong> (<em>object with read(int) method (some file or stream)</em>) &#8211; Stream containing packet (including header and checksum)</li>
+<li><strong>search</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.5)"><em>bool</em></a>) &#8211; True iff bytes not starting header should be dropped
+from the beginning of the stream.</li>
+</ul>
+</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><p class="first"><a class="reference internal" href="#obci.drivers.eeg.tmsi.Packet" title="obci.drivers.eeg.tmsi.Packet">Packet</a></p>
+</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body"><p class="first last">new Packet instance.</p>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.Packet.recalculate_checksum">
+<code class="descname">recalculate_checksum</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#Packet.recalculate_checksum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.Packet.recalculate_checksum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Updates checksum of a packet after some changes.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.Packet.set_word">
+<code class="descname">set_word</code><span class="sig-paren">(</span><em>index</em>, <em>value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#Packet.set_word"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.Packet.set_word" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set a word in packet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>index</strong> (<em>number</em>) &#8211; index of word (in word-size units)</li>
+<li><strong>value</strong> (<em>number</em>) &#8211; value to be put into index-th word of packet</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.drivers.eeg.tmsi.PacketType">
+<em class="property">class </em><code class="descclassname">obci.drivers.eeg.tmsi.</code><code class="descname">PacketType</code><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#PacketType"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.PacketType" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>This class names all suported packet types.</p>
+<p>Generates all_known_types, names, values.</p>
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.PacketType.TMS_ACKNOWLEDGE">
+<code class="descname">TMS_ACKNOWLEDGE</code><em class="property"> = 0</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.PacketType.TMS_ACKNOWLEDGE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.PacketType.TMS_CHANNEL_DATA">
+<code class="descname">TMS_CHANNEL_DATA</code><em class="property"> = 1</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.PacketType.TMS_CHANNEL_DATA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.PacketType.TMS_FRONTEND_INFO">
+<code class="descname">TMS_FRONTEND_INFO</code><em class="property"> = 2</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.PacketType.TMS_FRONTEND_INFO" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.PacketType.TMS_FRONTEND_INFO_REQUEST">
+<code class="descname">TMS_FRONTEND_INFO_REQUEST</code><em class="property"> = 3</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.PacketType.TMS_FRONTEND_INFO_REQUEST" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.PacketType.TMS_KEEP_ALIVE">
+<code class="descname">TMS_KEEP_ALIVE</code><em class="property"> = 39</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.PacketType.TMS_KEEP_ALIVE" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.PacketType.TMS_VL_DELTA_DATA">
+<code class="descname">TMS_VL_DELTA_DATA</code><em class="property"> = 47</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.PacketType.TMS_VL_DELTA_DATA" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.PacketType.TMS_VL_DELTA_INFO">
+<code class="descname">TMS_VL_DELTA_INFO</code><em class="property"> = 49</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.PacketType.TMS_VL_DELTA_INFO" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.PacketType.TMS_VL_DELTA_INFO_REQUEST">
+<code class="descname">TMS_VL_DELTA_INFO_REQUEST</code><em class="property"> = 48</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.PacketType.TMS_VL_DELTA_INFO_REQUEST" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.PacketType.all_known_types">
+<code class="descname">all_known_types</code><em class="property"> = [0, 1, 2, 3, 39, 47, 49, 48]</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.PacketType.all_known_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>list of all known types, dynamically generated</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.PacketType.generate_internals">
+<code class="descname">generate_internals</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#PacketType.generate_internals"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.PacketType.generate_internals" title="Permalink to this definition">¶</a></dt>
+<dd><p>Generate internal fields: all_known_types, names, values</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.PacketType.names">
+<code class="descname">names</code><em class="property"> = {'TMS_ACKNOWLEDGE': 0, 'TMS_FRONTEND_INFO_REQUEST': 3, 'TMS_FRONTEND_INFO': 2, 'TMS_VL_DELTA_INFO': 49, 'TMS_CHANNEL_DATA': 1, 'TMS_VL_DELTA_INFO_REQUEST': 48, 'TMS_KEEP_ALIVE': 39, 'TMS_VL_DELTA_DATA': 47}</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.PacketType.names" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict of name =&gt; value, dynamically generated</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.PacketType.print_types">
+<code class="descname">print_types</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#PacketType.print_types"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.PacketType.print_types" title="Permalink to this definition">¶</a></dt>
+<dd><p>Show all available packet types.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="obci.drivers.eeg.tmsi.PacketType.values">
+<code class="descname">values</code><em class="property"> = {0: 'TMS_ACKNOWLEDGE', 1: 'TMS_CHANNEL_DATA', 2: 'TMS_FRONTEND_INFO', 3: 'TMS_FRONTEND_INFO_REQUEST', 48: 'TMS_VL_DELTA_INFO_REQUEST', 49: 'TMS_VL_DELTA_INFO', 39: 'TMS_KEEP_ALIVE', 47: 'TMS_VL_DELTA_DATA'}</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.PacketType.values" title="Permalink to this definition">¶</a></dt>
+<dd><p>dict of value =&gt; name, dynamically generated</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.drivers.eeg.tmsi.VLDeltaData">
+<em class="property">class </em><code class="descclassname">obci.drivers.eeg.tmsi.</code><code class="descname">VLDeltaData</code><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#VLDeltaData"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.VLDeltaData" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.drivers.eeg.tmsi.ChannelData" title="obci.drivers.eeg.tmsi.ChannelData"><code class="xref py py-class docutils literal"><span class="pre">obci.drivers.eeg.tmsi.ChannelData</span></code></a></p>
+<p>Packet containing VL Delta channel data.
+Supports VL Delta compression.</p>
+<p>Delta dat packet has the following format:</p>
+<ul class="simple">
+<li>header</li>
+<li>references: data in all channels at the beginning of quant of time,
+including data for digi and saw channels, these values are encoded like
+in normal ChannelData packet</li>
+<li>delta bits: see below</li>
+<li>filling (because delta bits len can not be divisible by 16bit = word size)</li>
+<li>checksum</li>
+</ul>
+<p>Delta bits is raw stream of bits.
+Every delta is encoded as 4 bit length + delta body.
+Delta length can name values from 0 to 15. If length is 0, then delta body
+has 2 bits! In opposit case, delta body has delta length bits.
+Delta length 0 (so in length we have all 0bits: &#8220;0000&#8221; bits) is used to
+encode special delta values:</p>
+<ul class="simple">
+<li>0 - delta = 0</li>
+<li>1 - this value is never used!</li>
+<li>2 - channels is in overflow</li>
+<li>3 - delta = -1</li>
+</ul>
+<p>Every channel can have different divider. Lets consider an example, where
+there are only two channels: A and B.
+Channel A is send with 128Hz freq.
+Channel B is send with 256Hz freq.
+Base frequency is set to 64Hz.
+Then in 1/64s we have 2 data in A and 4 data in B.
+So the VLDelta packet will consist of reference samples: 1 for A and
+1 for B. Then it will multiplex:
+delta for channel B, delta for channel A, delta for channel B, delta for
+channel B.
+If some channel was in overflow at the beginning of quant of time then
+it is not included later in deltas (till the end of this packet).
+If some channel become in overflow in the middle of the packet,
+this is signalised by using special delta, and later this channel will
+not be send in deltas (till the end of this packet).</p>
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.VLDeltaData.decode">
+<code class="descname">decode</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#VLDeltaData.decode"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.VLDeltaData.decode" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decode channel data contained in this packet.
+Supports VL Delta compression.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">list of lists of ints</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">List indexed by channel numbers. Every list contains
+list of values in this channel.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.VLDeltaData.decode_next_delta">
+<code class="descname">decode_next_delta</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#VLDeltaData.decode_next_delta"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.VLDeltaData.decode_next_delta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decode one delta data from delta_bits attribute.
+Later delete decoded data from delta_bits.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">tuple (bool, int)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">(was this delta special, value of delta)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.VLDeltaData.get_digi">
+<code class="descname">get_digi</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#VLDeltaData.get_digi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.VLDeltaData.get_digi" title="Permalink to this definition">¶</a></dt>
+<dd><p>Get Digi channel status.
+This channel contains data such as battery level, on off button status,
+trigger status.</p>
+<p>For VLDelta Data packet, which can contain multiple information
+in digi channel, this is done by taking binary alternative of all
+digi channel values.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">number</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">byte containing flags (on/off button etc.) set in packet</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.VLDeltaData.set_vldelta_info">
+<code class="descname">set_vldelta_info</code><span class="sig-paren">(</span><em>vldelta_info</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#VLDeltaData.set_vldelta_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.VLDeltaData.set_vldelta_info" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set VLDelta Info (user should obtain one from device before calling
+decode method).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>vldelta_info</strong> (<a class="reference internal" href="#obci.drivers.eeg.tmsi.VLDeltaInfo" title="obci.drivers.eeg.tmsi.VLDeltaInfo"><em>VLDeltaInfo</em></a>) &#8211; packet of type vldelta info containing divider
+list</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.drivers.eeg.tmsi.VLDeltaInfo">
+<em class="property">class </em><code class="descclassname">obci.drivers.eeg.tmsi.</code><code class="descname">VLDeltaInfo</code><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#VLDeltaInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.VLDeltaInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.drivers.eeg.tmsi.Packet" title="obci.drivers.eeg.tmsi.Packet"><code class="xref py py-class docutils literal"><span class="pre">obci.drivers.eeg.tmsi.Packet</span></code></a></p>
+<p>Packet containing VL Delta information (like transmission frequency
+divider).</p>
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.VLDeltaInfo.get_divider_list">
+<code class="descname">get_divider_list</code><span class="sig-paren">(</span><em>number_of_channels</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#VLDeltaInfo.get_divider_list"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.VLDeltaInfo.get_divider_list" title="Permalink to this definition">¶</a></dt>
+<dd><p>Decode dividers list from tha packet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>number_of_channels</strong> (<em>number</em>) &#8211; number of data channels (not including digi
+and saw channels)</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list of ints</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of all dividers (including digi
+and saw channels)</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.drivers.eeg.tmsi.VLDeltaInfo.get_trans_freq_div">
+<code class="descname">get_trans_freq_div</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#VLDeltaInfo.get_trans_freq_div"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.VLDeltaInfo.get_trans_freq_div" title="Permalink to this definition">¶</a></dt>
+<dd><p>Returns value of transmission frequency divider from current packet.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">number</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body">transmission frequency divider</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="data">
+<dt id="obci.drivers.eeg.tmsi.WORD_SIZE">
+<code class="descclassname">obci.drivers.eeg.tmsi.</code><code class="descname">WORD_SIZE</code><em class="property"> = 2</em><a class="headerlink" href="#obci.drivers.eeg.tmsi.WORD_SIZE" title="Permalink to this definition">¶</a></dt>
+<dd><p>word size in bytes</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="obci.drivers.eeg.tmsi.bits_to_num">
+<code class="descclassname">obci.drivers.eeg.tmsi.</code><code class="descname">bits_to_num</code><span class="sig-paren">(</span><em>bits</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#bits_to_num"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.bits_to_num" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert bit representation of a number (as large as you can imagine) back
+into number - int.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>bits</strong> (<em>list of ints</em>) &#8211; binary representation of a number</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">number</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">number represented by a given list of bits</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="obci.drivers.eeg.tmsi.calculate_checksum">
+<code class="descclassname">obci.drivers.eeg.tmsi.</code><code class="descname">calculate_checksum</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#calculate_checksum"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.calculate_checksum" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calculates checksum of a packet and return two byte (one word) string
+containing it.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/string.html#module-string" title="(in Python v3.5)"><em>string</em></a>) &#8211; data we want checksum of</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">string (two byte) representing checksum</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">checksum of data</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="obci.drivers.eeg.tmsi.decode_tmsi_bluetooth_number">
+<code class="descclassname">obci.drivers.eeg.tmsi.</code><code class="descname">decode_tmsi_bluetooth_number</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#decode_tmsi_bluetooth_number"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.decode_tmsi_bluetooth_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert number in TMSi internal format into int.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<em>string (3 bytes)</em>) &#8211; number represented in internal TMSi format</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.5)">int</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">number after conversion</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="obci.drivers.eeg.tmsi.encode_tmsi_bluetooth_number">
+<code class="descclassname">obci.drivers.eeg.tmsi.</code><code class="descname">encode_tmsi_bluetooth_number</code><span class="sig-paren">(</span><em>num</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#encode_tmsi_bluetooth_number"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.encode_tmsi_bluetooth_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert number into TMSi internal format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>num</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.5)"><em>int</em></a>) &#8211; number to be converted</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">string (3 bytes)</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">number represented in internal TMSi format</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="obci.drivers.eeg.tmsi.num_to_bits">
+<code class="descclassname">obci.drivers.eeg.tmsi.</code><code class="descname">num_to_bits</code><span class="sig-paren">(</span><em>num</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#num_to_bits"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.num_to_bits" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert number into its binary representation (list of bits).
+Number has to be from 0..255 range.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>num</strong> (<em>number</em>) &#8211; number to be converted into bit representation</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">list of ints</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">list of bits representing number num</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="obci.drivers.eeg.tmsi.number_to_string_word">
+<code class="descclassname">obci.drivers.eeg.tmsi.</code><code class="descname">number_to_string_word</code><span class="sig-paren">(</span><em>number</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#number_to_string_word"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.number_to_string_word" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a number 0..65535 to two byte string representation.
+First byte is less significant.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>number</strong> (<em>number</em>) &#8211; number to be converted.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body"><a class="reference external" href="https://docs.python.org/3/library/string.html#module-string" title="(in Python v3.5)">string</a></td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">two byte string containing representation of a word.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="obci.drivers.eeg.tmsi.string_word_to_number">
+<code class="descclassname">obci.drivers.eeg.tmsi.</code><code class="descname">string_word_to_number</code><span class="sig-paren">(</span><em>data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/drivers/eeg/tmsi.html#string_word_to_number"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.drivers.eeg.tmsi.string_word_to_number" title="Permalink to this definition">¶</a></dt>
+<dd><p>Convert a two byte string representation of a number back into number.
+First byte is less significant.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/string.html#module-string" title="(in Python v3.5)"><em>string</em></a>) &#8211; two byte string containing representation of a word.</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Return type:</th><td class="field-body">number</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">a number described by data parameter.</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.drivers.eeg">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-obci.drivers.eeg" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">obci</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="obci.html">obci package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="obci.acquisition.html">obci.acquisition package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.analysis.html">obci.analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.benchmark.html">obci.benchmark package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.cmd.html">obci.cmd package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.configs.html">obci.configs package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.control.html">obci.control package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.core.html">obci.core package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="obci.drivers.html">obci.drivers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.gui.html">obci.gui package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.mx_legacy.html">obci.mx_legacy package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.peers.html">obci.peers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.scenarios.html">obci.scenarios package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.utils.html">obci.utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">obci</a><ul>
+  <li><a href="obci.html">obci package</a><ul>
+  <li><a href="obci.drivers.html">obci.drivers package</a><ul>
+      <li>Previous: <a href="obci.drivers.html" title="previous chapter">obci.drivers package</a></li>
+      <li>Next: <a href="obci.drivers.eeg.driver_discovery.html" title="next chapter">obci.drivers.eeg.driver_discovery package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/apidoc/obci.drivers.eeg.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

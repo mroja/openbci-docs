@@ -1,0 +1,151 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.drivers.eeg.driver_discovery.amplifier_virtual_discovery &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.drivers.eeg.driver_discovery.amplifier_virtual_discovery</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">obci.control.launcher.launcher_tools</span> <span class="k">import</span> <span class="n">READY_TO_LAUNCH</span>
+<span class="kn">from</span> <span class="nn">obci.control.peer.peer_config</span> <span class="k">import</span> <span class="n">PeerConfig</span>
+<span class="kn">from</span> <span class="nn">obci.drivers.eeg.driver_comm</span> <span class="k">import</span> <span class="n">DriverComm</span>
+
+
+<span class="n">DESC_FILE</span> <span class="o">=</span> <span class="s1">&#39;amplifier_virtual.json&#39;</span>
+<span class="n">_AMP_PEER</span> <span class="o">=</span> <span class="s1">&#39;drivers/eeg/amplifier_virtual.py&#39;</span>
+<span class="n">_AMP_EXECUTABLE</span> <span class="o">=</span> <span class="s1">&#39;dummy_amplifier&#39;</span>
+<span class="n">_SCENARIO</span> <span class="o">=</span> <span class="s1">&#39;scenarios/amplifier/virtual_amp_signal.ini&#39;</span>
+
+
+<div class="viewcode-block" id="get_description_from_driver"><a class="viewcode-back" href="../../../../../apidoc/obci.drivers.eeg.driver_discovery.html#obci.drivers.eeg.driver_discovery.amplifier_virtual_discovery.get_description_from_driver">[docs]</a><span class="k">def</span> <span class="nf">get_description_from_driver</span><span class="p">():</span>
+    <span class="n">conf</span> <span class="o">=</span> <span class="n">PeerConfig</span><span class="p">(</span><span class="s1">&#39;amplifier&#39;</span><span class="p">)</span>
+    <span class="n">conf</span><span class="o">.</span><span class="n">add_local_param</span><span class="p">(</span><span class="s1">&#39;driver_executable&#39;</span><span class="p">,</span> <span class="n">_AMP_EXECUTABLE</span><span class="p">)</span>
+    <span class="n">conf</span><span class="o">.</span><span class="n">add_local_param</span><span class="p">(</span><span class="s1">&#39;samples_per_packet&#39;</span><span class="p">,</span> <span class="s1">&#39;4&#39;</span><span class="p">)</span>
+
+    <span class="n">driv</span> <span class="o">=</span> <span class="n">DriverComm</span><span class="p">(</span><span class="n">conf</span><span class="p">,</span> <span class="n">catch_signals</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+    <span class="n">descr</span> <span class="o">=</span> <span class="n">driv</span><span class="o">.</span><span class="n">get_driver_description</span><span class="p">()</span>
+    <span class="n">dic</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">descr</span><span class="p">)</span>
+    <span class="n">driv</span><span class="o">.</span><span class="n">terminate_driver</span><span class="p">()</span>
+    <span class="k">return</span> <span class="n">dic</span></div>
+
+
+<div class="viewcode-block" id="driver_descriptions"><a class="viewcode-back" href="../../../../../apidoc/obci.drivers.eeg.driver_discovery.html#obci.drivers.eeg.driver_discovery.amplifier_virtual_discovery.driver_descriptions">[docs]</a><span class="k">def</span> <span class="nf">driver_descriptions</span><span class="p">():</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">__file__</span><span class="p">),</span> <span class="n">DESC_FILE</span><span class="p">))</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">desc</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s1">&#39;experiment_info&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s2">&quot;launch_file_path&quot;</span><span class="p">:</span> <span class="n">_SCENARIO</span><span class="p">,</span>
+                <span class="s1">&#39;experiment_status&#39;</span><span class="p">:</span> <span class="p">{</span>
+                    <span class="s1">&#39;status_name&#39;</span><span class="p">:</span> <span class="n">READY_TO_LAUNCH</span>
+                <span class="p">}</span>
+            <span class="p">},</span>
+            <span class="s1">&#39;amplifier_peer_info&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;driver_executable&#39;</span><span class="p">:</span> <span class="n">_AMP_EXECUTABLE</span><span class="p">,</span>
+                <span class="s1">&#39;path&#39;</span><span class="p">:</span> <span class="n">_AMP_PEER</span><span class="p">},</span>
+            <span class="s1">&#39;amplifier_params&#39;</span><span class="p">:</span> <span class="p">{</span>
+                <span class="s1">&#39;active_channels&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;channel_names&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;sampling_rate&#39;</span><span class="p">:</span> <span class="s1">&#39;&#39;</span><span class="p">,</span>
+                <span class="s1">&#39;additional_params&#39;</span><span class="p">:</span> <span class="p">{},</span>
+                <span class="s1">&#39;channels_info&#39;</span><span class="p">:</span> <span class="n">get_description_from_driver</span><span class="p">()}</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">desc</span><span class="p">]</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

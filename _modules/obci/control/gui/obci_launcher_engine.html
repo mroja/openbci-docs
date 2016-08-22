@@ -1,0 +1,770 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.gui.obci_launcher_engine &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.gui.obci_launcher_engine</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">zmq</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+<span class="kn">import</span> <span class="nn">configparser</span>
+<span class="kn">import</span> <span class="nn">codecs</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">uuid</span>
+<span class="kn">import</span> <span class="nn">json</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="k">import</span> <span class="n">QtCore</span>
+<span class="kn">from</span> <span class="nn">PyQt4.QtGui</span> <span class="k">import</span> <span class="n">QProgressDialog</span>
+<span class="kn">from</span> <span class="nn">PyQt4.QtCore</span> <span class="k">import</span> <span class="n">Qt</span>
+
+<span class="kn">import</span> <span class="nn">obci.control.common.net_tools</span> <span class="k">as</span> <span class="nn">net</span>
+<span class="kn">from</span> <span class="nn">obci.control.common.message</span> <span class="k">import</span> <span class="n">send_msg</span><span class="p">,</span> <span class="n">recv_msg</span>
+
+<span class="kn">import</span> <span class="nn">obci.control.launcher.obci_script_utils</span> <span class="k">as</span> <span class="nn">obci_script_utils</span>
+
+<span class="kn">import</span> <span class="nn">obci.control.launcher.launcher_tools</span> <span class="k">as</span> <span class="nn">launcher_tools</span>
+<span class="kn">from</span> <span class="nn">obci.control.launcher.launch_file_serializer</span> <span class="k">import</span> <span class="n">LaunchFileSerializerINI</span><span class="p">,</span> <span class="n">serialize_scenario_json</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.peer.peer_config_parser</span> <span class="k">import</span> <span class="n">PeerConfigParserDict</span>
+<span class="kn">from</span> <span class="nn">obci.control.peer.peer_config</span> <span class="k">import</span> <span class="n">PeerConfig</span>
+
+<span class="kn">from</span> <span class="nn">obci.utils.openbci_logging</span> <span class="k">import</span> <span class="n">get_logger</span><span class="p">,</span> <span class="n">log_crash</span>
+
+<span class="kn">from</span> <span class="nn">.experiment_engine_info</span> <span class="k">import</span> <span class="n">ExperimentEngineInfo</span><span class="p">,</span> <span class="n">MODE_ADVANCED</span><span class="p">,</span> \
+    <span class="n">DEFAULT_CATEGORY</span><span class="p">,</span> <span class="n">USER_CATEGORY</span>
+
+<span class="kn">import</span> <span class="nn">obci.control.common.obci_control_settings</span> <span class="k">as</span> <span class="nn">settings</span>
+
+<span class="n">PRESETS</span> <span class="o">=</span> <span class="s1">&#39;control/gui/presets/default.ini&#39;</span>
+
+<span class="n">USER_PRESETS</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">OBCI_HOME_DIR</span><span class="p">,</span> <span class="s1">&#39;user_presets.ini&#39;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="OBCILauncherEngine"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_launcher_engine.OBCILauncherEngine">[docs]</a><span class="k">class</span> <span class="nc">OBCILauncherEngine</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="p">):</span>
+    <span class="n">update_ui</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+    <span class="n">obci_state_change</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+    <span class="n">rq_error</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+    <span class="n">saver_msg</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">pyqtSignal</span><span class="p">(</span><span class="nb">object</span><span class="p">)</span>
+
+    <span class="n">internal_msg_templates</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s1">&#39;_launcher_engine_msg&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">task</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">,</span> <span class="n">pub_addr</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">),</span>
+        <span class="s1">&#39;_user_set_scenario&#39;</span><span class="p">:</span> <span class="nb">dict</span><span class="p">(</span><span class="n">uuid</span><span class="o">=</span><span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="p">}</span>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">obci_client</span><span class="p">,</span> <span class="n">server_ip</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">presets</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">OBCILauncherEngine</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">get_logger</span><span class="p">(</span><span class="s1">&#39;launcherGUIEngine&#39;</span><span class="p">,</span> <span class="n">obci_peer</span><span class="o">=</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">server_ip</span> <span class="o">=</span> <span class="n">server_ip</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">obci_client</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span> <span class="o">=</span> <span class="n">obci_client</span><span class="o">.</span><span class="n">ctx</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">mtool</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">add_templates</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">internal_msg_templates</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cached_nearby_machines</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="n">presets</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">preset_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="n">launcher_tools</span><span class="o">.</span><span class="n">obci_root</span><span class="p">(),</span> <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s1">&#39;control/gui/presets/&#39;</span><span class="p">,</span> <span class="n">presets</span><span class="p">,</span> <span class="s1">&#39;.ini&#39;</span><span class="p">]))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">preset_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">launcher_tools</span><span class="o">.</span><span class="n">obci_root</span><span class="p">(),</span> <span class="n">PRESETS</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">user_preset_path</span> <span class="o">=</span> <span class="n">USER_PRESETS</span>
+
+        <span class="c1"># create home preset directory if it does not exists</span>
+        <span class="n">preset_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user_preset_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">preset_dir</span><span class="p">)):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">makedirs</span><span class="p">(</span><span class="n">preset_dir</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare_experiments</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">obci_poller</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Poller</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">monitor_push</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">PUSH</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">monitor_addr</span> <span class="o">=</span> <span class="s1">&#39;inproc://obci_monitor&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">uuid</span><span class="o">.</span><span class="n">uuid4</span><span class="p">())[:</span><span class="mi">4</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">monitor_push</span><span class="o">.</span><span class="n">bind</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor_addr</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_monitoring</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">srv_addr</span> <span class="o">=</span> <span class="s1">&#39;tcp://&#39;</span> <span class="o">+</span> <span class="n">server_ip</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="n">net</span><span class="o">.</span><span class="n">server_pub_port</span><span class="p">()</span> <span class="k">if</span> <span class="n">server_ip</span> <span class="k">else</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obci_monitor_thr</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">obci_monitor</span><span class="p">,</span>
+                                                 <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">monitor_addr</span><span class="p">,</span>
+                                                       <span class="n">srv_addr</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obci_monitor_thr</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obci_monitor_thr</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">obci_state_change</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">handle_obci_state_change</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">exp</span><span class="o">.</span><span class="n">launcher_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_exp_connect</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">launcher_data</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">details_mode</span> <span class="o">=</span> <span class="n">MODE_ADVANCED</span>
+
+    <span class="k">def</span> <span class="nf">_crash_extra_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exception</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">{</span><span class="s1">&#39;obci_part&#39;</span><span class="p">:</span> <span class="s1">&#39;launcher&#39;</span><span class="p">}</span>
+
+<div class="viewcode-block" id="OBCILauncherEngine.make_exp_obj"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.make_exp_obj">[docs]</a>    <span class="k">def</span> <span class="nf">make_exp_obj</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+        <span class="n">exp</span> <span class="o">=</span> <span class="n">ExperimentEngineInfo</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
+        <span class="n">exp</span><span class="o">.</span><span class="n">exp_saver_msg</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_saver_msg</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">exp</span></div>
+
+    <span class="k">def</span> <span class="nf">_saver_msg</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">killer_proc</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;_SAVER_MSG&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">saver_msg</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">killer_proc</span><span class="p">)</span>
+
+    <span class="nd">@log_crash</span>
+<div class="viewcode-block" id="OBCILauncherEngine.cleanup"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.cleanup">[docs]</a>    <span class="k">def</span> <span class="nf">cleanup</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;CLEANUP!!!!&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_stop_monitoring</span> <span class="o">=</span> <span class="kc">True</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">monitor_push</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  <span class="c1"># linger=0)</span>
+        <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">:</span>
+            <span class="n">exp</span><span class="o">.</span><span class="n">cleanup</span><span class="p">()</span>
+            <span class="n">exp</span><span class="o">.</span><span class="n">setParent</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+            <span class="n">exp</span><span class="o">.</span><span class="n">deleteLater</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">obci_monitor_thr</span><span class="o">.</span><span class="n">join</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="OBCILauncherEngine.exp_ids"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.exp_ids">[docs]</a>    <span class="k">def</span> <span class="nf">exp_ids</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">ids</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">):</span>
+            <span class="n">ids</span><span class="p">[</span><span class="n">e</span><span class="o">.</span><span class="n">uuid</span><span class="p">]</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="k">return</span> <span class="n">ids</span></div>
+
+<div class="viewcode-block" id="OBCILauncherEngine.index_of"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.index_of">[docs]</a>    <span class="k">def</span> <span class="nf">index_of</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp_uuid</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">exp_uuid</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp_ids</span><span class="p">():</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">exp_ids</span><span class="p">()[</span><span class="n">exp_uuid</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span></div>
+
+    <span class="nd">@log_crash</span>
+<div class="viewcode-block" id="OBCILauncherEngine.prepare_experiments"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.prepare_experiments">[docs]</a>    <span class="k">def</span> <span class="nf">prepare_experiments</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">experiments</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">presets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_presets</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">preset_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user_preset_path</span><span class="p">):</span>
+            <span class="n">presets</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_presets</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user_preset_path</span><span class="p">,</span> <span class="n">cat_name</span><span class="o">=</span><span class="n">USER_CATEGORY</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">preset</span> <span class="ow">in</span> <span class="n">presets</span><span class="p">:</span>
+            <span class="n">exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_exp_obj</span><span class="p">(</span><span class="n">preset_data</span><span class="o">=</span><span class="n">preset</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="p">)</span>
+            <span class="n">experiments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
+
+        <span class="n">running</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_list_experiments</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="n">running</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;running exp::::::  &quot;</span><span class="p">,</span> <span class="n">exp</span><span class="p">)</span>
+            <span class="n">matches</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">experiments</span><span class="p">)</span> <span class="k">if</span>
+                       <span class="n">e</span><span class="o">.</span><span class="n">launch_file</span> <span class="o">==</span> <span class="n">exp</span><span class="p">[</span><span class="s1">&#39;launch_file_path&#39;</span><span class="p">]</span> <span class="ow">and</span> <span class="n">e</span><span class="o">.</span><span class="n">preset_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                       <span class="ow">and</span> <span class="n">e</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">status_name</span> <span class="o">==</span> <span class="n">launcher_tools</span><span class="o">.</span><span class="n">READY_TO_LAUNCH</span><span class="p">]</span>
+            <span class="k">if</span> <span class="n">matches</span><span class="p">:</span>
+                <span class="n">index</span><span class="p">,</span> <span class="n">preset</span> <span class="o">=</span> <span class="n">matches</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+                <span class="n">preset</span><span class="o">.</span><span class="n">setup_from_launcher</span><span class="p">(</span><span class="n">exp</span><span class="p">,</span> <span class="n">preset</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">experiments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">make_exp_obj</span><span class="p">(</span><span class="n">launcher_data</span><span class="o">=</span><span class="n">exp</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="n">experiments</span></div>
+
+    <span class="k">def</span> <span class="nf">_addr_connectable</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addr</span><span class="p">,</span> <span class="n">machine</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">machine</span> <span class="o">==</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span> <span class="ow">or</span> \
+            <span class="p">(</span><span class="n">net</span><span class="o">.</span><span class="n">is_ip</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">net</span><span class="o">.</span><span class="n">addr_is_local</span><span class="p">(</span><span class="n">addr</span><span class="p">))</span>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">_exp_connect</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">addr</span> <span class="ow">in</span> <span class="n">exp_data</span><span class="p">[</span><span class="s1">&#39;pub_addrs&#39;</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">addr</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;tcp://localhost&#39;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_addr_connectable</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="n">exp_data</span><span class="p">[</span><span class="s1">&#39;origin_machine&#39;</span><span class="p">]):</span>
+                <span class="n">send_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">monitor_push</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s1">&#39;_launcher_engine_msg&#39;</span><span class="p">,</span>
+                                                                <span class="n">task</span><span class="o">=</span><span class="s1">&#39;connect&#39;</span><span class="p">,</span> <span class="n">pub_addr</span><span class="o">=</span><span class="n">addr</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_parse_presets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preset_path</span><span class="p">,</span> <span class="n">cat_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">preset_file</span> <span class="o">=</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">preset_path</span><span class="p">,</span> <span class="n">encoding</span><span class="o">=</span><span class="s1">&#39;utf-8&#39;</span><span class="p">)</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">RawConfigParser</span><span class="p">()</span>
+        <span class="n">parser</span><span class="o">.</span><span class="n">readfp</span><span class="p">(</span><span class="n">preset_file</span><span class="p">)</span>
+        <span class="n">presets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">parser</span><span class="o">.</span><span class="n">sections</span><span class="p">():</span>
+            <span class="n">pres</span> <span class="o">=</span> <span class="p">{</span><span class="s1">&#39;name&#39;</span><span class="p">:</span> <span class="n">sec</span><span class="p">}</span>
+            <span class="k">for</span> <span class="n">opt</span> <span class="ow">in</span> <span class="n">parser</span><span class="o">.</span><span class="n">options</span><span class="p">(</span><span class="n">sec</span><span class="p">):</span>
+                <span class="n">pres</span><span class="p">[</span><span class="n">opt</span><span class="p">]</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">sec</span><span class="p">,</span> <span class="n">opt</span><span class="p">)</span>
+            <span class="k">if</span> <span class="s1">&#39;category&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pres</span><span class="p">:</span>
+                <span class="n">pres</span><span class="p">[</span><span class="s1">&#39;category&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">cat_name</span> <span class="k">if</span> <span class="n">cat_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">DEFAULT_CATEGORY</span>
+            <span class="k">if</span> <span class="s1">&#39;public_params&#39;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">pres</span><span class="p">:</span>
+                <span class="n">pres</span><span class="p">[</span><span class="s1">&#39;public_params&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+            <span class="n">presets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pres</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">presets</span>
+
+    <span class="nd">@log_crash</span>
+<div class="viewcode-block" id="OBCILauncherEngine.obci_monitor"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.obci_monitor">[docs]</a>    <span class="k">def</span> <span class="nf">obci_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ctx</span><span class="p">,</span> <span class="n">pull_addr</span><span class="p">,</span> <span class="n">server_ip</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">pull</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">PULL</span><span class="p">)</span>
+        <span class="n">pull</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">pull_addr</span><span class="p">)</span>
+
+        <span class="n">subscriber</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SUB</span><span class="p">)</span>
+        <span class="n">subscriber</span><span class="o">.</span><span class="n">setsockopt_string</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">SUBSCRIBE</span><span class="p">,</span> <span class="s2">&quot;&quot;</span><span class="p">)</span>
+
+        <span class="n">poller</span> <span class="o">=</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Poller</span><span class="p">()</span>
+        <span class="n">poller</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">pull</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">POLLIN</span><span class="p">)</span>
+        <span class="n">poller</span><span class="o">.</span><span class="n">register</span><span class="p">(</span><span class="n">subscriber</span><span class="p">,</span> <span class="n">zmq</span><span class="o">.</span><span class="n">POLLIN</span><span class="p">)</span>
+
+        <span class="n">_all</span> <span class="o">=</span> <span class="p">[</span><span class="n">pull</span><span class="p">,</span> <span class="n">subscriber</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">server_ip</span><span class="p">:</span>
+            <span class="n">addr</span> <span class="o">=</span> <span class="n">server_ip</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">addr</span> <span class="o">=</span> <span class="n">net</span><span class="o">.</span><span class="n">server_address</span><span class="p">(</span><span class="n">sock_type</span><span class="o">=</span><span class="s1">&#39;pub&#39;</span><span class="p">)</span>
+        <span class="n">subscriber</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
+
+        <span class="k">def</span> <span class="nf">handle_msg</span><span class="p">(</span><span class="n">msg</span><span class="p">):</span>
+            <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;_launcher_engine_msg&#39;</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">task</span> <span class="o">==</span> <span class="s1">&#39;connect&#39;</span><span class="p">:</span>
+                    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;msg.pub.addr  &quot;</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">pub_addr</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span>
+                    <span class="n">subscriber</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">pub_addr</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">obci_state_change</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_monitoring</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">socks</span> <span class="o">=</span> <span class="nb">dict</span><span class="p">(</span><span class="n">poller</span><span class="o">.</span><span class="n">poll</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="mi">200</span><span class="p">))</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">break</span>
+
+            <span class="k">for</span> <span class="n">socket</span> <span class="ow">in</span> <span class="n">socks</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">socks</span><span class="p">[</span><span class="n">socket</span><span class="p">]</span> <span class="o">==</span> <span class="n">zmq</span><span class="o">.</span><span class="n">POLLIN</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">unpack_msg</span><span class="p">(</span><span class="n">recv_msg</span><span class="p">(</span><span class="n">socket</span><span class="p">))</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_monitoring</span><span class="p">:</span>
+                        <span class="n">handle_msg</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">sock</span> <span class="ow">in</span> <span class="n">_all</span><span class="p">:</span>
+            <span class="n">sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>  <span class="c1"># linger=0)</span></div>
+
+    <span class="nd">@log_crash</span>
+<div class="viewcode-block" id="OBCILauncherEngine.handle_obci_state_change"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.handle_obci_state_change">[docs]</a>    <span class="k">def</span> <span class="nf">handle_obci_state_change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">launcher_message</span><span class="p">):</span>
+        <span class="n">type_</span> <span class="o">=</span> <span class="n">launcher_message</span><span class="o">.</span><span class="n">type</span>
+        <span class="n">handled</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;experiment_created&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_experiment_created</span><span class="p">(</span><span class="n">launcher_message</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;experiment_scenario&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_experiment_scenario_set</span><span class="p">(</span><span class="n">launcher_message</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;launcher_shutdown&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_launcher_shutdown</span><span class="p">(</span><span class="n">launcher_message</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;kill_sent&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_kill_sent</span><span class="p">(</span><span class="n">launcher_message</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;kill&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_kill</span><span class="p">(</span><span class="n">launcher_message</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;obci_control_message&#39;</span><span class="p">:</span>  <span class="c1"># obci_peer_registered, obci_peer_params_changed</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_obci_control_message</span><span class="p">(</span><span class="n">launcher_message</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;experiment_status_change&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_experiment_status_change</span><span class="p">(</span><span class="n">launcher_message</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;experiment_info_change&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_experiment_info_change</span><span class="p">(</span><span class="n">launcher_message</span><span class="p">)</span>
+
+        <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;obci_peer_dead&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_obci_peer_dead</span><span class="p">(</span><span class="n">launcher_message</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;launch_error&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_launch_error</span><span class="p">(</span><span class="n">launcher_message</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;experiment_transformation&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_experiment_transformation</span><span class="p">(</span><span class="n">launcher_message</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="s1">&#39;nearby_machines&#39;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_nearby_machines</span><span class="p">(</span><span class="n">launcher_message</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">type_</span> <span class="o">==</span> <span class="s2">&quot;new_peer_added&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_handle_new_peer_added</span><span class="p">(</span><span class="n">launcher_message</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">handled</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="k">if</span> <span class="n">handled</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">update_ui</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">launcher_message</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;----engine signalled&quot;</span><span class="p">,</span> <span class="n">type_</span><span class="p">)</span></div>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">_handle_experiment_created</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">exp_list</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="n">exps</span> <span class="o">=</span> <span class="n">exp_list</span> <span class="k">if</span> <span class="n">exp_list</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span>
+
+        <span class="n">matches</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">exps</span><span class="p">)</span> <span class="k">if</span>
+                   <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">msg</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="n">e</span><span class="o">.</span><span class="n">launch_file</span> <span class="o">==</span> <span class="n">msg</span><span class="o">.</span><span class="n">launch_file_path</span><span class="p">)</span> <span class="ow">and</span>
+                   <span class="n">e</span><span class="o">.</span><span class="n">preset_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="n">matches</span><span class="p">:</span>
+            <span class="n">index</span><span class="p">,</span> <span class="n">exp</span> <span class="o">=</span> <span class="n">matches</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+            <span class="n">exp</span><span class="o">.</span><span class="n">setup_from_launcher</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">dict</span><span class="p">(),</span> <span class="n">preset</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;^^^^^^^^  created exp, UUID:&quot;</span><span class="p">,</span> <span class="n">exp</span><span class="o">.</span><span class="n">exp_config</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">exps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">make_exp_obj</span><span class="p">(</span><span class="n">launcher_data</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">dict</span><span class="p">(),</span> <span class="n">ctx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_exp_connect</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">dict</span><span class="p">())</span>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">_handle_experiment_scenario_set</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_of</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+            <span class="n">exp</span><span class="o">.</span><span class="n">update_scenario</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">launch_file_path</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">scenario</span><span class="p">)</span>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">_handle_experiment_transformation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="n">exps</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span>
+        <span class="n">old_index</span><span class="p">,</span> <span class="n">old_exp</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="n">new_index</span><span class="p">,</span> <span class="n">new_exp</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span> <span class="kc">None</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">exps</span><span class="p">))</span>
+
+        <span class="n">old_matches</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">exps</span><span class="p">):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">launch_file</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">old_launch_file</span> <span class="o">==</span> <span class="n">e</span><span class="o">.</span><span class="n">launch_file</span><span class="p">:</span>
+                <span class="n">old_matches</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">i</span><span class="p">,</span> <span class="n">e</span><span class="p">))</span>
+        <span class="c1"># old_matches = [(i, e) for i, e in enumerate(exps) if\</span>
+        <span class="c1"># (msg.old_launch_file in e.launch_file) ]#and\</span>
+        <span class="c1"># e.preset_data is not None]</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;old_matches&quot;</span><span class="p">,</span> <span class="n">old_matches</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">old_matches</span><span class="p">:</span>
+            <span class="n">old_index</span><span class="p">,</span> <span class="n">old_exp</span> <span class="o">=</span> <span class="n">old_matches</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+        <span class="n">new_matches</span> <span class="o">=</span> <span class="p">[(</span><span class="n">i</span><span class="p">,</span> <span class="n">e</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">e</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">exps</span><span class="p">)</span> <span class="k">if</span>
+                       <span class="p">(</span><span class="n">e</span><span class="o">.</span><span class="n">name</span> <span class="o">==</span> <span class="n">msg</span><span class="o">.</span><span class="n">name</span> <span class="ow">or</span> <span class="n">e</span><span class="o">.</span><span class="n">launch_file</span> <span class="o">==</span> <span class="n">msg</span><span class="o">.</span><span class="n">launch_file</span><span class="p">)</span> <span class="ow">and</span>
+                       <span class="n">e</span><span class="o">.</span><span class="n">preset_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">e</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">status_name</span> <span class="o">!=</span> <span class="n">launcher_tools</span><span class="o">.</span><span class="n">RUNNING</span><span class="p">]</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;new matches&quot;</span><span class="p">,</span> <span class="n">new_matches</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">new_matches</span><span class="p">:</span>
+            <span class="n">new_index</span><span class="p">,</span> <span class="n">new_exp</span> <span class="o">=</span> <span class="n">new_matches</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">old_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;old match&quot;</span><span class="p">,</span> <span class="n">old_index</span><span class="p">,</span> <span class="n">old_exp</span><span class="o">.</span><span class="n">preset_data</span><span class="p">)</span>
+            <span class="n">exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_exp_obj</span><span class="p">(</span><span class="n">preset_data</span><span class="o">=</span><span class="n">old_exp</span><span class="o">.</span><span class="n">preset_data</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="n">old_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">exp</span>
+
+        <span class="n">old_exp</span><span class="o">.</span><span class="n">launcher_data</span><span class="p">[</span><span class="s1">&#39;name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">name</span>
+        <span class="n">old_exp</span><span class="o">.</span><span class="n">launcher_data</span><span class="p">[</span><span class="s1">&#39;launch_file_path&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">launch_file</span>
+        <span class="n">old_exp</span><span class="o">.</span><span class="n">launcher_data</span><span class="p">[</span><span class="s1">&#39;status_name&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">status_name</span>
+        <span class="n">old_exp</span><span class="o">.</span><span class="n">launcher_data</span><span class="p">[</span><span class="s1">&#39;details&#39;</span><span class="p">]</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">details</span>
+        <span class="n">old_exp</span><span class="o">.</span><span class="n">setup_from_launcher</span><span class="p">(</span><span class="n">old_exp</span><span class="o">.</span><span class="n">launcher_data</span><span class="p">,</span>
+                                    <span class="n">preset</span><span class="o">=</span><span class="p">(</span><span class="n">new_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">),</span>
+                                    <span class="n">transform</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">new_index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">old_exp</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">name</span> <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">name</span> <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="n">new_index</span><span class="p">]</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">old_exp</span><span class="o">.</span><span class="n">preset_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="n">new_index</span><span class="p">]</span><span class="o">.</span><span class="n">preset_data</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="n">new_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">old_exp</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">old_exp</span><span class="o">.</span><span class="n">preset_data</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">old_exp</span><span class="p">)</span>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">_handle_launcher_shutdown</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">presets</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_presets</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">preset_path</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">exists</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user_preset_path</span><span class="p">):</span>
+            <span class="n">presets</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_parse_presets</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">user_preset_path</span><span class="p">,</span> <span class="n">cat_name</span><span class="o">=</span><span class="n">USER_CATEGORY</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">preset</span> <span class="ow">in</span> <span class="n">presets</span><span class="p">:</span>
+            <span class="n">exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_exp_obj</span><span class="p">(</span><span class="n">preset_data</span><span class="o">=</span><span class="n">preset</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_process_response</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">unpack_msg</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s1">&#39;rq_error&#39;</span><span class="p">,</span> <span class="n">err_code</span><span class="o">=</span><span class="s1">&#39;launcher_shut_down&#39;</span><span class="p">,</span>
+                                                                         <span class="n">details</span><span class="o">=</span><span class="s1">&#39;Launcher (obci_server) shut down. Starting </span><span class="se">\</span>
+<span class="s1">experiments is possible only when launcher is running (command: obci srv)&#39;</span><span class="p">)))</span>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">_handle_kill_sent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="n">uid</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">experiment_id</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_of</span><span class="p">(</span><span class="n">uid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;msg&quot;</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="s2">&quot;uid&quot;</span><span class="p">,</span> <span class="n">uid</span><span class="p">,</span> <span class="s2">&quot;index&quot;</span><span class="p">,</span> <span class="n">index</span><span class="p">)</span>
+            <span class="n">exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">exp</span><span class="o">.</span><span class="n">preset_data</span><span class="p">:</span>
+                <span class="n">exp</span><span class="o">.</span><span class="n">setup_from_preset</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">preset_data</span><span class="p">)</span>
+                <span class="n">exp</span><span class="o">.</span><span class="n">launcher_data</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">del</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+    <span class="k">def</span> <span class="nf">_handle_kill</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">_handle_obci_control_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="n">uid</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">sender</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_of</span><span class="p">(</span><span class="n">uid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+            <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">msg_code</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;obci_peer_registered&quot;</span><span class="p">,</span> <span class="s2">&quot;obci_peer_params_changed&quot;</span><span class="p">]:</span>
+                <span class="k">for</span> <span class="n">par</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">msg</span><span class="o">.</span><span class="n">launcher_message</span><span class="p">[</span><span class="s1">&#39;params&#39;</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">exp</span><span class="o">.</span><span class="n">update_peer_param</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">launcher_message</span><span class="p">[</span><span class="s1">&#39;peer_id&#39;</span><span class="p">],</span>
+                                          <span class="n">par</span><span class="p">,</span>
+                                          <span class="n">val</span><span class="p">,</span>
+                                          <span class="n">runtime</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">_handle_experiment_status_change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="n">uid</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">uuid</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_of</span><span class="p">(</span><span class="n">uid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+            <span class="n">exp</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">status_name</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">details</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">status_name</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">msg</span><span class="o">.</span><span class="n">peers</span><span class="p">:</span>
+                <span class="k">for</span> <span class="n">peer</span><span class="p">,</span> <span class="n">status</span> <span class="ow">in</span> <span class="n">msg</span><span class="o">.</span><span class="n">peers</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+                    <span class="n">exp</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">peer_status</span><span class="p">(</span><span class="n">peer</span><span class="p">)</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="n">status</span><span class="p">)</span>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">_handle_experiment_info_change</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="n">uid</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">uuid</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_of</span><span class="p">(</span><span class="n">uid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+            <span class="n">exp</span><span class="o">.</span><span class="n">name</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">name</span>
+            <span class="n">exp</span><span class="o">.</span><span class="n">launch_file_path</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">launch_file_path</span>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">_handle_obci_peer_dead</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="n">uid</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">experiment_id</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_of</span><span class="p">(</span><span class="n">uid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+            <span class="n">status_name</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">status</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">details</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">status</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+            <span class="n">st</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">status</span>
+            <span class="n">st</span><span class="o">.</span><span class="n">peer_status</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">peer_id</span><span class="p">)</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="n">status_name</span><span class="p">,</span> <span class="n">details</span><span class="p">)</span>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">_handle_launch_error</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="n">peer_id</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">details</span><span class="p">[</span><span class="s2">&quot;peer_id&quot;</span><span class="p">]</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_of</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">sender</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+
+            <span class="n">status_name</span> <span class="o">=</span> <span class="n">launcher_tools</span><span class="o">.</span><span class="n">FAILED_LAUNCH</span>
+            <span class="n">details</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+            <span class="n">st</span> <span class="o">=</span> <span class="n">exp</span><span class="o">.</span><span class="n">status</span>
+            <span class="n">st</span><span class="o">.</span><span class="n">peer_status</span><span class="p">(</span><span class="n">peer_id</span><span class="p">)</span><span class="o">.</span><span class="n">set_status</span><span class="p">(</span><span class="n">status_name</span><span class="p">,</span> <span class="n">details</span><span class="p">)</span>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">_handle_nearby_machines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_cached_nearby_machines</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">nearby_machines</span>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">_handle_new_peer_added</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+        <span class="c1"># add new peer status and configuration so it is visible in GUI</span>
+        <span class="n">peer_id</span> <span class="o">=</span> <span class="n">msg</span><span class="o">.</span><span class="n">peer_id</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_of</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+            <span class="n">par</span> <span class="o">=</span> <span class="n">PeerConfigParserDict</span><span class="p">()</span>
+            <span class="n">conf</span> <span class="o">=</span> <span class="n">PeerConfig</span><span class="p">(</span><span class="n">peer_id</span><span class="p">)</span>
+            <span class="n">dic_conf</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">msg</span><span class="o">.</span><span class="n">config</span><span class="p">)</span>
+
+            <span class="n">par</span><span class="o">.</span><span class="n">parse</span><span class="p">(</span><span class="n">dic_conf</span><span class="p">,</span> <span class="n">conf</span><span class="p">)</span>
+            <span class="n">exp</span><span class="o">.</span><span class="n">exp_config</span><span class="o">.</span><span class="n">extend_with_peer</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span> <span class="n">msg</span><span class="o">.</span><span class="n">peer_path</span><span class="p">,</span> <span class="n">conf</span><span class="p">)</span>
+            <span class="n">exp</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">peers_status</span><span class="p">[</span><span class="n">peer_id</span><span class="p">]</span> <span class="o">=</span> <span class="n">launcher_tools</span><span class="o">.</span><span class="n">PeerStatus</span><span class="p">(</span><span class="n">peer_id</span><span class="p">,</span>
+                                                                         <span class="n">status_name</span><span class="o">=</span><span class="n">msg</span><span class="o">.</span><span class="n">status_name</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+
+<div class="viewcode-block" id="OBCILauncherEngine.list_experiments"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.list_experiments">[docs]</a>    <span class="k">def</span> <span class="nf">list_experiments</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span></div>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">_list_experiments</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">exp_list</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">send_list_experiments</span><span class="p">()</span>
+        <span class="n">exps</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_process_response</span><span class="p">(</span><span class="n">exp_list</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">exp_list</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">for</span> <span class="n">exp_data</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">exp_list</span><span class="o">.</span><span class="n">exp_data</span><span class="o">.</span><span class="n">values</span><span class="p">()):</span>
+                <span class="n">exps</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exp_data</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">exps</span>
+
+    <span class="nd">@log_crash</span>
+<div class="viewcode-block" id="OBCILauncherEngine.reset_launcher"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.reset_launcher">[docs]</a>    <span class="k">def</span> <span class="nf">reset_launcher</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">):</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">srv_kill</span><span class="p">()</span>
+        <span class="n">running</span> <span class="o">=</span> <span class="n">obci_script_utils</span><span class="o">.</span><span class="n">server_process_running</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">running</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;reset_launcher: something went wrong... SERVER STILL RUNNING&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">client</span> <span class="o">=</span> <span class="n">obci_script_utils</span><span class="o">.</span><span class="n">client_server_prep</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">prepare_experiments</span><span class="p">()</span></div>
+
+    <span class="nd">@log_crash</span>
+<div class="viewcode-block" id="OBCILauncherEngine.stop_experiment"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.stop_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">stop_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">stop_storing</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">progress</span> <span class="o">=</span> <span class="n">QProgressDialog</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="n">Qt</span><span class="o">.</span><span class="n">WindowStaysOnTopHint</span> <span class="o">|</span> <span class="n">Qt</span><span class="o">.</span><span class="n">FramelessWindowHint</span><span class="p">)</span>
+        <span class="n">progress</span><span class="o">.</span><span class="n">setLabelText</span><span class="p">(</span><span class="s2">&quot;Stopping...&quot;</span><span class="p">)</span>
+        <span class="n">progress</span><span class="o">.</span><span class="n">setRange</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="mi">5</span><span class="p">)</span>
+        <span class="n">progress</span><span class="o">.</span><span class="n">setCancelButton</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="n">progress</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;STOP EXPERIMENT!!!!&quot;</span><span class="p">)</span>
+        <span class="n">uid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_of</span><span class="p">(</span><span class="n">uid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;experiment uuid not found: &quot;</span><span class="p">,</span> <span class="n">uid</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">exp</span><span class="o">.</span><span class="n">launcher_data</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;this exp is not running...&quot;</span><span class="p">,</span> <span class="n">uid</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="k">if</span> <span class="n">stop_storing</span><span class="p">:</span>
+            <span class="c1"># stop storing ONLY if the experiment was fired from this very obci gui</span>
+            <span class="c1"># otherwise the data is lost ....</span>
+            <span class="c1"># below code was to stop storing every time signal saver is in scenarios`es modules</span>
+            <span class="c1"># but it sometimes hangs forever eg. when we are using morph extensively ...</span>
+            <span class="c1"># `</span>
+            <span class="c1"># or (&quot;signal_saver&quot; in exp.exp_config.peers and\</span>
+            <span class="c1">#    exp.status.peer_status(&quot;signal_saver&quot;).status_name \</span>
+            <span class="c1">#                in [launcher_tools.RUNNING, launcher_tools.LAUNCHING]):</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;STOP STORING&quot;</span><span class="p">)</span>
+            <span class="n">exp</span><span class="o">.</span><span class="n">stop_storing</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">4</span><span class="p">):</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.6</span><span class="p">)</span>  <span class="c1"># FIXME - without it some problem with below kill...</span>
+                <span class="n">progress</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+        <span class="n">progress</span><span class="o">.</span><span class="n">setValue</span><span class="p">(</span><span class="mi">5</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_process_response</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">kill_exp</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">uuid</span><span class="p">))</span></div>
+
+    <span class="nd">@log_crash</span>
+<div class="viewcode-block" id="OBCILauncherEngine.start_experiment"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.start_experiment">[docs]</a>    <span class="k">def</span> <span class="nf">start_experiment</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">msg</span><span class="p">,</span> <span class="n">store_options</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;START EXPERIMENT!!!!&quot;</span><span class="p">)</span>
+        <span class="n">uid</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">index</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">index_of</span><span class="p">(</span><span class="n">uid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">index</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;experiment uuid not found: &quot;</span><span class="p">,</span> <span class="n">uid</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">exp</span><span class="o">.</span><span class="n">launcher_data</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;already running&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+
+        <span class="k">if</span> <span class="n">store_options</span><span class="p">:</span>
+            <span class="n">exp</span><span class="o">.</span><span class="n">enable_signal_storing</span><span class="p">(</span><span class="n">store_options</span><span class="p">)</span>
+
+        <span class="n">jsoned</span> <span class="o">=</span> <span class="n">serialize_scenario_json</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">exp_config</span><span class="p">)</span>
+
+        <span class="n">result</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">send_create_experiment</span><span class="p">(</span><span class="n">name</span><span class="o">=</span><span class="n">exp</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+        <span class="n">ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_response</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ok</span><span class="p">:</span>
+            <span class="k">return</span> <span class="n">result</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">result</span><span class="p">)</span>
+
+        <span class="n">machine</span> <span class="o">=</span> <span class="n">result</span><span class="o">.</span><span class="n">origin_machine</span>
+        <span class="n">addrs</span> <span class="o">=</span> <span class="p">[</span><span class="n">addr</span> <span class="k">for</span> <span class="n">addr</span> <span class="ow">in</span> <span class="n">result</span><span class="o">.</span><span class="n">rep_addrs</span> <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_addr_connectable</span><span class="p">(</span><span class="n">addr</span><span class="p">,</span> <span class="n">machine</span><span class="p">)]</span>
+
+        <span class="n">exp_sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REQ</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">addr</span> <span class="ow">in</span> <span class="n">addrs</span><span class="p">:</span>
+            <span class="n">exp_sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">addr</span><span class="p">)</span>
+        <span class="n">send_msg</span><span class="p">(</span><span class="n">exp_sock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;set_experiment_scenario&quot;</span><span class="p">,</span> <span class="n">scenario</span><span class="o">=</span><span class="n">jsoned</span><span class="p">,</span>
+                                               <span class="n">launch_file_path</span><span class="o">=</span><span class="n">exp</span><span class="o">.</span><span class="n">exp_config</span><span class="o">.</span><span class="n">launch_file_path</span><span class="p">))</span>
+        <span class="n">reply</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">exp_sock</span><span class="p">,</span> <span class="mi">20000</span><span class="p">)</span>
+        <span class="n">ok</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_process_response</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ok</span><span class="p">:</span>
+            <span class="n">exp_sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+            <span class="k">return</span>
+        <span class="n">send_msg</span><span class="p">(</span><span class="n">exp_sock</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;start_experiment&quot;</span><span class="p">))</span>
+        <span class="n">reply</span><span class="p">,</span> <span class="n">details</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">exp_sock</span><span class="p">,</span> <span class="mi">20000</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_process_response</span><span class="p">(</span><span class="n">reply</span><span class="p">)</span>
+        <span class="n">exp_sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+    <span class="nd">@log_crash</span>
+<div class="viewcode-block" id="OBCILauncherEngine.nearby_machines"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.nearby_machines">[docs]</a>    <span class="k">def</span> <span class="nf">nearby_machines</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">nearby_machines</span> <span class="o">=</span> <span class="p">{}</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_nearby_machines</span><span class="p">:</span>
+            <span class="n">res</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">client</span><span class="o">.</span><span class="n">send_list_nearby_machines</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">res</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_cached_nearby_machines</span> <span class="o">=</span> <span class="n">res</span><span class="o">.</span><span class="n">nearby_machines</span>
+        <span class="k">for</span> <span class="n">mach</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_cached_nearby_machines</span><span class="o">.</span><span class="n">values</span><span class="p">():</span>
+            <span class="n">nearby_machines</span><span class="p">[</span><span class="n">mach</span><span class="p">[</span><span class="s2">&quot;ip&quot;</span><span class="p">]]</span> <span class="o">=</span> <span class="n">mach</span><span class="p">[</span><span class="s2">&quot;hostname&quot;</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">nearby_machines</span><span class="p">:</span>
+            <span class="n">nearby_machines</span><span class="p">[</span><span class="n">net</span><span class="o">.</span><span class="n">lo_ip</span><span class="p">()]</span> <span class="o">=</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">nearby_machines</span></div>
+
+    <span class="nd">@log_crash</span>
+<div class="viewcode-block" id="OBCILauncherEngine.save_scenario_as"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.save_scenario_as">[docs]</a>    <span class="k">def</span> <span class="nf">save_scenario_as</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename_and_experiment</span><span class="p">):</span>
+        <span class="n">filename</span><span class="p">,</span> <span class="n">exp</span> <span class="o">=</span> <span class="n">filename_and_experiment</span>
+        <span class="n">filename</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">confdir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">filename</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span> <span class="o">+</span> <span class="s2">&quot;_configs&quot;</span>
+        <span class="n">ser</span> <span class="o">=</span> <span class="n">LaunchFileSerializerINI</span><span class="p">()</span>
+        <span class="k">with</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">ser</span><span class="o">.</span><span class="n">serialize</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">exp_config</span><span class="p">,</span> <span class="n">confdir</span><span class="p">,</span> <span class="n">f</span><span class="p">)</span>
+        <span class="n">new_exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_experiments</span><span class="p">(</span><span class="n">filename</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+        <span class="n">strmsg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;_user_set_scenario&quot;</span><span class="p">,</span> <span class="n">uuid</span><span class="o">=</span><span class="n">new_exp</span><span class="o">.</span><span class="n">exp_config</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_ui</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">unpack_msg</span><span class="p">(</span><span class="n">strmsg</span><span class="p">))</span></div>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">_update_experiments</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scenario_path</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="n">scenario_path</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">scenario_path</span><span class="p">)</span>
+        <span class="n">preset_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_preset_data</span><span class="p">(</span><span class="n">scenario_path</span><span class="p">)</span>
+        <span class="n">dup</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_duplicate</span><span class="p">(</span><span class="n">preset_data</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">dup</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">replace</span><span class="p">:</span>
+                <span class="n">preset_data</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">+=</span> <span class="s2">&quot;_*&quot;</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">dup</span><span class="p">)</span>
+        <span class="n">exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">make_exp_obj</span><span class="p">(</span><span class="n">preset_data</span><span class="o">=</span><span class="n">preset_data</span><span class="p">,</span> <span class="n">ctx</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_user_presets</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">exp</span>
+
+    <span class="k">def</span> <span class="nf">_find_duplicate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preset_data</span><span class="p">):</span>
+        <span class="n">dup</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">exp</span><span class="o">.</span><span class="n">preset_data</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">preset_data</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">]</span> <span class="ow">and</span>\
+                    <span class="n">exp</span><span class="o">.</span><span class="n">preset_data</span><span class="p">[</span><span class="s2">&quot;launch_file&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">preset_data</span><span class="p">[</span><span class="s2">&quot;launch_file&quot;</span><span class="p">]</span> <span class="ow">and</span>\
+                    <span class="n">exp</span><span class="o">.</span><span class="n">preset_data</span><span class="p">[</span><span class="s2">&quot;category&quot;</span><span class="p">]</span> <span class="o">==</span> <span class="n">preset_data</span><span class="p">[</span><span class="s2">&quot;category&quot;</span><span class="p">]:</span>
+                <span class="n">dup</span> <span class="o">=</span> <span class="n">exp</span>
+                <span class="k">break</span>
+        <span class="k">return</span> <span class="n">dup</span>
+
+    <span class="k">def</span> <span class="nf">_create_preset_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">scenario_path</span><span class="p">):</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">basename</span><span class="p">(</span><span class="n">scenario_path</span><span class="p">)</span>
+        <span class="n">name</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">splitext</span><span class="p">(</span><span class="n">name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;_&quot;</span><span class="p">,</span> <span class="s2">&quot; &quot;</span><span class="p">)</span>
+        <span class="n">data</span> <span class="o">=</span> <span class="p">{</span><span class="s2">&quot;name&quot;</span><span class="p">:</span> <span class="n">name</span><span class="p">}</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;User preset&quot;</span>
+        <span class="k">if</span> <span class="n">scenario_path</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;HOME&#39;</span><span class="p">]):</span>
+            <span class="n">scenario_path</span> <span class="o">=</span> <span class="n">scenario_path</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s1">&#39;HOME&#39;</span><span class="p">],</span> <span class="s1">&#39;~&#39;</span><span class="p">)</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;launch_file&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">scenario_path</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;public_params&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="n">data</span><span class="p">[</span><span class="s2">&quot;category&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="n">USER_CATEGORY</span>
+        <span class="k">return</span> <span class="n">data</span>
+
+    <span class="nd">@log_crash</span>
+<div class="viewcode-block" id="OBCILauncherEngine.remove_preset"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.remove_preset">[docs]</a>    <span class="k">def</span> <span class="nf">remove_preset</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experiment</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="o">.</span><span class="n">remove</span><span class="p">(</span><span class="n">experiment</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_user_presets</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_ui</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span></div>
+
+    <span class="nd">@log_crash</span>
+<div class="viewcode-block" id="OBCILauncherEngine.import_scenario"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.import_scenario">[docs]</a>    <span class="k">def</span> <span class="nf">import_scenario</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">):</span>
+        <span class="n">new_exp</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_update_experiments</span><span class="p">(</span><span class="n">filename</span><span class="p">)</span>
+        <span class="n">strmsg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;_user_set_scenario&quot;</span><span class="p">,</span> <span class="n">uuid</span><span class="o">=</span><span class="n">new_exp</span><span class="o">.</span><span class="n">exp_config</span><span class="o">.</span><span class="n">uuid</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update_ui</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">unpack_msg</span><span class="p">(</span><span class="n">strmsg</span><span class="p">))</span></div>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">_update_user_presets</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">user_presets</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">exp</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">experiments</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">exp</span><span class="o">.</span><span class="n">preset_data</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">exp</span><span class="o">.</span><span class="n">preset_data</span><span class="p">[</span><span class="s1">&#39;category&#39;</span><span class="p">]</span> <span class="o">==</span> <span class="n">USER_CATEGORY</span><span class="p">:</span>
+                    <span class="n">user_presets</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">exp</span><span class="o">.</span><span class="n">preset_data</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_save_presets</span><span class="p">(</span><span class="n">user_presets</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">user_preset_path</span><span class="p">)</span>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">_save_presets</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">preset_list</span><span class="p">,</span> <span class="n">preset_path</span><span class="p">):</span>
+        <span class="n">parser</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">RawConfigParser</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">pre</span> <span class="ow">in</span> <span class="n">preset_list</span><span class="p">:</span>
+            <span class="n">parser</span><span class="o">.</span><span class="n">add_section</span><span class="p">(</span><span class="n">pre</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">])</span>
+            <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;info&quot;</span><span class="p">,</span> <span class="s2">&quot;launch_file&quot;</span><span class="p">,</span> <span class="s2">&quot;public_params&quot;</span><span class="p">,</span> <span class="s2">&quot;category&quot;</span><span class="p">]:</span>
+                <span class="n">parser</span><span class="o">.</span><span class="n">set</span><span class="p">(</span><span class="n">pre</span><span class="p">[</span><span class="s2">&quot;name&quot;</span><span class="p">],</span> <span class="n">key</span><span class="p">,</span> <span class="n">pre</span><span class="p">[</span><span class="n">key</span><span class="p">])</span>
+        <span class="k">with</span> <span class="n">codecs</span><span class="o">.</span><span class="n">open</span><span class="p">(</span><span class="n">preset_path</span><span class="p">,</span> <span class="s2">&quot;w&quot;</span><span class="p">,</span> <span class="s2">&quot;utf-8&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+            <span class="n">parser</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">_process_response</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">response</span><span class="p">):</span>
+        <span class="n">is_ok</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="k">if</span> <span class="n">response</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">err</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;rq_error&quot;</span><span class="p">,</span> <span class="n">err_code</span><span class="o">=</span><span class="s2">&quot;no_response&quot;</span><span class="p">,</span>
+                                      <span class="n">details</span><span class="o">=</span><span class="s2">&quot;Timeout.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rq_error</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">unpack_msg</span><span class="p">(</span><span class="n">err</span><span class="p">))</span>
+        <span class="k">elif</span> <span class="n">response</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s2">&quot;rq_error&quot;</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">rq_error</span><span class="o">.</span><span class="n">emit</span><span class="p">(</span><span class="n">response</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">is_ok</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">return</span> <span class="n">is_ok</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

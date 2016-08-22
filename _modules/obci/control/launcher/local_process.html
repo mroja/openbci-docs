@@ -1,0 +1,264 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.launcher.local_process &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.launcher.local_process</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os</span>
+<span class="kn">from</span> <span class="nn">.process_io_handler</span> <span class="k">import</span> <span class="n">DEFAULT_TAIL_RQ</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">process</span>
+<span class="kn">from</span> <span class="nn">.process</span> <span class="k">import</span> <span class="n">FAILED</span><span class="p">,</span> <span class="n">FINISHED</span><span class="p">,</span> <span class="n">TERMINATED</span><span class="p">,</span> <span class="n">NON_RESPONSIVE</span><span class="p">,</span>\
+    <span class="n">PING</span><span class="p">,</span> <span class="n">RETURNCODE</span><span class="p">,</span> <span class="n">REG_TIMER</span>
+
+
+<div class="viewcode-block" id="LocalProcess"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.local_process.LocalProcess">[docs]</a><span class="k">class</span> <span class="nc">LocalProcess</span><span class="p">(</span><span class="n">process</span><span class="o">.</span><span class="n">Process</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">proc_description</span><span class="p">,</span> <span class="n">popen_obj</span><span class="p">,</span> <span class="n">io_handler</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">reg_timeout_desc</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+                 <span class="n">monitoring_optflags</span><span class="o">=</span><span class="n">PING</span> <span class="o">|</span> <span class="n">RETURNCODE</span><span class="p">,</span>
+                 <span class="n">logger</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span> <span class="o">=</span> <span class="n">popen_obj</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">io_handler</span> <span class="o">=</span> <span class="n">io_handler</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">LocalProcess</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">proc_description</span><span class="p">,</span>
+                                           <span class="n">reg_timeout_desc</span><span class="p">,</span> <span class="n">monitoring_optflags</span><span class="p">,</span>
+                                           <span class="n">logger</span><span class="p">)</span>
+
+<div class="viewcode-block" id="LocalProcess.is_local"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.local_process.LocalProcess.is_local">[docs]</a>    <span class="k">def</span> <span class="nf">is_local</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+    <span class="k">def</span> <span class="nf">_do_handle_timeout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">type_</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">type_</span> <span class="o">==</span> <span class="n">REG_TIMER</span><span class="p">:</span>
+            <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status_lock</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">FAILED</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_status_details</span> <span class="o">=</span> <span class="s2">&quot;Failed to register before timeout.&quot;</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">kill</span><span class="p">()</span>
+
+<div class="viewcode-block" id="LocalProcess.tail_stdout"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.local_process.LocalProcess.tail_stdout">[docs]</a>    <span class="k">def</span> <span class="nf">tail_stdout</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lines</span><span class="o">=</span><span class="n">DEFAULT_TAIL_RQ</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">io_handler</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">io_handler</span><span class="o">.</span><span class="n">tail_stdout</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">lines</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="LocalProcess.kill"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.local_process.LocalProcess.kill">[docs]</a>    <span class="k">def</span> <span class="nf">kill</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop_monitoring</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">io_handler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">io_handler</span><span class="o">.</span><span class="n">is_running</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">io_handler</span><span class="o">.</span><span class="n">stop_output_handler</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">returncode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">==</span> <span class="n">NON_RESPONSIVE</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_status_details</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">returncode</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">TERMINATED</span></div>
+
+<div class="viewcode-block" id="LocalProcess.kill_with_force"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.local_process.LocalProcess.kill_with_force">[docs]</a>    <span class="k">def</span> <span class="nf">kill_with_force</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">timeout_s</span><span class="o">=</span><span class="mf">0.5</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">stop_monitoring</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">io_handler</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">io_handler</span><span class="o">.</span><span class="n">is_running</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">io_handler</span><span class="o">.</span><span class="n">stop_output_handler</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">returncode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[win] sending CTRL_C_EVENT.............. </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="c1"># self.popen_obj.send_signal(signal.SIGINT)</span>
+                    <span class="n">os</span><span class="o">.</span><span class="n">kill</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">pid</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">CTRL_BREAK_EVENT</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">timeout_s</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span>
+        <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status_lock</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">returncode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">sys</span><span class="o">.</span><span class="n">platform</span> <span class="o">==</span> <span class="s2">&quot;win32&quot;</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;[win] terminating process </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;KILLING -9 PROCESS </span><span class="si">%s</span><span class="s2"> </span><span class="si">%s</span><span class="s2">&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">pid</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span><span class="p">)</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">send_signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGKILL</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">==</span> <span class="n">NON_RESPONSIVE</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_status_details</span> <span class="o">=</span> <span class="o">-</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">returncode</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">TERMINATED</span></div>
+
+<div class="viewcode-block" id="LocalProcess.returncode_monitor"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.local_process.LocalProcess.returncode_monitor">[docs]</a>    <span class="k">def</span> <span class="nf">returncode_monitor</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="c1"># TODO just use wait() instead of poll()ing every 0.5s</span>
+        <span class="c1"># self.popen_obj.wait()</span>
+        <span class="c1"># code = self.popen_obj.returncode</span>
+
+        <span class="c1"># print &quot;[subprocess_monitor]&quot;,self.proc_type,&quot;process&quot;, \</span>
+        <span class="c1">#                 self.name, &quot;pid&quot;, self.pid, &quot;ended with&quot;, code</span>
+        <span class="c1"># with self._status_lock:</span>
+
+        <span class="c1">#     if code == 0:</span>
+        <span class="c1">#         self._status = FINISHED</span>
+        <span class="c1">#         self._status_details = &#39;&#39;</span>
+        <span class="c1">#     elif code &lt; 0:</span>
+        <span class="c1">#         self._status = TERMINATED</span>
+        <span class="c1">#         self._status_details = -code</span>
+        <span class="c1">#     else:</span>
+        <span class="c1">#         self._status = FAILED</span>
+        <span class="c1">#         self._status_detals = self.tail_stdout(15)</span>
+
+        <span class="k">while</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_stop_monitoring</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span>
+            <span class="n">code</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">returncode</span>
+
+            <span class="k">if</span> <span class="n">code</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proc_type</span> <span class="o">+</span> <span class="s2">&quot; process &quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span>
+                                 <span class="s2">&quot; pid &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pid</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; ended with &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">code</span><span class="p">))</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status_lock</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="n">code</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">FINISHED</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_status_details</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span>
+                    <span class="k">elif</span> <span class="n">code</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">TERMINATED</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_status_details</span> <span class="o">=</span> <span class="o">-</span><span class="n">code</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">FAILED</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_status_detals</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tail_stdout</span><span class="p">(</span><span class="mi">15</span><span class="p">)</span>
+                <span class="k">break</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">status</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">NON_RESPONSIVE</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">proc_type</span> <span class="o">+</span> <span class="s2">&quot;process&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">name</span> <span class="o">+</span>
+                                    <span class="s2">&quot;pid&quot;</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">pid</span> <span class="o">+</span> <span class="s2">&quot;is NON_RESPONSIVE&quot;</span><span class="p">)</span>
+                <span class="k">with</span> <span class="bp">self</span><span class="o">.</span><span class="n">_status_lock</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span>
+                    <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">returncode</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">terminate</span><span class="p">()</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">_status</span> <span class="o">=</span> <span class="n">TERMINATED</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.5</span><span class="p">)</span>
+        <span class="c1"># print &quot;[subprocess_monitor]&quot;,self.proc_type,self.name, self.pid,\</span>
+        <span class="c1">#                             self.popen_obj.returncode, self._stop_monitoring</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">returncode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="LocalProcess.finished"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.local_process.LocalProcess.finished">[docs]</a>    <span class="k">def</span> <span class="nf">finished</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">finished</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ping_thread</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">finished</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ping_thread</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_returncode_thread</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">finished</span> <span class="o">=</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_returncode_thread</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">finished</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">returncode</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+
+<div class="viewcode-block" id="LocalProcess.process_is_running"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.local_process.LocalProcess.process_is_running">[docs]</a>    <span class="k">def</span> <span class="nf">process_is_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">running</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ping_thread</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">running</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ping_thread</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_returncode_thread</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">running</span> <span class="o">=</span> <span class="n">running</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">_returncode_thread</span><span class="o">.</span><span class="n">is_alive</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">running</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">popen_obj</span><span class="o">.</span><span class="n">returncode</span> <span class="ow">is</span> <span class="kc">None</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

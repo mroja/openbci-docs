@@ -1,0 +1,152 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.launcher.start_eeg_signal &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.launcher.start_eeg_signal</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">zmq</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.common.message</span> <span class="k">import</span> <span class="n">OBCIMessageTool</span><span class="p">,</span> <span class="n">send_msg</span>
+<span class="kn">from</span> <span class="nn">obci.control.launcher.launcher_messages</span> <span class="k">import</span> <span class="n">message_templates</span>
+<span class="kn">from</span> <span class="nn">obci.control.launcher.obci_client</span> <span class="k">import</span> <span class="n">OBCIClient</span>
+
+<span class="kn">import</span> <span class="nn">obci.control.launcher.launcher_logging</span> <span class="k">as</span> <span class="nn">logger</span>
+<span class="kn">from</span> <span class="nn">obci.control.peer</span> <span class="k">import</span> <span class="n">peer_cmd</span>
+<span class="kn">from</span> <span class="nn">obci.control.peer.config_defaults</span> <span class="k">import</span> <span class="n">CONFIG_DEFAULTS</span>
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="s2">&quot;start_eeg_signal&quot;</span><span class="p">,</span> <span class="s2">&quot;info&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="start_eeg_signal_experiment"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.start_eeg_signal.start_eeg_signal_experiment">[docs]</a><span class="k">def</span> <span class="nf">start_eeg_signal_experiment</span><span class="p">(</span><span class="n">ctx</span><span class="p">,</span> <span class="n">srv_addrs</span><span class="p">,</span> <span class="n">rq_message</span><span class="p">):</span>
+    <span class="n">client</span> <span class="o">=</span> <span class="n">OBCIClient</span><span class="p">(</span><span class="n">srv_addrs</span><span class="p">,</span> <span class="n">ctx</span><span class="p">)</span>
+    <span class="c1"># server_req_socket = ctx.socket(zmq.REQ)</span>
+    <span class="c1">#     for addr in srv_addrs:</span>
+    <span class="c1">#         server_req_socket.connect(addr)</span>
+
+    <span class="n">amp_params</span> <span class="o">=</span> <span class="p">{}</span>
+    <span class="n">amp_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">rq_message</span><span class="o">.</span><span class="n">amplifier_params</span><span class="p">[</span><span class="s1">&#39;additional_params&#39;</span><span class="p">])</span>
+    <span class="k">del</span> <span class="n">rq_message</span><span class="o">.</span><span class="n">amplifier_params</span><span class="p">[</span><span class="s1">&#39;additional_params&#39;</span><span class="p">]</span>
+    <span class="n">amp_params</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">rq_message</span><span class="o">.</span><span class="n">amplifier_params</span><span class="p">)</span>
+
+    <span class="n">par_list</span> <span class="o">=</span> <span class="p">[</span><span class="s1">&#39;--peer&#39;</span><span class="p">,</span> <span class="s1">&#39;amplifier&#39;</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">par</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">amp_params</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">par_list</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)]</span>
+    <span class="k">for</span> <span class="n">par</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">CONFIG_DEFAULTS</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">par</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">par_list</span><span class="p">:</span>
+            <span class="n">par_list</span> <span class="o">+=</span> <span class="p">[</span><span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="n">par</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">val</span><span class="p">)]</span>
+
+    <span class="n">overwrites</span> <span class="o">=</span> <span class="n">peer_cmd</span><span class="o">.</span><span class="n">peer_overwrites_pack</span><span class="p">(</span><span class="n">par_list</span><span class="p">)</span>
+    <span class="n">result</span> <span class="o">=</span> <span class="n">client</span><span class="o">.</span><span class="n">launch</span><span class="p">(</span><span class="n">rq_message</span><span class="o">.</span><span class="n">launch_file</span><span class="p">,</span> <span class="kc">None</span><span class="p">,</span> <span class="n">rq_message</span><span class="o">.</span><span class="n">name</span><span class="p">,</span> <span class="n">overwrites</span><span class="p">)</span>
+
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;START EEG signal! return to:  &quot;</span> <span class="o">+</span> <span class="n">rq_message</span><span class="o">.</span><span class="n">client_push_address</span><span class="p">)</span>
+    <span class="n">mtool</span> <span class="o">=</span> <span class="n">OBCIMessageTool</span><span class="p">(</span><span class="n">message_templates</span><span class="p">)</span>
+    <span class="n">to_client</span> <span class="o">=</span> <span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">PUSH</span><span class="p">)</span>
+    <span class="n">to_client</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">rq_message</span><span class="o">.</span><span class="n">client_push_address</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">result</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">result</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="s1">&#39;no_data&#39;</span><span class="p">:</span>
+        <span class="n">send_msg</span><span class="p">(</span><span class="n">to_client</span><span class="p">,</span> <span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;rq_error&quot;</span><span class="p">,</span> <span class="n">err_code</span><span class="o">=</span><span class="s2">&quot;launch_failed&quot;</span><span class="p">,</span>
+                                           <span class="n">details</span><span class="o">=</span><span class="s2">&quot;No response from server or experiment&quot;</span><span class="p">))</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">send_msg</span><span class="p">(</span><span class="n">to_client</span><span class="p">,</span> <span class="n">result</span><span class="o">.</span><span class="n">raw</span><span class="p">())</span>
+    <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;sent eeg launch result&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">result</span><span class="p">)[:</span><span class="mi">500</span><span class="p">])</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

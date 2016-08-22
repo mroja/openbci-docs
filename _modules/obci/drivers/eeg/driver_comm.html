@@ -1,0 +1,363 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.drivers.eeg.driver_comm &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.drivers.eeg.driver_comm</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python3</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">subprocess</span>
+<span class="kn">import</span> <span class="nn">signal</span>
+<span class="kn">import</span> <span class="nn">time</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+
+<span class="kn">from</span> <span class="nn">subprocess</span> <span class="k">import</span> <span class="n">Popen</span>
+<span class="kn">from</span> <span class="nn">threading</span> <span class="k">import</span> <span class="n">Thread</span>
+<span class="kn">from</span> <span class="nn">obci.utils</span> <span class="k">import</span> <span class="n">context</span> <span class="k">as</span> <span class="n">ctx</span>
+
+<span class="k">try</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">queue</span> <span class="k">import</span> <span class="n">Queue</span><span class="p">,</span> <span class="n">Empty</span>
+<span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">queue</span> <span class="k">import</span> <span class="n">Queue</span><span class="p">,</span> <span class="n">Empty</span>  <span class="c1"># python 3.x</span>
+
+<span class="n">SEP</span> <span class="o">=</span> <span class="s1">&#39;;&#39;</span>
+
+
+<div class="viewcode-block" id="DriverComm"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.driver_comm.DriverComm">[docs]</a><span class="k">class</span> <span class="nc">DriverComm</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot; Start, stop and communicate with amplifier driver binaries.</span>
+<span class="sd">        Note: To run amplifier as OBCI experiment peer, use subclasses of BinaryDriverWrapper</span>
+<span class="sd">        which fully support INI file configuration.</span>
+
+<span class="sd">        Example:</span>
+<span class="sd">        &gt;&gt;&gt; from obci.control.peer.peer_config import PeerConfig</span>
+<span class="sd">        &gt;&gt;&gt; import json</span>
+
+<span class="sd">        &gt;&gt;&gt; conf = PeerConfig(&#39;amplifier&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; conf.add_local_param(&#39;driver_executable&#39;, &#39;dummy_amplifier&#39;)</span>
+<span class="sd">        &gt;&gt;&gt; conf.add_local_param(&#39;samples_per_packet&#39;, &#39;4&#39;)</span>
+
+<span class="sd">        &gt;&gt;&gt; driv = DriverComm(conf)</span>
+<span class="sd">        dummy_amplifier</span>
+<span class="sd">        &gt;&gt;&gt; descr = driv.get_driver_description() # channels_info</span>
+<span class="sd">        &gt;&gt;&gt; dic = json.loads(descr)</span>
+<span class="sd">        &gt;&gt;&gt; driv.start_sampling()</span>
+<span class="sd">        start OK</span>
+<span class="sd">        &lt;BLANKLINE&gt;</span>
+<span class="sd">        &gt;&gt;&gt; time.sleep(3)</span>
+<span class="sd">        &gt;&gt;&gt; driv.terminate_driver()</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_config</span><span class="p">,</span> <span class="n">mx_addresses</span><span class="o">=</span><span class="p">[(</span><span class="s1">&#39;localhost&#39;</span><span class="p">,</span> <span class="mi">41921</span><span class="p">)],</span> <span class="n">catch_signals</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+                 <span class="n">context</span><span class="o">=</span><span class="n">ctx</span><span class="o">.</span><span class="n">get_dummy_context</span><span class="p">(</span><span class="s1">&#39;DriverComm&#39;</span><span class="p">)):</span>
+        <span class="sd">&quot;&quot;&quot; *peer_config* - parameter provider. Should respond to get_param(param_name, value)</span>
+<span class="sd">        and has_param(param_name) calls. PeerConfig and PeerControl objects are suitable.</span>
+<span class="sd">        *mx_addresses* - list of (host, port) pairs. Port value None means using default</span>
+<span class="sd">        amplifier binary value.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">peer_config</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;_mx_addresses&quot;</span><span class="p">):</span>
+            <span class="c1"># FIXME</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mx_addresses</span> <span class="o">=</span> <span class="n">mx_addresses</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;logger&quot;</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span> <span class="o">=</span> <span class="n">context</span><span class="p">[</span><span class="s1">&#39;logger&#39;</span><span class="p">]</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">run_driver</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_run_args</span><span class="p">((</span><span class="n">socket</span><span class="o">.</span><span class="n">gethostbyname</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_mx_addresses</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">0</span><span class="p">]),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mx_addresses</span><span class="p">[</span><span class="mi">0</span><span class="p">][</span><span class="mi">1</span><span class="p">])))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver_out_q</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver_out_thr</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">enqueue_output</span><span class="p">,</span>
+                                     <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">stdout</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver_out_q</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver_out_thr</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># thread dies with the program</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver_out_thr</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver_err_q</span> <span class="o">=</span> <span class="n">Queue</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver_err_thr</span> <span class="o">=</span> <span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">enqueue_output</span><span class="p">,</span>
+                                     <span class="n">args</span><span class="o">=</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver_err_q</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver_err_thr</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>  <span class="c1"># thread dies with the program</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver_err_thr</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="n">catch_signals</span><span class="p">:</span>
+            <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal_handler</span><span class="p">())</span>
+            <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">signal_handler</span><span class="p">())</span>
+
+<div class="viewcode-block" id="DriverComm.signal_handler"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.driver_comm.DriverComm.signal_handler">[docs]</a>    <span class="k">def</span> <span class="nf">signal_handler</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">def</span> <span class="nf">handler</span><span class="p">(</span><span class="n">signum</span><span class="p">,</span> <span class="n">frame</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Got signal &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">signum</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;!!! Stopping driver!&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stop_sampling</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">terminate_driver</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Exit!&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="o">-</span><span class="n">signum</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">handler</span></div>
+
+<div class="viewcode-block" id="DriverComm.run_driver"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.driver_comm.DriverComm.run_driver">[docs]</a>    <span class="k">def</span> <span class="nf">run_driver</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">run_args</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Executing: &quot;</span> <span class="o">+</span> <span class="s1">&#39; &#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">run_args</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">Popen</span><span class="p">(</span><span class="n">run_args</span><span class="p">,</span> <span class="n">stdin</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stdout</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">,</span> <span class="n">stderr</span><span class="o">=</span><span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DriverComm.get_driver_description"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.driver_comm.DriverComm.get_driver_description">[docs]</a>    <span class="k">def</span> <span class="nf">get_driver_description</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_communicate</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DriverComm.set_driver_params"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.driver_comm.DriverComm.set_driver_params">[docs]</a>    <span class="k">def</span> <span class="nf">set_driver_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_sampling_rate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;sampling_rate&quot;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_active_channels</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;active_channels&quot;</span><span class="p">))</span></div>
+
+<div class="viewcode-block" id="DriverComm.get_run_args"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.driver_comm.DriverComm.get_run_args">[docs]</a>    <span class="k">def</span> <span class="nf">get_run_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">multiplexer_address</span><span class="p">):</span>
+        <span class="n">host</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="n">multiplexer_address</span>
+
+        <span class="n">exe</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;driver_executable&#39;</span><span class="p">)</span>
+        <span class="nb">print</span><span class="p">(</span><span class="n">exe</span><span class="p">)</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="p">[</span><span class="n">exe</span><span class="p">,</span> <span class="s1">&#39;-v&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;samples_per_packet&#39;</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="n">port</span><span class="p">:</span>
+            <span class="n">args</span> <span class="o">+=</span> <span class="p">[</span><span class="s2">&quot;-h&quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">host</span><span class="p">),</span> <span class="s1">&#39;-p&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">)]</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">has_param</span><span class="p">(</span><span class="s2">&quot;usb_device&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">has_param</span><span class="p">(</span><span class="s2">&quot;bluetooth_device&quot;</span><span class="p">):</span>
+            <span class="n">usb</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;usb_device&quot;</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">usb</span><span class="p">:</span>
+                <span class="n">args</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;-d&quot;</span><span class="p">,</span> <span class="n">usb</span><span class="p">])</span>
+            <span class="k">elif</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;bluetooth_device&quot;</span><span class="p">):</span>
+                <span class="n">args</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;-b&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;bluetooth_device&quot;</span><span class="p">)])</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;usb_device or bluetooth_device is required&quot;</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">has_param</span><span class="p">(</span><span class="s2">&quot;amplifier_responses&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;amplifier_responses&quot;</span><span class="p">):</span>
+                <span class="n">args</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;-r&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;amplifier_responses&quot;</span><span class="p">)])</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">has_param</span><span class="p">(</span><span class="s2">&quot;dump_responses&quot;</span><span class="p">):</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;dump_responses&quot;</span><span class="p">):</span>
+                <span class="n">args</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;--save_responses&quot;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;dump_responses&quot;</span><span class="p">)])</span>
+
+        <span class="c1"># FIXME FIXME</span>
+        <span class="k">if</span> <span class="s2">&quot;gtec&quot;</span> <span class="ow">in</span> <span class="n">exe</span><span class="p">:</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">extend</span><span class="p">([</span><span class="s2">&quot;-d&quot;</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">exe</span><span class="p">),</span> <span class="s2">&quot;simple_gtec_driver&quot;</span><span class="p">)])</span>
+        <span class="k">return</span> <span class="n">args</span></div>
+
+<div class="viewcode-block" id="DriverComm.set_sampling_rate"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.driver_comm.DriverComm.set_sampling_rate">[docs]</a>    <span class="k">def</span> <span class="nf">set_sampling_rate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">sampling_rate</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Set sampling rate: </span><span class="si">%s</span><span class="s2"> &quot;</span> <span class="o">%</span> <span class="n">sampling_rate</span><span class="p">)</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_communicate</span><span class="p">(</span><span class="s2">&quot;sampling_rate &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">sampling_rate</span><span class="p">),</span>
+                                  <span class="n">timeout_s</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">timeout_error</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">error</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">error</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DriverComm.set_active_channels"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.driver_comm.DriverComm.set_active_channels">[docs]</a>    <span class="k">def</span> <span class="nf">set_active_channels</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">active_channels</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Set Active channels: </span><span class="si">%s</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="n">active_channels</span><span class="p">)</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_communicate</span><span class="p">(</span><span class="s2">&quot;active_channels &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">active_channels</span><span class="p">),</span>
+                                  <span class="n">timeout_s</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">timeout_error</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">error</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">error</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DriverComm.start_sampling"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.driver_comm.DriverComm.start_sampling">[docs]</a>    <span class="k">def</span> <span class="nf">start_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">stop_sampling</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Start sampling&quot;</span><span class="p">)</span>
+        <span class="n">error</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_communicate</span><span class="p">(</span><span class="s2">&quot;start&quot;</span><span class="p">,</span> <span class="n">timeout_s</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="n">timeout_error</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">error</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span><span class="n">error</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Sampling started&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DriverComm.stop_sampling"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.driver_comm.DriverComm.stop_sampling">[docs]</a>    <span class="k">def</span> <span class="nf">stop_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_1</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">_2</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># sys.stderr.write(&quot;stop sampling&quot;)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Stop sampling&quot;</span><span class="p">)</span>
+        <span class="n">signal</span><span class="o">.</span><span class="n">signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">,</span> <span class="n">signal</span><span class="o">.</span><span class="n">SIG_DFL</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">send_signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGINT</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Sampling stopped&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DriverComm.terminate_driver"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.driver_comm.DriverComm.terminate_driver">[docs]</a>    <span class="k">def</span> <span class="nf">terminate_driver</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">send_signal</span><span class="p">(</span><span class="n">signal</span><span class="o">.</span><span class="n">SIGTERM</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Terminated driver.&quot;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DriverComm.abort"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.driver_comm.DriverComm.abort">[docs]</a>    <span class="k">def</span> <span class="nf">abort</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">error_msg</span><span class="p">):</span>
+        <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">2</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="n">error_msg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver_is_running</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Stopping driver.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">stop_sampling</span><span class="p">()</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver_is_running</span><span class="p">():</span>
+            <span class="c1"># TODO does &#39;stop_sampling&#39; always terminate the driver process???</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;driver still not dead&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">terminate_driver</span><span class="p">()</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DriverComm.driver_is_running"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.driver_comm.DriverComm.driver_is_running">[docs]</a>    <span class="k">def</span> <span class="nf">driver_is_running</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">returncode</span> <span class="ow">is</span> <span class="kc">None</span></div>
+
+    <span class="k">def</span> <span class="nf">_communicate</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">command</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">timeout_s</span><span class="o">=</span><span class="mi">7</span><span class="p">,</span> <span class="n">timeout_error</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver_is_running</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Driver is not running!!!!!!!&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">returncode</span><span class="p">)</span>
+
+        <span class="n">get_timeout</span> <span class="o">=</span> <span class="o">.</span><span class="mi">1</span>
+        <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">command</span><span class="o">.</span><span class="n">encode</span><span class="p">()</span> <span class="o">+</span> <span class="n">b</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">stdin</span><span class="o">.</span><span class="n">flush</span><span class="p">()</span>
+        <span class="k">while</span> <span class="n">timeout_s</span> <span class="o">-</span> <span class="n">get_timeout</span> <span class="o">*</span> <span class="n">count</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">line</span> <span class="o">=</span> <span class="kc">None</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">line</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver_out_q</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="n">timeout</span><span class="o">=</span><span class="n">get_timeout</span><span class="p">)</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>  <span class="c1"># or self.driver_out_q.get_nowait()</span>
+            <span class="k">except</span> <span class="n">Empty</span><span class="p">:</span>
+                <span class="n">count</span> <span class="o">+=</span> <span class="mi">1</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="n">get_timeout</span><span class="p">)</span>
+                <span class="k">pass</span>
+            <span class="k">if</span> <span class="n">line</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver_is_running</span><span class="p">():</span>
+                    <span class="k">continue</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Driver is dead. ABORTING!!!&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="nb">len</span><span class="p">(</span><span class="n">line</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="s2">&quot;Got empty string from driver. ABORTING...!!!&quot;</span><span class="p">)</span>
+            <span class="k">elif</span> <span class="n">line</span> <span class="o">==</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">count</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="n">out</span> <span class="o">+=</span> <span class="n">line</span>
+
+        <span class="k">if</span> <span class="n">out</span> <span class="o">==</span> <span class="s2">&quot;&quot;</span> <span class="ow">and</span> <span class="n">timeout_error</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">abort</span><span class="p">(</span><span class="s2">&quot;Communication with driver unsuccesful, </span><span class="se">\</span>
+<span class="s2">timeout &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">timeout_s</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;s passed. ABORTING!!!&quot;</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+<div class="viewcode-block" id="DriverComm.do_samplingg"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.driver_comm.DriverComm.do_samplingg">[docs]</a>    <span class="k">def</span> <span class="nf">do_samplingg</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">wait</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Driver finished working with code &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">returncode</span><span class="p">))</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">returncode</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DriverComm.do_sampling"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.driver_comm.DriverComm.do_sampling">[docs]</a>    <span class="k">def</span> <span class="nf">do_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Stat waiting on drivers output....&quot;</span><span class="p">)</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>  <span class="c1"># read and log data from sterr and stoout of the driver...</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver_err_q</span><span class="o">.</span><span class="n">get_nowait</span><span class="p">()</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>  <span class="c1"># amplifiers send binary and like to add \n at the end</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">Empty</span><span class="p">:</span>
+                <span class="k">pass</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver_out_q</span><span class="o">.</span><span class="n">get_nowait</span><span class="p">()</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="n">v</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span><span class="o">.</span><span class="n">rstrip</span><span class="p">()</span>  <span class="c1"># amplifiers send binary and like to add \n at the end</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">Empty</span><span class="p">:</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mf">0.1</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">driver</span><span class="o">.</span><span class="n">returncode</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="enqueue_output"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.driver_comm.enqueue_output">[docs]</a><span class="k">def</span> <span class="nf">enqueue_output</span><span class="p">(</span><span class="n">out</span><span class="p">,</span> <span class="n">queue</span><span class="p">):</span>
+    <span class="k">for</span> <span class="n">line</span> <span class="ow">in</span> <span class="nb">iter</span><span class="p">(</span><span class="n">out</span><span class="o">.</span><span class="n">readline</span><span class="p">,</span> <span class="n">b</span><span class="s1">&#39;&#39;</span><span class="p">):</span>
+        <span class="n">queue</span><span class="o">.</span><span class="n">put</span><span class="p">(</span><span class="n">line</span><span class="p">)</span>
+    <span class="n">out</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="kn">from</span> <span class="nn">obci.control.peer.peer_config</span> <span class="k">import</span> <span class="n">PeerConfig</span>
+    <span class="kn">import</span> <span class="nn">json</span>
+
+    <span class="n">conf</span> <span class="o">=</span> <span class="n">PeerConfig</span><span class="p">(</span><span class="s1">&#39;amplifier&#39;</span><span class="p">)</span>
+    <span class="n">conf</span><span class="o">.</span><span class="n">add_local_param</span><span class="p">(</span><span class="s1">&#39;driver_executable&#39;</span><span class="p">,</span> <span class="s1">&#39;tmsi_amplifier&#39;</span><span class="p">)</span>
+    <span class="n">conf</span><span class="o">.</span><span class="n">add_local_param</span><span class="p">(</span><span class="s1">&#39;samples_per_packet&#39;</span><span class="p">,</span> <span class="s1">&#39;4&#39;</span><span class="p">)</span>
+    <span class="n">conf</span><span class="o">.</span><span class="n">add_local_param</span><span class="p">(</span><span class="s1">&#39;bluetooth_device&#39;</span><span class="p">,</span> <span class="s1">&#39;&#39;</span><span class="p">)</span>
+    <span class="n">conf</span><span class="o">.</span><span class="n">add_local_param</span><span class="p">(</span><span class="s1">&#39;usb_device&#39;</span><span class="p">,</span> <span class="s1">&#39;/dev/tmsi0&#39;</span><span class="p">)</span>
+
+    <span class="n">driv</span> <span class="o">=</span> <span class="n">DriverComm</span><span class="p">(</span><span class="n">conf</span><span class="p">)</span>
+    <span class="n">descr</span> <span class="o">=</span> <span class="n">driv</span><span class="o">.</span><span class="n">get_driver_description</span><span class="p">()</span>
+    <span class="n">dic</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">loads</span><span class="p">(</span><span class="n">descr</span><span class="p">)</span>
+    <span class="n">driv</span><span class="o">.</span><span class="n">start_sampling</span><span class="p">()</span>
+    <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+    <span class="n">driv</span><span class="o">.</span><span class="n">terminate_driver</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

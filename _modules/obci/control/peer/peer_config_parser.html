@@ -1,0 +1,366 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.peer.peer_config_parser &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.peer.peer_config_parser</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">configparser</span>
+<span class="kn">import</span> <span class="nn">json</span>
+
+<span class="kn">import</span> <span class="nn">obci.control.common.config_helpers</span> <span class="k">as</span> <span class="nn">helpers</span>
+
+
+<div class="viewcode-block" id="PeerConfigParser"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_parser.PeerConfigParser">[docs]</a><span class="k">class</span> <span class="nc">PeerConfigParser</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="n">config_parts</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">helpers</span><span class="o">.</span><span class="n">CONFIG_SOURCES</span><span class="p">,</span>
+        <span class="n">helpers</span><span class="o">.</span><span class="n">EXT_PARAMS</span><span class="p">,</span>
+        <span class="n">helpers</span><span class="o">.</span><span class="n">LOCAL_PARAMS</span><span class="p">,</span>
+        <span class="n">helpers</span><span class="o">.</span><span class="n">LAUNCH_DEPENDENCIES</span>
+    <span class="p">]</span>
+
+<div class="viewcode-block" id="PeerConfigParser.parse"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_parser.PeerConfigParser.parse">[docs]</a>    <span class="k">def</span> <span class="nf">parse</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_file</span><span class="p">,</span> <span class="n">p_config_obj</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prepare</span><span class="p">(</span><span class="n">p_file</span><span class="p">,</span> <span class="n">p_config_obj</span><span class="p">,</span> <span class="n">update</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_do_parse</span><span class="p">()</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+    <span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_file</span><span class="p">,</span> <span class="n">p_config_obj</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">_do_parse</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_check_sections</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_config_sources</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_external_params</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_local_params</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_parse_launch_dependencies</span><span class="p">()</span>
+
+<div class="viewcode-block" id="PeerConfigParser.check_complete"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_parser.PeerConfigParser.check_complete">[docs]</a>    <span class="k">def</span> <span class="nf">check_complete</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_config</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">p_config</span><span class="o">.</span><span class="n">check</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_get_config_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">_parse_config_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_has_section</span><span class="p">(</span><span class="n">helpers</span><span class="o">.</span><span class="n">CONFIG_SOURCES</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="n">sources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_config_sources</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_source</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">val</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_config_source</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_launch_dependencies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">_parse_launch_dependencies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_has_section</span><span class="p">(</span><span class="n">helpers</span><span class="o">.</span><span class="n">LAUNCH_DEPENDENCIES</span><span class="p">):</span>
+            <span class="k">return</span>
+        <span class="n">sources</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_launch_dependencies</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">sources</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_check_source</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+            <span class="n">val</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">val</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_launch_dependency</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_external_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">_parse_external_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_has_section</span><span class="p">(</span><span class="n">helpers</span><span class="o">.</span><span class="n">EXT_PARAMS</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="n">exts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_external_params</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">exts</span><span class="p">:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update_external_param_def</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">add_external_param_def</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_local_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">_parse_local_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_has_section</span><span class="p">(</span><span class="n">helpers</span><span class="o">.</span><span class="n">LOCAL_PARAMS</span><span class="p">):</span>
+            <span class="k">return</span>
+
+        <span class="n">exts</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_local_params</span><span class="p">()</span>
+        <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">val</span> <span class="ow">in</span> <span class="n">exts</span><span class="p">:</span>
+            <span class="n">v</span> <span class="o">=</span> <span class="s1">&#39;&#39;</span> <span class="k">if</span> <span class="n">val</span> <span class="ow">is</span> <span class="kc">None</span> <span class="k">else</span> <span class="n">val</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">update</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">update_local_param</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">add_local_param</span><span class="p">(</span><span class="n">name</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_has_section</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">pass</span>
+
+    <span class="k">def</span> <span class="nf">_get_sections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="bp">NotImplemented</span>
+
+    <span class="k">def</span> <span class="nf">_check_sections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">sections</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_get_sections</span><span class="p">()</span>
+
+        <span class="k">for</span> <span class="n">sec</span> <span class="ow">in</span> <span class="n">sections</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">sec</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">config_parts</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="n">UnknownConfigSection</span><span class="p">(</span><span class="n">err_illegal_sec_name</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">sec</span><span class="p">))</span>
+
+        <span class="k">return</span> <span class="kc">True</span>
+
+    <span class="k">def</span> <span class="nf">_check_source</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">src_name</span><span class="p">,</span> <span class="n">value</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">value</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">value</span> <span class="o">!=</span> <span class="s1">&#39;&#39;</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">update</span> <span class="ow">is</span> <span class="kc">False</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">ConfigSourceError</span><span class="p">(</span><span class="n">err_config_source</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">src_name</span><span class="p">,</span> <span class="n">value</span><span class="p">))</span>
+        <span class="k">return</span> <span class="kc">True</span></div>
+
+
+<div class="viewcode-block" id="PeerConfigParserINI"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_parser.PeerConfigParserINI">[docs]</a><span class="k">class</span> <span class="nc">PeerConfigParserINI</span><span class="p">(</span><span class="n">PeerConfigParser</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_file</span><span class="p">,</span> <span class="n">p_config_obj</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span> <span class="o">=</span> <span class="n">configparser</span><span class="o">.</span><span class="n">RawConfigParser</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">read_file</span><span class="p">(</span><span class="n">p_file</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">p_config_obj</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span> <span class="o">=</span> <span class="n">update</span>
+
+    <span class="k">def</span> <span class="nf">_get_config_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="n">helpers</span><span class="o">.</span><span class="n">CONFIG_SOURCES</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_external_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="n">helpers</span><span class="o">.</span><span class="n">EXT_PARAMS</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_local_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="n">helpers</span><span class="o">.</span><span class="n">LOCAL_PARAMS</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_get_launch_dependencies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">items</span><span class="p">(</span><span class="n">helpers</span><span class="o">.</span><span class="n">LAUNCH_DEPENDENCIES</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_check_has_section</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">has_section</span><span class="p">(</span><span class="n">name</span><span class="p">):</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># if not self.update:</span>
+            <span class="c1">#    raise IncompleteConfigSections(err_no_section.format(name))</span>
+            <span class="c1"># else:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_get_sections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">parser</span><span class="o">.</span><span class="n">sections</span><span class="p">()</span></div>
+
+
+<div class="viewcode-block" id="PeerConfigParserJSON"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_parser.PeerConfigParserJSON">[docs]</a><span class="k">class</span> <span class="nc">PeerConfigParserJSON</span><span class="p">(</span><span class="n">PeerConfigParser</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_file</span><span class="p">,</span> <span class="n">p_config_obj</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load</span> <span class="o">=</span> <span class="n">json</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="n">p_file</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Expected a JSON&#39;d dictionary!&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">p_config_obj</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span> <span class="o">=</span> <span class="n">update</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">CONFIG_SOURCES</span><span class="p">,</span> <span class="n">helpers</span><span class="o">.</span><span class="n">LAUNCH_DEPENDENCIES</span><span class="p">,</span>
+                    <span class="n">helpers</span><span class="o">.</span><span class="n">LOCAL_PARAMS</span><span class="p">,</span> <span class="n">helpers</span><span class="o">.</span><span class="n">EXT_PARAMS</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span><span class="n">key</span><span class="p">)</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="k">def</span> <span class="nf">_get_config_sources</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="ow">in</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">CONFIG_SOURCES</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+    <span class="k">def</span> <span class="nf">_get_launch_dependencies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="ow">in</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">LAUNCH_DEPENDENCIES</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+    <span class="k">def</span> <span class="nf">_get_external_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="ow">in</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">EXT_PARAMS</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+    <span class="k">def</span> <span class="nf">_get_local_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="n">key</span><span class="p">,</span> <span class="n">val</span><span class="p">)</span> <span class="ow">in</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">LOCAL_PARAMS</span><span class="p">]</span><span class="o">.</span><span class="n">items</span><span class="p">()]</span>
+
+    <span class="k">def</span> <span class="nf">_check_has_section</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">name</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># if not self.update:</span>
+            <span class="c1">#     raise IncompleteConfigSections(err_no_section.format(name))</span>
+            <span class="c1"># else:</span>
+            <span class="k">return</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_get_sections</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
+
+
+<div class="viewcode-block" id="PeerConfigParserDict"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_parser.PeerConfigParserDict">[docs]</a><span class="k">class</span> <span class="nc">PeerConfigParserDict</span><span class="p">(</span><span class="n">PeerConfigParserJSON</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span> <span class="o">=</span> <span class="kc">False</span>
+
+    <span class="k">def</span> <span class="nf">_prepare</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_python_dict</span><span class="p">,</span> <span class="n">p_config_obj</span><span class="p">,</span> <span class="n">update</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">load</span> <span class="o">=</span> <span class="n">p_python_dict</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">,</span> <span class="nb">dict</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Expected a dictionary!&quot;</span><span class="p">)</span>
+
+        <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="p">[</span><span class="n">helpers</span><span class="o">.</span><span class="n">CONFIG_SOURCES</span><span class="p">,</span> <span class="n">helpers</span><span class="o">.</span><span class="n">LAUNCH_DEPENDENCIES</span><span class="p">,</span>
+                    <span class="n">helpers</span><span class="o">.</span><span class="n">LOCAL_PARAMS</span><span class="p">,</span> <span class="n">helpers</span><span class="o">.</span><span class="n">EXT_PARAMS</span><span class="p">]:</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">load</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span> <span class="o">=</span> <span class="n">p_config_obj</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">update</span> <span class="o">=</span> <span class="n">update</span></div>
+
+
+<span class="n">err_no_section</span> <span class="o">=</span> <span class="s2">&quot;Section &#39;</span><span class="si">{0}</span><span class="s2">&#39; not found in config file.&quot;</span>
+<span class="n">err_config_source</span> <span class="o">=</span> <span class="s2">&quot;Config source definitions should not have </span><span class="se">\</span>
+<span class="s2">values assigned in config file. Name: &#39;</span><span class="si">{0}</span><span class="s2">&#39;, illegal value: &#39;</span><span class="si">{1}</span><span class="s2">&#39;.&quot;</span>
+<span class="n">err_illegal_sec_name</span> <span class="o">=</span> <span class="s2">&quot;Illegal section name: &#39;</span><span class="si">{0}</span><span class="s2">&#39;&quot;</span>
+
+
+<div class="viewcode-block" id="PeerConfigParserError"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_parser.PeerConfigParserError">[docs]</a><span class="k">class</span> <span class="nc">PeerConfigParserError</span><span class="p">(</span><span class="ne">Exception</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+    <span class="c1"># def __init__(self, value=None):</span>
+    <span class="c1">#     self.value = value</span>
+
+    <span class="c1"># def __str__(self):</span>
+    <span class="c1">#     if self.value is not None:</span>
+    <span class="c1">#         return repr(self.value)</span>
+    <span class="c1">#     else:</span>
+    <span class="c1">#         return repr(self)</span>
+
+
+<div class="viewcode-block" id="ParserNotFoundError"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_parser.ParserNotFoundError">[docs]</a><span class="k">class</span> <span class="nc">ParserNotFoundError</span><span class="p">(</span><span class="n">PeerConfigParserError</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="ConfigSourceError"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_parser.ConfigSourceError">[docs]</a><span class="k">class</span> <span class="nc">ConfigSourceError</span><span class="p">(</span><span class="n">PeerConfigParserError</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="UnknownConfigSection"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_parser.UnknownConfigSection">[docs]</a><span class="k">class</span> <span class="nc">UnknownConfigSection</span><span class="p">(</span><span class="n">PeerConfigParserError</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+
+<div class="viewcode-block" id="IncompleteConfigSections"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_parser.IncompleteConfigSections">[docs]</a><span class="k">class</span> <span class="nc">IncompleteConfigSections</span><span class="p">(</span><span class="n">PeerConfigParserError</span><span class="p">):</span>
+    <span class="k">pass</span></div>
+
+<span class="n">parsers</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s1">&#39;ini&#39;</span><span class="p">:</span> <span class="n">PeerConfigParserINI</span><span class="p">,</span>
+    <span class="s1">&#39;json&#39;</span><span class="p">:</span> <span class="n">PeerConfigParserJSON</span><span class="p">,</span>
+    <span class="s1">&#39;python&#39;</span><span class="p">:</span> <span class="n">PeerConfigParserDict</span>
+<span class="p">}</span>
+
+
+<div class="viewcode-block" id="parser"><a class="viewcode-back" href="../../../../apidoc/obci.control.peer.html#obci.control.peer.peer_config_parser.parser">[docs]</a><span class="k">def</span> <span class="nf">parser</span><span class="p">(</span><span class="n">parser_type</span><span class="p">):</span>
+    <span class="k">if</span> <span class="n">parser_type</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">parsers</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="n">ParserNotFoundError</span><span class="p">(</span><span class="n">parser_type</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">parsers</span><span class="p">[</span><span class="n">parser_type</span><span class="p">]()</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

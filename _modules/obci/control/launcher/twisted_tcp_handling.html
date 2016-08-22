@@ -1,0 +1,202 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.launcher.twisted_tcp_handling &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.launcher.twisted_tcp_handling</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">twisted.protocols.basic</span> <span class="k">import</span> <span class="n">NetstringReceiver</span>
+<span class="kn">from</span> <span class="nn">twisted.internet.protocol</span> <span class="k">import</span> <span class="n">Factory</span>
+<span class="kn">from</span> <span class="nn">twisted.internet</span> <span class="k">import</span> <span class="n">reactor</span>
+
+<span class="kn">import</span> <span class="nn">zmq</span>
+<span class="kn">import</span> <span class="nn">socket</span>
+<span class="kn">import</span> <span class="nn">threading</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.common.message</span> <span class="k">import</span> <span class="n">OBCIMessageTool</span><span class="p">,</span> <span class="n">send_msg</span><span class="p">,</span> <span class="n">PollingObject</span>
+<span class="kn">from</span> <span class="nn">obci.control.launcher.launcher_messages</span> <span class="k">import</span> <span class="n">message_templates</span>
+
+<span class="kn">from</span> <span class="nn">obci.control.common.obci_control_settings</span> <span class="k">import</span> <span class="n">PORT_RANGE</span>
+
+
+<div class="viewcode-block" id="OBCIProxy"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.twisted_tcp_handling.OBCIProxy">[docs]</a><span class="k">class</span> <span class="nc">OBCIProxy</span><span class="p">(</span><span class="n">NetstringReceiver</span><span class="p">):</span>
+
+<div class="viewcode-block" id="OBCIProxy.stringReceived"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.twisted_tcp_handling.OBCIProxy.stringReceived">[docs]</a>    <span class="k">def</span> <span class="nf">stringReceived</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">string</span><span class="p">):</span>
+        <span class="n">req_sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">REQ</span><span class="p">)</span>
+        <span class="n">req_sock</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">zmq_rep_addr</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">req</span> <span class="o">=</span> <span class="n">string</span>
+            <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">req</span><span class="p">,</span> <span class="nb">bytes</span><span class="p">)</span>
+            <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;twisted got:&quot;</span><span class="p">,</span> <span class="n">req</span><span class="p">)</span>
+            <span class="n">bad</span> <span class="o">=</span> <span class="kc">False</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">parsed</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">unpack_msg</span><span class="p">(</span><span class="n">req</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                <span class="n">bad</span> <span class="o">=</span> <span class="kc">True</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">bad</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">parsed</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">long_rqs</span><span class="p">:</span>
+                    <span class="n">sock</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">long_rqs</span><span class="p">[</span><span class="n">parsed</span><span class="o">.</span><span class="n">type</span><span class="p">]</span>
+                    <span class="n">pull_addr</span> <span class="o">=</span> <span class="s1">&#39;tcp://&#39;</span> <span class="o">+</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">()</span> <span class="o">+</span> <span class="s1">&#39;:&#39;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">port</span><span class="p">)</span>
+                    <span class="n">parsed</span><span class="o">.</span><span class="n">client_push_address</span> <span class="o">=</span> <span class="n">pull_addr</span>
+                    <span class="n">send_msg</span><span class="p">(</span><span class="n">req_sock</span><span class="p">,</span> <span class="n">parsed</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">())</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">send_msg</span><span class="p">(</span><span class="n">req_sock</span><span class="p">,</span> <span class="n">req</span><span class="p">)</span>
+
+            <span class="n">pl</span> <span class="o">=</span> <span class="n">PollingObject</span><span class="p">()</span>
+            <span class="n">msg</span><span class="p">,</span> <span class="n">det</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">req_sock</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">5000</span><span class="p">)</span>
+        <span class="k">finally</span><span class="p">:</span>
+            <span class="n">req_sock</span><span class="o">.</span><span class="n">close</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">msg</span><span class="p">:</span>
+            <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;rq_error&quot;</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="n">det</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">bad</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">parsed</span><span class="o">.</span><span class="n">type</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">long_rqs</span><span class="p">:</span>
+                <span class="n">sock</span><span class="p">,</span> <span class="n">port</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">long_rqs</span><span class="p">[</span><span class="n">parsed</span><span class="o">.</span><span class="n">type</span><span class="p">]</span>
+                <span class="n">msg</span><span class="p">,</span> <span class="n">det</span> <span class="o">=</span> <span class="n">pl</span><span class="o">.</span><span class="n">poll_recv</span><span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="mi">20000</span><span class="p">)</span>
+                <span class="k">if</span> <span class="ow">not</span> <span class="n">msg</span><span class="p">:</span>
+                    <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">factory</span><span class="o">.</span><span class="n">mtool</span><span class="o">.</span><span class="n">fill_msg</span><span class="p">(</span><span class="s2">&quot;rq_error&quot;</span><span class="p">,</span> <span class="n">details</span><span class="o">=</span><span class="n">det</span><span class="p">)</span>
+                    <span class="k">return</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">sendString</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="n">reactor</span><span class="o">.</span><span class="n">callFromThread</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sendString</span><span class="p">,</span> <span class="n">msg</span><span class="p">)</span></div></div>
+
+
+<div class="viewcode-block" id="OBCIProxyFactory"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.twisted_tcp_handling.OBCIProxyFactory">[docs]</a><span class="k">class</span> <span class="nc">OBCIProxyFactory</span><span class="p">(</span><span class="n">Factory</span><span class="p">):</span>
+    <span class="n">protocol</span> <span class="o">=</span> <span class="n">OBCIProxy</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">address</span><span class="p">,</span> <span class="n">zmq_ctx</span><span class="p">,</span> <span class="n">zmq_rep_addr</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">srv_address</span> <span class="o">=</span> <span class="n">address</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span> <span class="o">=</span> <span class="n">zmq_ctx</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">zmq_rep_addr</span> <span class="o">=</span> <span class="n">zmq_rep_addr</span><span class="o">.</span><span class="n">replace</span><span class="p">(</span><span class="s2">&quot;*&quot;</span><span class="p">,</span> <span class="n">socket</span><span class="o">.</span><span class="n">gethostname</span><span class="p">())</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">long_rqs</span> <span class="o">=</span> <span class="p">{}</span>
+
+        <span class="k">for</span> <span class="n">msgtype</span> <span class="ow">in</span> <span class="p">[</span><span class="s2">&quot;find_eeg_experiments&quot;</span><span class="p">,</span>
+                        <span class="s2">&quot;find_eeg_amplifiers&quot;</span><span class="p">,</span>
+                        <span class="c1"># &quot;join_experiment&quot;,</span>
+                        <span class="s2">&quot;start_eeg_signal&quot;</span><span class="p">]:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">long_rqs</span><span class="p">[</span><span class="n">msgtype</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_make_pull_sock</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">mtool</span> <span class="o">=</span> <span class="n">OBCIMessageTool</span><span class="p">(</span><span class="n">message_templates</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_make_pull_sock</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">sock</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ctx</span><span class="o">.</span><span class="n">socket</span><span class="p">(</span><span class="n">zmq</span><span class="o">.</span><span class="n">PULL</span><span class="p">)</span>
+        <span class="n">port</span> <span class="o">=</span> <span class="n">sock</span><span class="o">.</span><span class="n">bind_to_random_port</span><span class="p">(</span><span class="s1">&#39;tcp://*&#39;</span><span class="p">,</span>
+                                        <span class="n">min_port</span><span class="o">=</span><span class="n">PORT_RANGE</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                        <span class="n">max_port</span><span class="o">=</span><span class="n">PORT_RANGE</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">max_tries</span><span class="o">=</span><span class="mi">500</span><span class="p">)</span>
+        <span class="k">return</span> <span class="p">(</span><span class="n">sock</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="run_twisted_server"><a class="viewcode-back" href="../../../../apidoc/obci.control.launcher.html#obci.control.launcher.twisted_tcp_handling.run_twisted_server">[docs]</a><span class="k">def</span> <span class="nf">run_twisted_server</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">zmq_ctx</span><span class="p">,</span> <span class="n">zmq_rep_addr</span><span class="p">):</span>
+    <span class="n">fact</span> <span class="o">=</span> <span class="n">OBCIProxyFactory</span><span class="p">(</span><span class="n">address</span><span class="p">,</span> <span class="n">zmq_ctx</span><span class="p">,</span> <span class="n">zmq_rep_addr</span><span class="p">)</span>
+    <span class="n">port</span> <span class="o">=</span> <span class="n">reactor</span><span class="o">.</span><span class="n">listenTCP</span><span class="p">(</span><span class="n">address</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">fact</span><span class="p">)</span>
+    <span class="n">port</span> <span class="o">=</span> <span class="n">port</span><span class="o">.</span><span class="n">getHost</span><span class="p">()</span><span class="o">.</span><span class="n">port</span>
+    <span class="n">fact</span><span class="o">.</span><span class="n">srv_address</span> <span class="o">=</span> <span class="p">(</span><span class="n">address</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">port</span><span class="p">)</span>
+    <span class="n">thr</span> <span class="o">=</span> <span class="n">threading</span><span class="o">.</span><span class="n">Thread</span><span class="p">(</span><span class="n">target</span><span class="o">=</span><span class="n">reactor</span><span class="o">.</span><span class="n">run</span><span class="p">,</span> <span class="n">args</span><span class="o">=</span><span class="p">[</span><span class="kc">False</span><span class="p">])</span>
+    <span class="n">thr</span><span class="o">.</span><span class="n">daemon</span> <span class="o">=</span> <span class="kc">True</span>
+    <span class="n">thr</span><span class="o">.</span><span class="n">start</span><span class="p">()</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Twisted: listening on port&quot;</span><span class="p">,</span> <span class="n">port</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">thr</span><span class="p">,</span> <span class="n">port</span></div>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
+    <span class="n">run_twisted_server</span><span class="p">((</span><span class="s1">&#39;0.0.0.0&#39;</span><span class="p">,</span> <span class="mi">12013</span><span class="p">),</span> <span class="n">zmq</span><span class="o">.</span><span class="n">Context</span><span class="p">(),</span> <span class="s1">&#39;tcp://127.0.0.1:54654&#39;</span><span class="p">)</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;twisted: server started.&quot;</span><span class="p">)</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

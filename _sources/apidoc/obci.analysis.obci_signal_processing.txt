@@ -1,0 +1,55 @@
+obci.analysis.obci_signal_processing package
+============================================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    obci.analysis.obci_signal_processing.signal
+    obci.analysis.obci_signal_processing.tags
+    obci.analysis.obci_signal_processing.tests
+
+Submodules
+----------
+
+obci.analysis.obci_signal_processing.obci_signal_processing_logging module
+--------------------------------------------------------------------------
+
+.. automodule:: obci.analysis.obci_signal_processing.obci_signal_processing_logging
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.analysis.obci_signal_processing.read_manager module
+--------------------------------------------------------
+
+.. automodule:: obci.analysis.obci_signal_processing.read_manager
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.analysis.obci_signal_processing.smart_tags_manager module
+--------------------------------------------------------------
+
+.. automodule:: obci.analysis.obci_signal_processing.smart_tags_manager
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.analysis.obci_signal_processing.types_utils module
+-------------------------------------------------------
+
+.. automodule:: obci.analysis.obci_signal_processing.types_utils
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.analysis.obci_signal_processing
+    :members:
+    :undoc-members:
+    :show-inheritance:

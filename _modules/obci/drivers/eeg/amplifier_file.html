@@ -1,0 +1,240 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.drivers.eeg.amplifier_file &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.drivers.eeg.amplifier_file</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/python</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">import</span> <span class="nn">queue</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">obci.mx_legacy.multiplexer_constants</span> <span class="k">import</span> <span class="n">peers</span>
+<span class="kn">from</span> <span class="nn">obci.drivers.eeg.binary_driver_wrapper</span> <span class="k">import</span> <span class="n">BinaryDriverWrapper</span>
+<span class="kn">from</span> <span class="nn">obci.configs</span> <span class="k">import</span> <span class="n">settings</span>
+<span class="kn">from</span> <span class="nn">obci.drivers.eeg</span> <span class="k">import</span> <span class="n">tags_to_mxmsg</span>
+<span class="kn">from</span> <span class="nn">obci.analysis.obci_signal_processing.signal</span> <span class="k">import</span> <span class="n">read_info_source</span>
+<span class="kn">from</span> <span class="nn">obci.analysis.obci_signal_processing.tags</span> <span class="k">import</span> <span class="n">read_tags_source</span>
+<span class="kn">from</span> <span class="nn">obci.acquisition.acquisition_helper</span> <span class="k">import</span> <span class="n">get_file_path</span>
+
+
+<div class="viewcode-block" id="AmplifierFile"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.amplifier_file.AmplifierFile">[docs]</a><span class="k">class</span> <span class="nc">AmplifierFile</span><span class="p">(</span><span class="n">BinaryDriverWrapper</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addresses</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AmplifierFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">addresses</span><span class="o">=</span><span class="n">addresses</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="n">peers</span><span class="o">.</span><span class="n">AMPLIFIER_SERVER</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_init_got_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_files</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_configs</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_init_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_data</span> <span class="o">=</span> <span class="n">get_file_path</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;data_file_dir&#39;</span><span class="p">),</span>
+                                    <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;data_file_name&#39;</span><span class="p">)</span> <span class="o">+</span> <span class="s1">&#39;.obci.raw&#39;</span><span class="p">)</span>
+
+        <span class="n">i_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;info_file_dir&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_dir</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">i_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;data_file_dir&#39;</span><span class="p">)</span>
+        <span class="n">i_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;info_file_name&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">i_name</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">i_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;data_file_name&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_info</span> <span class="o">=</span> <span class="n">get_file_path</span><span class="p">(</span><span class="n">i_dir</span><span class="p">,</span> <span class="n">i_name</span> <span class="o">+</span> <span class="s1">&#39;.obci.xml&#39;</span><span class="p">)</span>
+
+        <span class="n">t_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;tags_file_dir&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t_dir</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">t_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;data_file_dir&#39;</span><span class="p">)</span>
+        <span class="n">t_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;tags_file_name&#39;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">t_name</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">t_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;data_file_name&#39;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">f_tags</span> <span class="o">=</span> <span class="n">get_file_path</span><span class="p">(</span><span class="n">t_dir</span><span class="p">,</span> <span class="n">t_name</span> <span class="o">+</span> <span class="s1">&#39;.obci.tag&#39;</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_init_configs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">mgr</span> <span class="o">=</span> <span class="n">read_info_source</span><span class="o">.</span><span class="n">FileInfoSource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_info</span><span class="p">)</span>
+
+        <span class="n">names</span> <span class="o">=</span> <span class="n">mgr</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;channels_names&#39;</span><span class="p">)</span>
+        <span class="nb">type</span> <span class="o">=</span> <span class="n">mgr</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;sample_type&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_types</span> <span class="o">=</span> <span class="s1">&#39;;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">type</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">names</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_names</span> <span class="o">=</span> <span class="s1">&#39;;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">names</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_gains</span> <span class="o">=</span> <span class="s1">&#39;;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mgr</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;channels_gains&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">all_offsets</span> <span class="o">=</span> <span class="s1">&#39;;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">mgr</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;channels_offsets&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">sleep_on_out</span> <span class="o">=</span> <span class="mf">1.0</span> <span class="o">/</span> <span class="nb">float</span><span class="p">(</span><span class="n">mgr</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;sampling_frequency&#39;</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s1">&#39;sample_type&#39;</span><span class="p">,</span> <span class="n">mgr</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;sample_type&#39;</span><span class="p">))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s1">&#39;sampling_rate&#39;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">mgr</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;sampling_frequency&#39;</span><span class="p">)))))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s1">&#39;channel_names&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_names</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;active_channels&#39;</span><span class="p">))</span> <span class="o">==</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s1">&#39;active_channels&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;channel_names&#39;</span><span class="p">))</span>
+
+<div class="viewcode-block" id="AmplifierFile.get_run_args"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.amplifier_file.AmplifierFile.get_run_args">[docs]</a>    <span class="k">def</span> <span class="nf">get_run_args</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">multiplexer_address</span><span class="p">):</span>
+        <span class="n">args</span> <span class="o">=</span> <span class="nb">super</span><span class="p">(</span><span class="n">AmplifierFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">get_run_args</span><span class="p">(</span><span class="n">multiplexer_address</span><span class="p">)</span>
+
+        <span class="n">args</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span>
+            <span class="p">[</span><span class="s1">&#39;-f&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">f_data</span><span class="p">,</span>
+             <span class="s1">&#39;-t&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_types</span><span class="p">,</span>
+             <span class="s1">&#39;-n&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_names</span><span class="p">,</span>
+             <span class="s1">&#39;-g&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_gains</span><span class="p">,</span>
+             <span class="s1">&#39;-o&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">all_offsets</span><span class="p">,</span>
+             <span class="s1">&#39;-s&#39;</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;sampling_rate&#39;</span><span class="p">)</span>
+             <span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Extended arguments: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">args</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">args</span></div>
+
+<div class="viewcode-block" id="AmplifierFile.set_driver_params"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.amplifier_file.AmplifierFile.set_driver_params">[docs]</a>    <span class="k">def</span> <span class="nf">set_driver_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AmplifierFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">set_driver_params</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_tags</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="AmplifierFile.store_driver_description"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.amplifier_file.AmplifierFile.store_driver_description">[docs]</a>    <span class="k">def</span> <span class="nf">store_driver_description</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">driver_output</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">AmplifierFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">store_driver_description</span><span class="p">(</span><span class="n">driver_output</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s1">&#39;sampling_rates&#39;</span><span class="p">,</span> <span class="p">[</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;sampling_rate&#39;</span><span class="p">))])</span></div>
+
+<div class="viewcode-block" id="AmplifierFile.set_tags"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.amplifier_file.AmplifierFile.set_tags">[docs]</a>    <span class="k">def</span> <span class="nf">set_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="n">read_tags_source</span><span class="o">.</span><span class="n">FileTagsSource</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">f_tags</span><span class="p">)</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">msg_mgr</span> <span class="o">=</span> <span class="n">tags_to_mxmsg</span><span class="o">.</span><span class="n">TagsToMxmsg</span><span class="p">(</span><span class="n">tags</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;tags_rules&#39;</span><span class="p">))</span>
+        <span class="n">tss</span> <span class="o">=</span> <span class="s1">&#39;;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">repr</span><span class="p">(</span><span class="n">t</span><span class="p">[</span><span class="s1">&#39;start_timestamp&#39;</span><span class="p">])</span> <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">])</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communicate</span><span class="p">(</span><span class="s2">&quot;tags_start&quot;</span><span class="p">,</span> <span class="n">timeout_s</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">timeout_error</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Start sending tss to driver...&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communicate</span><span class="p">(</span><span class="n">tss</span><span class="p">,</span> <span class="n">timeout_s</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">timeout_error</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Finished sending tss to driver!&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_communicate</span><span class="p">(</span><span class="s2">&quot;tags_end&quot;</span><span class="p">,</span> <span class="n">timeout_s</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">timeout_error</span><span class="o">=</span><span class="kc">False</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AmplifierFile.got_trigger"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.amplifier_file.AmplifierFile.got_trigger">[docs]</a>    <span class="k">def</span> <span class="nf">got_trigger</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ts</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Got trigger from the drivers.</span>
+<span class="sd">        Let`s send next tag (or other message)</span>
+<span class="sd">        with ts as its realtime timestamp&quot;&quot;&quot;</span>
+        <span class="c1"># ...</span>
+        <span class="n">tp</span><span class="p">,</span> <span class="n">msg</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">msg_mgr</span><span class="o">.</span><span class="n">next_message</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">tp</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;No tags left but got trigger. Should not happen!!!&quot;</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Send msg of type: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">tp</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span>
+                <span class="n">message</span><span class="o">=</span><span class="n">msg</span><span class="p">,</span>
+                <span class="nb">type</span><span class="o">=</span><span class="n">tp</span><span class="p">,</span>
+                <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="AmplifierFile.do_sampling"><a class="viewcode-back" href="../../../../apidoc/obci.drivers.eeg.html#obci.drivers.eeg.amplifier_file.AmplifierFile.do_sampling">[docs]</a>    <span class="k">def</span> <span class="nf">do_sampling</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Stat waiting on drivers output...&quot;</span><span class="p">)</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>  <span class="c1"># read tags from stdout</span>
+                <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver_out_q</span><span class="o">.</span><span class="n">get_nowait</span><span class="p">()</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">ts</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">v</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;start OK&#39;</span><span class="p">):</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Driver finished!!!&quot;</span><span class="p">)</span>
+                        <span class="k">break</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Got unrecognised message from driver: &quot;</span> <span class="o">+</span> <span class="n">v</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Got trigger with ts: &quot;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span> <span class="o">+</span> <span class="s2">&quot; / real ts: &quot;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">got_trigger</span><span class="p">(</span><span class="n">ts</span><span class="p">)</span>
+            <span class="k">except</span> <span class="n">queue</span><span class="o">.</span><span class="n">Empty</span><span class="p">:</span>  <span class="c1"># try reading other log from stderr</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">v</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">driver_err_q</span><span class="o">.</span><span class="n">get_nowait</span><span class="p">()</span>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="n">v</span><span class="p">)</span>
+                <span class="k">except</span> <span class="n">queue</span><span class="o">.</span><span class="n">Empty</span><span class="p">:</span>
+                    <span class="k">pass</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">sleep_on_out</span><span class="p">)</span>
+
+        <span class="nb">super</span><span class="p">(</span><span class="n">AmplifierFile</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">do_sampling</span><span class="p">()</span></div></div>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">srv</span> <span class="o">=</span> <span class="n">AmplifierFile</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">MULTIPLEXER_ADDRESSES</span><span class="p">)</span>
+    <span class="n">srv</span><span class="o">.</span><span class="n">do_sampling</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

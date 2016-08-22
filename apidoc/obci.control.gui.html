@@ -1,0 +1,759 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.gui package &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../index.html" />
+    <link rel="up" title="obci.control package" href="obci.control.html" />
+    <link rel="next" title="obci.control.launcher package" href="obci.control.launcher.html" />
+    <link rel="prev" title="obci.control.common package" href="obci.control.common.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="obci-control-gui-package">
+<h1>obci.control.gui package<a class="headerlink" href="#obci-control-gui-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-obci.control.gui.connect_dialog">
+<span id="obci-control-gui-connect-dialog-module"></span><h2>obci.control.gui.connect_dialog module<a class="headerlink" href="#module-obci.control.gui.connect_dialog" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.control.gui.connect_dialog.Ui_ConnectToMachine">
+<em class="property">class </em><code class="descclassname">obci.control.gui.connect_dialog.</code><code class="descname">Ui_ConnectToMachine</code><a class="reference internal" href="../_modules/obci/control/gui/connect_dialog.html#Ui_ConnectToMachine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.connect_dialog.Ui_ConnectToMachine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="obci.control.gui.connect_dialog.Ui_ConnectToMachine.retranslateUi">
+<code class="descname">retranslateUi</code><span class="sig-paren">(</span><em>ConnectToMachine</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/connect_dialog.html#Ui_ConnectToMachine.retranslateUi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.connect_dialog.Ui_ConnectToMachine.retranslateUi" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.connect_dialog.Ui_ConnectToMachine.setupUi">
+<code class="descname">setupUi</code><span class="sig-paren">(</span><em>ConnectToMachine</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/connect_dialog.html#Ui_ConnectToMachine.setupUi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.connect_dialog.Ui_ConnectToMachine.setupUi" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.gui.experiment_engine_info">
+<span id="obci-control-gui-experiment-engine-info-module"></span><h2>obci.control.gui.experiment_engine_info module<a class="headerlink" href="#module-obci.control.gui.experiment_engine_info" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.control.gui.experiment_engine_info.ExperimentEngineInfo">
+<em class="property">class </em><code class="descclassname">obci.control.gui.experiment_engine_info.</code><code class="descname">ExperimentEngineInfo</code><span class="sig-paren">(</span><em>preset_data=None</em>, <em>launcher_data=None</em>, <em>ctx=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/experiment_engine_info.html#ExperimentEngineInfo"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.experiment_engine_info.ExperimentEngineInfo" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">PyQt4.QtCore.QObject</span></code></p>
+<dl class="method">
+<dt id="obci.control.gui.experiment_engine_info.ExperimentEngineInfo.add_peer">
+<code class="descname">add_peer</code><span class="sig-paren">(</span><em>peer_id</em>, <em>peer_path</em>, <em>config_sources=None</em>, <em>launch_deps=None</em>, <em>custom_config_path=None</em>, <em>param_overwrites=None</em>, <em>machine=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/experiment_engine_info.html#ExperimentEngineInfo.add_peer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.experiment_engine_info.ExperimentEngineInfo.add_peer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.experiment_engine_info.ExperimentEngineInfo.cleanup">
+<code class="descname">cleanup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/experiment_engine_info.html#ExperimentEngineInfo.cleanup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.experiment_engine_info.ExperimentEngineInfo.cleanup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.experiment_engine_info.ExperimentEngineInfo.comm_exp">
+<code class="descname">comm_exp</code><span class="sig-paren">(</span><em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/experiment_engine_info.html#ExperimentEngineInfo.comm_exp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.experiment_engine_info.ExperimentEngineInfo.comm_exp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.experiment_engine_info.ExperimentEngineInfo.enable_signal_storing">
+<code class="descname">enable_signal_storing</code><span class="sig-paren">(</span><em>store_options</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/experiment_engine_info.html#ExperimentEngineInfo.enable_signal_storing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.experiment_engine_info.ExperimentEngineInfo.enable_signal_storing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.gui.experiment_engine_info.ExperimentEngineInfo.exp_saver_msg">
+<code class="descname">exp_saver_msg</code><a class="headerlink" href="#obci.control.gui.experiment_engine_info.ExperimentEngineInfo.exp_saver_msg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.experiment_engine_info.ExperimentEngineInfo.get_launch_args">
+<code class="descname">get_launch_args</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/experiment_engine_info.html#ExperimentEngineInfo.get_launch_args"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.experiment_engine_info.ExperimentEngineInfo.get_launch_args" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.experiment_engine_info.ExperimentEngineInfo.make_experiment_config">
+<code class="descname">make_experiment_config</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/experiment_engine_info.html#ExperimentEngineInfo.make_experiment_config"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.experiment_engine_info.ExperimentEngineInfo.make_experiment_config" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.experiment_engine_info.ExperimentEngineInfo.parameters">
+<code class="descname">parameters</code><span class="sig-paren">(</span><em>peer_id</em>, <em>mode</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/experiment_engine_info.html#ExperimentEngineInfo.parameters"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.experiment_engine_info.ExperimentEngineInfo.parameters" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.experiment_engine_info.ExperimentEngineInfo.peer_info">
+<code class="descname">peer_info</code><span class="sig-paren">(</span><em>peer_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/experiment_engine_info.html#ExperimentEngineInfo.peer_info"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.experiment_engine_info.ExperimentEngineInfo.peer_info" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.experiment_engine_info.ExperimentEngineInfo.setup_from_launcher">
+<code class="descname">setup_from_launcher</code><span class="sig-paren">(</span><em>launcher_data</em>, <em>preset=False</em>, <em>transform=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/experiment_engine_info.html#ExperimentEngineInfo.setup_from_launcher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.experiment_engine_info.ExperimentEngineInfo.setup_from_launcher" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.experiment_engine_info.ExperimentEngineInfo.setup_from_preset">
+<code class="descname">setup_from_preset</code><span class="sig-paren">(</span><em>preset_data</em>, <em>launcher=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/experiment_engine_info.html#ExperimentEngineInfo.setup_from_preset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.experiment_engine_info.ExperimentEngineInfo.setup_from_preset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.experiment_engine_info.ExperimentEngineInfo.stop_storing">
+<code class="descname">stop_storing</code><span class="sig-paren">(</span><em>client</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/experiment_engine_info.html#ExperimentEngineInfo.stop_storing"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.experiment_engine_info.ExperimentEngineInfo.stop_storing" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.experiment_engine_info.ExperimentEngineInfo.updatable">
+<code class="descname">updatable</code><span class="sig-paren">(</span><em>peer_id</em>, <em>config_part</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/experiment_engine_info.html#ExperimentEngineInfo.updatable"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.experiment_engine_info.ExperimentEngineInfo.updatable" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.experiment_engine_info.ExperimentEngineInfo.update_peer_param">
+<code class="descname">update_peer_param</code><span class="sig-paren">(</span><em>peer_id</em>, <em>param</em>, <em>value</em>, <em>runtime=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/experiment_engine_info.html#ExperimentEngineInfo.update_peer_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.experiment_engine_info.ExperimentEngineInfo.update_peer_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.experiment_engine_info.ExperimentEngineInfo.update_scenario">
+<code class="descname">update_scenario</code><span class="sig-paren">(</span><em>launch_file_path</em>, <em>scenario</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/experiment_engine_info.html#ExperimentEngineInfo.update_scenario"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.experiment_engine_info.ExperimentEngineInfo.update_scenario" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.gui.obci_gui">
+<span id="obci-control-gui-obci-gui-module"></span><h2>obci.control.gui.obci_gui module<a class="headerlink" href="#module-obci.control.gui.obci_gui" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.control.gui.obci_gui.ConnectToMachine">
+<em class="property">class </em><code class="descclassname">obci.control.gui.obci_gui.</code><code class="descname">ConnectToMachine</code><span class="sig-paren">(</span><em>parent</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#ConnectToMachine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.ConnectToMachine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">PyQt4.QtGui.QDialog</span></code>, <a class="reference internal" href="#obci.control.gui.connect_dialog.Ui_ConnectToMachine" title="obci.control.gui.connect_dialog.Ui_ConnectToMachine"><code class="xref py py-class docutils literal"><span class="pre">obci.control.gui.connect_dialog.Ui_ConnectToMachine</span></code></a></p>
+<dl class="method">
+<dt id="obci.control.gui.obci_gui.ConnectToMachine.accept">
+<code class="descname">accept</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#ConnectToMachine.accept"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.ConnectToMachine.accept" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_gui.ConnectToMachine.set_nearby_machines">
+<code class="descname">set_nearby_machines</code><span class="sig-paren">(</span><em>machines</em>, <em>current_hostname</em>, <em>current_ip</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#ConnectToMachine.set_nearby_machines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.ConnectToMachine.set_nearby_machines" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.gui.obci_gui.ExperimentGuiState">
+<em class="property">class </em><code class="descclassname">obci.control.gui.obci_gui.</code><code class="descname">ExperimentGuiState</code><span class="sig-paren">(</span><em>srv_client</em>, <em>engine_experiment</em>, <em>log_engine</em>, <em>old_exp=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#ExperimentGuiState"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.ExperimentGuiState" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.gui.obci_gui.ObciLauncherWindow">
+<em class="property">class </em><code class="descclassname">obci.control.gui.obci_gui.</code><code class="descname">ObciLauncherWindow</code><span class="sig-paren">(</span><em>presets=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#ObciLauncherWindow"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.ObciLauncherWindow" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">PyQt4.QtGui.QMainWindow</span></code>, <a class="reference internal" href="#obci.control.gui.obci_window.Ui_OBCILauncher" title="obci.control.gui.obci_window.Ui_OBCILauncher"><code class="xref py py-class docutils literal"><span class="pre">obci.control.gui.obci_window.Ui_OBCILauncher</span></code></a></p>
+<p>Constructor</p>
+<dl class="method">
+<dt id="obci.control.gui.obci_gui.ObciLauncherWindow.closeEvent">
+<code class="descname">closeEvent</code><span class="sig-paren">(</span><em>e</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#ObciLauncherWindow.closeEvent"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.ObciLauncherWindow.closeEvent" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.gui.obci_gui.ObciLauncherWindow.engine_reinit">
+<code class="descname">engine_reinit</code><a class="headerlink" href="#obci.control.gui.obci_gui.ObciLauncherWindow.engine_reinit" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_gui.ObciLauncherWindow.engine_server_setup">
+<code class="descname">engine_server_setup</code><span class="sig-paren">(</span><em>server_ip_host=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#ObciLauncherWindow.engine_server_setup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.ObciLauncherWindow.engine_server_setup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_gui.ObciLauncherWindow.exp_destroyed">
+<code class="descname">exp_destroyed</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#ObciLauncherWindow.exp_destroyed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.ObciLauncherWindow.exp_destroyed" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_gui.ObciLauncherWindow.getScenarios">
+<code class="descname">getScenarios</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#ObciLauncherWindow.getScenarios"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.ObciLauncherWindow.getScenarios" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.gui.obci_gui.ObciLauncherWindow.import_scenario">
+<code class="descname">import_scenario</code><a class="headerlink" href="#obci.control.gui.obci_gui.ObciLauncherWindow.import_scenario" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_gui.ObciLauncherWindow.launcher_error">
+<code class="descname">launcher_error</code><span class="sig-paren">(</span><em>error_msg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#ObciLauncherWindow.launcher_error"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.ObciLauncherWindow.launcher_error" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_gui.ObciLauncherWindow.makeComboHandler">
+<code class="descname">makeComboHandler</code><span class="sig-paren">(</span><em>item</em>, <em>column</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#ObciLauncherWindow.makeComboHandler"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.ObciLauncherWindow.makeComboHandler" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.gui.obci_gui.ObciLauncherWindow.remove_user_preset">
+<code class="descname">remove_user_preset</code><a class="headerlink" href="#obci.control.gui.obci_gui.ObciLauncherWindow.remove_user_preset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.gui.obci_gui.ObciLauncherWindow.reset">
+<code class="descname">reset</code><a class="headerlink" href="#obci.control.gui.obci_gui.ObciLauncherWindow.reset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.gui.obci_gui.ObciLauncherWindow.save_as">
+<code class="descname">save_as</code><a class="headerlink" href="#obci.control.gui.obci_gui.ObciLauncherWindow.save_as" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_gui.ObciLauncherWindow.setScenarios">
+<code class="descname">setScenarios</code><span class="sig-paren">(</span><em>scenarios</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#ObciLauncherWindow.setScenarios"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.ObciLauncherWindow.setScenarios" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_gui.ObciLauncherWindow.setupActions">
+<code class="descname">setupActions</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#ObciLauncherWindow.setupActions"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.ObciLauncherWindow.setupActions" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_gui.ObciLauncherWindow.setupMenus">
+<code class="descname">setupMenus</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#ObciLauncherWindow.setupMenus"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.ObciLauncherWindow.setupMenus" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.gui.obci_gui.ObciLauncherWindow.start">
+<code class="descname">start</code><a class="headerlink" href="#obci.control.gui.obci_gui.ObciLauncherWindow.start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.gui.obci_gui.ObciLauncherWindow.stop">
+<code class="descname">stop</code><a class="headerlink" href="#obci.control.gui.obci_gui.ObciLauncherWindow.stop" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_gui.ObciLauncherWindow.stop_logs">
+<code class="descname">stop_logs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#ObciLauncherWindow.stop_logs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.ObciLauncherWindow.stop_logs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_gui.ObciLauncherWindow.update_user_interface">
+<code class="descname">update_user_interface</code><span class="sig-paren">(</span><em>update_msg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#ObciLauncherWindow.update_user_interface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.ObciLauncherWindow.update_user_interface" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.gui.obci_gui.ObciTreeWidgetItem">
+<em class="property">class </em><code class="descclassname">obci.control.gui.obci_gui.</code><code class="descname">ObciTreeWidgetItem</code><span class="sig-paren">(</span><em>header_list</em>, <em>experiment_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#ObciTreeWidgetItem"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.ObciTreeWidgetItem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">PyQt4.QtGui.QTreeWidgetItem</span></code></p>
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.control.gui.obci_gui.SelectAmplifierDialog">
+<em class="property">class </em><code class="descclassname">obci.control.gui.obci_gui.</code><code class="descname">SelectAmplifierDialog</code><span class="sig-paren">(</span><em>parent</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#SelectAmplifierDialog"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.SelectAmplifierDialog" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">PyQt4.QtGui.QDialog</span></code>, <a class="reference internal" href="#obci.control.gui.select_amplifier_dialog.Ui_SelectAmplifier" title="obci.control.gui.select_amplifier_dialog.Ui_SelectAmplifier"><code class="xref py py-class docutils literal"><span class="pre">obci.control.gui.select_amplifier_dialog.Ui_SelectAmplifier</span></code></a></p>
+<dl class="method">
+<dt id="obci.control.gui.obci_gui.SelectAmplifierDialog.accept">
+<code class="descname">accept</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#SelectAmplifierDialog.accept"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.SelectAmplifierDialog.accept" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_gui.SelectAmplifierDialog.refresh">
+<code class="descname">refresh</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#SelectAmplifierDialog.refresh"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.SelectAmplifierDialog.refresh" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_gui.SelectAmplifierDialog.update">
+<code class="descname">update</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#SelectAmplifierDialog.update"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.SelectAmplifierDialog.update" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="obci.control.gui.obci_gui.run_obci_gui">
+<code class="descclassname">obci.control.gui.obci_gui.</code><code class="descname">run_obci_gui</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_gui.html#run_obci_gui"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_gui.run_obci_gui" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.gui.obci_launcher_constants">
+<span id="obci-control-gui-obci-launcher-constants-module"></span><h2>obci.control.gui.obci_launcher_constants module<a class="headerlink" href="#module-obci.control.gui.obci_launcher_constants" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-obci.control.gui.obci_launcher_engine">
+<span id="obci-control-gui-obci-launcher-engine-module"></span><h2>obci.control.gui.obci_launcher_engine module<a class="headerlink" href="#module-obci.control.gui.obci_launcher_engine" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine">
+<em class="property">class </em><code class="descclassname">obci.control.gui.obci_launcher_engine.</code><code class="descname">OBCILauncherEngine</code><span class="sig-paren">(</span><em>obci_client</em>, <em>server_ip=None</em>, <em>presets=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_launcher_engine.html#OBCILauncherEngine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">PyQt4.QtCore.QObject</span></code></p>
+<dl class="method">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.cleanup">
+<code class="descname">cleanup</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_launcher_engine.html#OBCILauncherEngine.cleanup"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.cleanup" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.exp_ids">
+<code class="descname">exp_ids</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_launcher_engine.html#OBCILauncherEngine.exp_ids"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.exp_ids" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.handle_obci_state_change">
+<code class="descname">handle_obci_state_change</code><span class="sig-paren">(</span><em>launcher_message</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_launcher_engine.html#OBCILauncherEngine.handle_obci_state_change"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.handle_obci_state_change" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.import_scenario">
+<code class="descname">import_scenario</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_launcher_engine.html#OBCILauncherEngine.import_scenario"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.import_scenario" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.index_of">
+<code class="descname">index_of</code><span class="sig-paren">(</span><em>exp_uuid</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_launcher_engine.html#OBCILauncherEngine.index_of"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.index_of" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.internal_msg_templates">
+<code class="descname">internal_msg_templates</code><em class="property"> = {'_launcher_engine_msg': {'task': '', 'pub_addr': ''}, '_user_set_scenario': {'uuid': ''}}</em><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.internal_msg_templates" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.list_experiments">
+<code class="descname">list_experiments</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_launcher_engine.html#OBCILauncherEngine.list_experiments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.list_experiments" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.make_exp_obj">
+<code class="descname">make_exp_obj</code><span class="sig-paren">(</span><em>*args</em>, <em>**kwargs</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_launcher_engine.html#OBCILauncherEngine.make_exp_obj"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.make_exp_obj" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.nearby_machines">
+<code class="descname">nearby_machines</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_launcher_engine.html#OBCILauncherEngine.nearby_machines"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.nearby_machines" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.obci_monitor">
+<code class="descname">obci_monitor</code><span class="sig-paren">(</span><em>ctx</em>, <em>pull_addr</em>, <em>server_ip=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_launcher_engine.html#OBCILauncherEngine.obci_monitor"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.obci_monitor" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.obci_state_change">
+<code class="descname">obci_state_change</code><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.obci_state_change" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.prepare_experiments">
+<code class="descname">prepare_experiments</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_launcher_engine.html#OBCILauncherEngine.prepare_experiments"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.prepare_experiments" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.remove_preset">
+<code class="descname">remove_preset</code><span class="sig-paren">(</span><em>experiment</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_launcher_engine.html#OBCILauncherEngine.remove_preset"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.remove_preset" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.reset_launcher">
+<code class="descname">reset_launcher</code><span class="sig-paren">(</span><em>msg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_launcher_engine.html#OBCILauncherEngine.reset_launcher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.reset_launcher" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.rq_error">
+<code class="descname">rq_error</code><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.rq_error" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.save_scenario_as">
+<code class="descname">save_scenario_as</code><span class="sig-paren">(</span><em>filename_and_experiment</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_launcher_engine.html#OBCILauncherEngine.save_scenario_as"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.save_scenario_as" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.saver_msg">
+<code class="descname">saver_msg</code><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.saver_msg" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.start_experiment">
+<code class="descname">start_experiment</code><span class="sig-paren">(</span><em>msg</em>, <em>store_options=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_launcher_engine.html#OBCILauncherEngine.start_experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.start_experiment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.stop_experiment">
+<code class="descname">stop_experiment</code><span class="sig-paren">(</span><em>msg</em>, <em>stop_storing=False</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_launcher_engine.html#OBCILauncherEngine.stop_experiment"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.stop_experiment" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.gui.obci_launcher_engine.OBCILauncherEngine.update_ui">
+<code class="descname">update_ui</code><a class="headerlink" href="#obci.control.gui.obci_launcher_engine.OBCILauncherEngine.update_ui" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.gui.obci_log_engine">
+<span id="obci-control-gui-obci-log-engine-module"></span><h2>obci.control.gui.obci_log_engine module<a class="headerlink" href="#module-obci.control.gui.obci_log_engine" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.control.gui.obci_log_engine.LogEngine">
+<em class="property">class </em><code class="descclassname">obci.control.gui.obci_log_engine.</code><code class="descname">LogEngine</code><span class="sig-paren">(</span><em>tab_widget</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_engine.html#LogEngine"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_engine.LogEngine" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">PyQt4.QtCore.QObject</span></code></p>
+<dl class="method">
+<dt id="obci.control.gui.obci_log_engine.LogEngine.experiment_started">
+<code class="descname">experiment_started</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_engine.html#LogEngine.experiment_started"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_engine.LogEngine.experiment_started" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_engine.LogEngine.experiment_stopped">
+<code class="descname">experiment_stopped</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_engine.html#LogEngine.experiment_stopped"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_engine.LogEngine.experiment_stopped" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_engine.LogEngine.on_experiment_start">
+<code class="descname">on_experiment_start</code><span class="sig-paren">(</span><em>exp</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_engine.html#LogEngine.on_experiment_start"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_engine.LogEngine.on_experiment_start" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_engine.LogEngine.show">
+<code class="descname">show</code><span class="sig-paren">(</span><em>experiment</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_engine.html#LogEngine.show"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_engine.LogEngine.show" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called from obci.gui when scenario`s moules panel is being refreshed,
+eg. when user clicks some new scenario or gui is autmatically being refreshed</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_engine.LogEngine.show_log">
+<code class="descname">show_log</code><span class="sig-paren">(</span><em>peer_id</em>, <em>scenario_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_engine.html#LogEngine.show_log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_engine.LogEngine.show_log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called from gui when user requests peer_id module`s
+log. Lets create and show it...</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_engine.LogEngine.tab_changed">
+<code class="descname">tab_changed</code><span class="sig-paren">(</span><em>tab_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_engine.html#LogEngine.tab_changed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_engine.LogEngine.tab_changed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called on tab_changed event from GUI</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_engine.LogEngine.tab_closed">
+<code class="descname">tab_closed</code><span class="sig-paren">(</span><em>tab_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_engine.html#LogEngine.tab_closed"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_engine.LogEngine.tab_closed" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called on tab_closed event from GUI</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_engine.LogEngine.update_log">
+<code class="descname">update_log</code><span class="sig-paren">(</span><em>log</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_engine.html#LogEngine.update_log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_engine.LogEngine.update_log" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_engine.LogEngine.update_user_interface">
+<code class="descname">update_user_interface</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_engine.html#LogEngine.update_user_interface"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_engine.LogEngine.update_user_interface" title="Permalink to this definition">¶</a></dt>
+<dd><p>Called from gui on refresh_gui request.
+Update tabs status in case module`s status
+has changed.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.gui.obci_log_model">
+<span id="obci-control-gui-obci-log-model-module"></span><h2>obci.control.gui.obci_log_model module<a class="headerlink" href="#module-obci.control.gui.obci_log_model" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.control.gui.obci_log_model.LogModel">
+<em class="property">class </em><code class="descclassname">obci.control.gui.obci_log_model.</code><code class="descname">LogModel</code><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model.html#LogModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model.LogModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">PyQt4.QtCore.QObject</span></code></p>
+<dl class="method">
+<dt id="obci.control.gui.obci_log_model.LogModel.add_peer">
+<code class="descname">add_peer</code><span class="sig-paren">(</span><em>peer_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model.html#LogModel.add_peer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model.LogModel.add_peer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_model.LogModel.connect_running">
+<code class="descname">connect_running</code><span class="sig-paren">(</span><em>exp</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model.html#LogModel.connect_running"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model.LogModel.connect_running" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_model.LogModel.emit_logs">
+<code class="descname">emit_logs</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model.html#LogModel.emit_logs"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model.LogModel.emit_logs" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_model.LogModel.get_peer_ind">
+<code class="descname">get_peer_ind</code><span class="sig-paren">(</span><em>peer_id</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model.html#LogModel.get_peer_ind"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model.LogModel.get_peer_ind" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_model.LogModel.get_peers">
+<code class="descname">get_peers</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model.html#LogModel.get_peers"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model.LogModel.get_peers" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_model.LogModel.is_running">
+<code class="descname">is_running</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model.html#LogModel.is_running"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model.LogModel.is_running" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_model.LogModel.remove_peer">
+<code class="descname">remove_peer</code><span class="sig-paren">(</span><em>ind</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model.html#LogModel.remove_peer"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model.LogModel.remove_peer" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_model.LogModel.run">
+<code class="descname">run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model.html#LogModel.run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model.LogModel.run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_model.LogModel.set_emmiting">
+<code class="descname">set_emmiting</code><span class="sig-paren">(</span><em>flag</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model.html#LogModel.set_emmiting"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model.LogModel.set_emmiting" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_model.LogModel.start_running">
+<code class="descname">start_running</code><span class="sig-paren">(</span><em>exp</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model.html#LogModel.start_running"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model.LogModel.start_running" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_model.LogModel.stop_running">
+<code class="descname">stop_running</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model.html#LogModel.stop_running"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model.LogModel.stop_running" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="obci.control.gui.obci_log_model.LogModel.update_log">
+<code class="descname">update_log</code><a class="headerlink" href="#obci.control.gui.obci_log_model.LogModel.update_log" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.gui.obci_log_model_dummy">
+<span id="obci-control-gui-obci-log-model-dummy-module"></span><h2>obci.control.gui.obci_log_model_dummy module<a class="headerlink" href="#module-obci.control.gui.obci_log_model_dummy" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.control.gui.obci_log_model_dummy.DummyLogModel">
+<em class="property">class </em><code class="descclassname">obci.control.gui.obci_log_model_dummy.</code><code class="descname">DummyLogModel</code><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model_dummy.html#DummyLogModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model_dummy.DummyLogModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.gui.obci_log_model.LogModel" title="obci.control.gui.obci_log_model.LogModel"><code class="xref py py-class docutils literal"><span class="pre">obci.control.gui.obci_log_model.LogModel</span></code></a></p>
+<dl class="method">
+<dt id="obci.control.gui.obci_log_model_dummy.DummyLogModel.next_log">
+<code class="descname">next_log</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model_dummy.html#DummyLogModel.next_log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model_dummy.DummyLogModel.next_log" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_model_dummy.DummyLogModel.post_run">
+<code class="descname">post_run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model_dummy.html#DummyLogModel.post_run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model_dummy.DummyLogModel.post_run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.gui.obci_log_model_real">
+<span id="obci-control-gui-obci-log-model-real-module"></span><h2>obci.control.gui.obci_log_model_real module<a class="headerlink" href="#module-obci.control.gui.obci_log_model_real" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.control.gui.obci_log_model_real.RealLogModel">
+<em class="property">class </em><code class="descclassname">obci.control.gui.obci_log_model_real.</code><code class="descname">RealLogModel</code><span class="sig-paren">(</span><em>srv_client</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model_real.html#RealLogModel"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model_real.RealLogModel" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.control.gui.obci_log_model.LogModel" title="obci.control.gui.obci_log_model.LogModel"><code class="xref py py-class docutils literal"><span class="pre">obci.control.gui.obci_log_model.LogModel</span></code></a></p>
+<dl class="method">
+<dt id="obci.control.gui.obci_log_model_real.RealLogModel.connect_running">
+<code class="descname">connect_running</code><span class="sig-paren">(</span><em>exp</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model_real.html#RealLogModel.connect_running"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model_real.RealLogModel.connect_running" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_model_real.RealLogModel.next_log">
+<code class="descname">next_log</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model_real.html#RealLogModel.next_log"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model_real.RealLogModel.next_log" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_model_real.RealLogModel.post_run">
+<code class="descname">post_run</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model_real.html#RealLogModel.post_run"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model_real.RealLogModel.post_run" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_model_real.RealLogModel.start_running">
+<code class="descname">start_running</code><span class="sig-paren">(</span><em>exp</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model_real.html#RealLogModel.start_running"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model_real.RealLogModel.start_running" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_log_model_real.RealLogModel.stop_running">
+<code class="descname">stop_running</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_model_real.html#RealLogModel.stop_running"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_model_real.RealLogModel.stop_running" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.gui.obci_log_peer">
+<span id="obci-control-gui-obci-log-peer-module"></span><h2>obci.control.gui.obci_log_peer module<a class="headerlink" href="#module-obci.control.gui.obci_log_peer" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.control.gui.obci_log_peer.OBCILogCollector">
+<em class="property">class </em><code class="descclassname">obci.control.gui.obci_log_peer.</code><code class="descname">OBCILogCollector</code><span class="sig-paren">(</span><em>addresses</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_peer.html#OBCILogCollector"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_peer.OBCILogCollector" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="obci.control.peer.html#obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer" title="obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer"><code class="xref py py-class docutils literal"><span class="pre">obci.control.peer.configured_multiplexer_server.ConfiguredMultiplexerServer</span></code></a></p>
+<dl class="method">
+<dt id="obci.control.gui.obci_log_peer.OBCILogCollector.handle_message">
+<code class="descname">handle_message</code><span class="sig-paren">(</span><em>mxmsg</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_log_peer.html#OBCILogCollector.handle_message"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_log_peer.OBCILogCollector.handle_message" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.gui.obci_window">
+<span id="obci-control-gui-obci-window-module"></span><h2>obci.control.gui.obci_window module<a class="headerlink" href="#module-obci.control.gui.obci_window" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.control.gui.obci_window.Ui_OBCILauncher">
+<em class="property">class </em><code class="descclassname">obci.control.gui.obci_window.</code><code class="descname">Ui_OBCILauncher</code><a class="reference internal" href="../_modules/obci/control/gui/obci_window.html#Ui_OBCILauncher"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_window.Ui_OBCILauncher" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="obci.control.gui.obci_window.Ui_OBCILauncher.retranslateUi">
+<code class="descname">retranslateUi</code><span class="sig-paren">(</span><em>OBCILauncher</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_window.html#Ui_OBCILauncher.retranslateUi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_window.Ui_OBCILauncher.retranslateUi" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.obci_window.Ui_OBCILauncher.setupUi">
+<code class="descname">setupUi</code><span class="sig-paren">(</span><em>OBCILauncher</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/obci_window.html#Ui_OBCILauncher.setupUi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.obci_window.Ui_OBCILauncher.setupUi" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.gui.resources_rc">
+<span id="obci-control-gui-resources-rc-module"></span><h2>obci.control.gui.resources_rc module<a class="headerlink" href="#module-obci.control.gui.resources_rc" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="obci.control.gui.resources_rc.qCleanupResources">
+<code class="descclassname">obci.control.gui.resources_rc.</code><code class="descname">qCleanupResources</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/resources_rc.html#qCleanupResources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.resources_rc.qCleanupResources" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="function">
+<dt id="obci.control.gui.resources_rc.qInitResources">
+<code class="descclassname">obci.control.gui.resources_rc.</code><code class="descname">qInitResources</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/resources_rc.html#qInitResources"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.resources_rc.qInitResources" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.gui.select_amplifier_dialog">
+<span id="obci-control-gui-select-amplifier-dialog-module"></span><h2>obci.control.gui.select_amplifier_dialog module<a class="headerlink" href="#module-obci.control.gui.select_amplifier_dialog" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.control.gui.select_amplifier_dialog.Ui_SelectAmplifier">
+<em class="property">class </em><code class="descclassname">obci.control.gui.select_amplifier_dialog.</code><code class="descname">Ui_SelectAmplifier</code><a class="reference internal" href="../_modules/obci/control/gui/select_amplifier_dialog.html#Ui_SelectAmplifier"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.select_amplifier_dialog.Ui_SelectAmplifier" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="obci.control.gui.select_amplifier_dialog.Ui_SelectAmplifier.retranslateUi">
+<code class="descname">retranslateUi</code><span class="sig-paren">(</span><em>SelectAmplifier</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/select_amplifier_dialog.html#Ui_SelectAmplifier.retranslateUi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.select_amplifier_dialog.Ui_SelectAmplifier.retranslateUi" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.control.gui.select_amplifier_dialog.Ui_SelectAmplifier.setupUi">
+<code class="descname">setupUi</code><span class="sig-paren">(</span><em>SelectAmplifier</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/control/gui/select_amplifier_dialog.html#Ui_SelectAmplifier.setupUi"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.control.gui.select_amplifier_dialog.Ui_SelectAmplifier.setupUi" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.control.gui">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-obci.control.gui" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">obci</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="obci.html">obci package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="obci.acquisition.html">obci.acquisition package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.analysis.html">obci.analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.benchmark.html">obci.benchmark package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.cmd.html">obci.cmd package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.configs.html">obci.configs package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="obci.control.html">obci.control package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.core.html">obci.core package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.drivers.html">obci.drivers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.gui.html">obci.gui package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.mx_legacy.html">obci.mx_legacy package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.peers.html">obci.peers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.scenarios.html">obci.scenarios package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.utils.html">obci.utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">obci</a><ul>
+  <li><a href="obci.html">obci package</a><ul>
+  <li><a href="obci.control.html">obci.control package</a><ul>
+      <li>Previous: <a href="obci.control.common.html" title="previous chapter">obci.control.common package</a></li>
+      <li>Next: <a href="obci.control.launcher.html" title="next chapter">obci.control.launcher package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/apidoc/obci.control.gui.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

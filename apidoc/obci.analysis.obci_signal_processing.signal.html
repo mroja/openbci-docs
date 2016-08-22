@@ -1,0 +1,693 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.analysis.obci_signal_processing.signal package &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../index.html" />
+    <link rel="up" title="obci.analysis.obci_signal_processing package" href="obci.analysis.obci_signal_processing.html" />
+    <link rel="next" title="obci.analysis.obci_signal_processing.tags package" href="obci.analysis.obci_signal_processing.tags.html" />
+    <link rel="prev" title="obci.analysis.obci_signal_processing package" href="obci.analysis.obci_signal_processing.html" />
+   
+  <link rel="stylesheet" href="../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="obci-analysis-obci-signal-processing-signal-package">
+<h1>obci.analysis.obci_signal_processing.signal package<a class="headerlink" href="#obci-analysis-obci-signal-processing-signal-package" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.signal.data_asci_write_proxy">
+<span id="obci-analysis-obci-signal-processing-signal-data-asci-write-proxy-module"></span><h2>obci.analysis.obci_signal_processing.signal.data_asci_write_proxy module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.signal.data_asci_write_proxy" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.signal.data_asci_write_proxy.DataAsciWriteProxy">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.data_asci_write_proxy.</code><code class="descname">DataAsciWriteProxy</code><span class="sig-paren">(</span><em>p_file_path</em>, <em>p_unpack_later=False</em>, <em>p_append_ts=False</em>, <em>p_sample_type='FLOAT'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_asci_write_proxy.html#DataAsciWriteProxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_asci_write_proxy.DataAsciWriteProxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy" title="obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy"><code class="xref py py-class docutils literal"><span class="pre">obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy</span></code></a></p>
+<p>Open p_file_name file in p_dir_path directory.</p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.data_asci_write_proxy.DataAsciWriteProxy.data_received">
+<code class="descname">data_received</code><span class="sig-paren">(</span><em>p_data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_asci_write_proxy.html#DataAsciWriteProxy.data_received"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_asci_write_proxy.DataAsciWriteProxy.data_received" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.signal.data_buffered_write_proxy">
+<span id="obci-analysis-obci-signal-processing-signal-data-buffered-write-proxy-module"></span><h2>obci.analysis.obci_signal_processing.signal.data_buffered_write_proxy module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.signal.data_buffered_write_proxy" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.signal.data_buffered_write_proxy.DataBufferedWriteProxy">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.data_buffered_write_proxy.</code><code class="descname">DataBufferedWriteProxy</code><span class="sig-paren">(</span><em>p_file_path</em>, <em>p_unpack_later=False</em>, <em>p_append_ts=False</em>, <em>p_sample_type='FLOAT'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_buffered_write_proxy.html#DataBufferedWriteProxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_buffered_write_proxy.DataBufferedWriteProxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy" title="obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy"><code class="xref py py-class docutils literal"><span class="pre">obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy</span></code></a></p>
+<p>Open p_file_name file in p_dir_path directory.</p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.data_buffered_write_proxy.DataBufferedWriteProxy.data_received">
+<code class="descname">data_received</code><span class="sig-paren">(</span><em>p_data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_buffered_write_proxy.html#DataBufferedWriteProxy.data_received"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_buffered_write_proxy.DataBufferedWriteProxy.data_received" title="Permalink to this definition">¶</a></dt>
+<dd><p>p_data must be protobuf SampleVector message, but serialized to string.
+Data is stored in temp buffer, once a while the buffer is flushed to a file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.data_buffered_write_proxy.DataBufferedWriteProxy.finish_saving">
+<code class="descname">finish_saving</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_buffered_write_proxy.html#DataBufferedWriteProxy.finish_saving"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_buffered_write_proxy.DataBufferedWriteProxy.finish_saving" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the file, return a tuple -
+file`s name and number of samples.</p>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.signal.data_generic_write_proxy">
+<span id="obci-analysis-obci-signal-processing-signal-data-generic-write-proxy-module"></span><h2>obci.analysis.obci_signal_processing.signal.data_generic_write_proxy module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.signal.data_generic_write_proxy" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.</code><code class="descname">DataGenericWriteProxy</code><span class="sig-paren">(</span><em>p_file_path</em>, <em>p_unpack_later=False</em>, <em>p_append_ts=False</em>, <em>p_sample_type='FLOAT'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_generic_write_proxy.html#DataGenericWriteProxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>A class representing data file.
+It should be an abstraction for saving raw data into a file.
+Decision whether save signal to one or few separate files should be made here
+and should be transparent regarding below interface - the interface should remain untouched.
+Public interface:
+- finish_saving() - closes data file and return its path,
+- data_received(p_data_sample) - gets and saves next sample of signal</p>
+<p>Open p_file_name file in p_dir_path directory.</p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy.data_received">
+<code class="descname">data_received</code><span class="sig-paren">(</span><em>p_data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_generic_write_proxy.html#DataGenericWriteProxy.data_received"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy.data_received" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy.finish_saving">
+<code class="descname">finish_saving</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_generic_write_proxy.html#DataGenericWriteProxy.finish_saving"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy.finish_saving" title="Permalink to this definition">¶</a></dt>
+<dd><p>Close the file, return a tuple -
+file`s name and number of samples.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy.set_data_len">
+<code class="descname">set_data_len</code><span class="sig-paren">(</span><em>ln</em>, <em>sm</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_generic_write_proxy.html#DataGenericWriteProxy.set_data_len"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy.set_data_len" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set length of one unit of protobuf data
+stored in temporary file. It`ll be useful
+in finish_saving() while extracting data from the file.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy.set_first_sample_timestamp">
+<code class="descname">set_first_sample_timestamp</code><span class="sig-paren">(</span><em>timestamp</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_generic_write_proxy.html#DataGenericWriteProxy.set_first_sample_timestamp"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy.set_first_sample_timestamp" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.signal.data_raw_write_proxy">
+<span id="obci-analysis-obci-signal-processing-signal-data-raw-write-proxy-module"></span><h2>obci.analysis.obci_signal_processing.signal.data_raw_write_proxy module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.signal.data_raw_write_proxy" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.signal.data_raw_write_proxy.DataRawWriteProxy">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.data_raw_write_proxy.</code><code class="descname">DataRawWriteProxy</code><span class="sig-paren">(</span><em>p_file_path</em>, <em>p_unpack_later=False</em>, <em>p_append_ts=False</em>, <em>p_sample_type='FLOAT'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_raw_write_proxy.html#DataRawWriteProxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_raw_write_proxy.DataRawWriteProxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy" title="obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy"><code class="xref py py-class docutils literal"><span class="pre">obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy</span></code></a></p>
+<p>Open p_file_name file in p_dir_path directory.</p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.data_raw_write_proxy.DataRawWriteProxy.data_received">
+<code class="descname">data_received</code><span class="sig-paren">(</span><em>p_data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_raw_write_proxy.html#DataRawWriteProxy.data_received"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_raw_write_proxy.DataRawWriteProxy.data_received" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.signal.data_read_proxy">
+<span id="obci-analysis-obci-signal-processing-signal-data-read-proxy-module"></span><h2>obci.analysis.obci_signal_processing.signal.data_read_proxy module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.signal.data_read_proxy" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.data_read_proxy.</code><code class="descname">DataReadProxy</code><span class="sig-paren">(</span><em>p_file_path</em>, <em>sample_type='FLOAT'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_read_proxy.html#DataReadProxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy.finish_reading">
+<code class="descname">finish_reading</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_read_proxy.html#DataReadProxy.finish_reading"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy.finish_reading" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy.get_all_values">
+<code class="descname">get_all_values</code><span class="sig-paren">(</span><em>p_channels_num=1</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_read_proxy.html#DataReadProxy.get_all_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy.get_all_values" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy.get_next_value">
+<code class="descname">get_next_value</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_read_proxy.html#DataReadProxy.get_next_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy.get_next_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return next value from data file (as python float).
+Close data file and raise NoNextValue exception if eof.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy.get_next_values">
+<code class="descname">get_next_values</code><span class="sig-paren">(</span><em>p_num</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_read_proxy.html#DataReadProxy.get_next_values"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy.get_next_values" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return next p_num values from data file (as numpy array).
+Close data file and raise NoNextValue exception if eof.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy.goto_value">
+<code class="descname">goto_value</code><span class="sig-paren">(</span><em>p_value_no</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_read_proxy.html#DataReadProxy.goto_value"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy.goto_value" title="Permalink to this definition">¶</a></dt>
+<dd><p>Set the engine, so that nex &#8216;get_next_value&#8217; call will return
+value number p_value_no+1.
+Eg. if p_value_no == 0, calling get_next_value will return first value.
+if p_value_no == 11, calling get_next_value will return 12-th value.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy.start_reading">
+<code class="descname">start_reading</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_read_proxy.html#DataReadProxy.start_reading"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy.start_reading" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.signal.data_simple_write_proxy">
+<span id="obci-analysis-obci-signal-processing-signal-data-simple-write-proxy-module"></span><h2>obci.analysis.obci_signal_processing.signal.data_simple_write_proxy module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.signal.data_simple_write_proxy" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.signal.data_simple_write_proxy.DataSimpleWriteProxy">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.data_simple_write_proxy.</code><code class="descname">DataSimpleWriteProxy</code><span class="sig-paren">(</span><em>p_file_path</em>, <em>p_unpack_later=False</em>, <em>p_append_ts=False</em>, <em>p_sample_type='FLOAT'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_simple_write_proxy.html#DataSimpleWriteProxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_simple_write_proxy.DataSimpleWriteProxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy" title="obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy"><code class="xref py py-class docutils literal"><span class="pre">obci.analysis.obci_signal_processing.signal.data_generic_write_proxy.DataGenericWriteProxy</span></code></a></p>
+<p>Open p_file_name file in p_dir_path directory.</p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.data_simple_write_proxy.DataSimpleWriteProxy.data_received">
+<code class="descname">data_received</code><span class="sig-paren">(</span><em>p_data</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_simple_write_proxy.html#DataSimpleWriteProxy.data_received"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_simple_write_proxy.DataSimpleWriteProxy.data_received" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.signal.data_write_proxy">
+<span id="obci-analysis-obci-signal-processing-signal-data-write-proxy-module"></span><h2>obci.analysis.obci_signal_processing.signal.data_write_proxy module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.signal.data_write_proxy" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.signal.data_write_proxy.get_proxy">
+<code class="descclassname">obci.analysis.obci_signal_processing.signal.data_write_proxy.</code><code class="descname">get_proxy</code><span class="sig-paren">(</span><em>file_path</em>, <em>append_ts=False</em>, <em>use_tmp_file=False</em>, <em>use_own_buffer=False</em>, <em>format='FLOAT'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/data_write_proxy.html#get_proxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.data_write_proxy.get_proxy" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.signal.generic_info_file_proxy">
+<span id="obci-analysis-obci-signal-processing-signal-generic-info-file-proxy-module"></span><h2>obci.analysis.obci_signal_processing.signal.generic_info_file_proxy module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.signal.generic_info_file_proxy" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileReadProxy">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.</code><code class="descname">GenericInfoFileReadProxy</code><span class="sig-paren">(</span><em>p_file_path</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/generic_info_file_proxy.html#GenericInfoFileReadProxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileReadProxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Info file reader.</p>
+<p>...</p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileReadProxy.get_param">
+<code class="descname">get_param</code><span class="sig-paren">(</span><em>p_param_name</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/generic_info_file_proxy.html#GenericInfoFileReadProxy.get_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileReadProxy.get_param" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return parameter value for p_param_name.
+Raise NoParameter exception if p_param_name
+parameters was not found.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileReadProxy.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/generic_info_file_proxy.html#GenericInfoFileReadProxy.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileReadProxy.get_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileReadProxy.start_reading">
+<code class="descname">start_reading</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/generic_info_file_proxy.html#GenericInfoFileReadProxy.start_reading"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileReadProxy.start_reading" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load xml to memory.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileWriteProxy">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.</code><code class="descname">GenericInfoFileWriteProxy</code><span class="sig-paren">(</span><em>p_file_path</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/generic_info_file_proxy.html#GenericInfoFileWriteProxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileWriteProxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>A class that is responsible for implementing logics of openbci
+signal parameters storage in info file.
+The file is supposed to be compatible with signalml2.0. By now it isn`t:)
+The class should be separated from all multiplexer-stuff logics.
+InfoFileProxy represents a process of saving one signal parameters.
+Init method gets a dictionary of signal params in format understadable by InfoFileProxy.
+See __init__ metod for more details.
+Wanna extend info file with a new param? See __init__ method for more details.
+Public interface:
+- finish_saving()</p>
+<p>Init xml structure.</p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileWriteProxy.finish_saving">
+<code class="descname">finish_saving</code><span class="sig-paren">(</span><em>p_signal_params={}</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/generic_info_file_proxy.html#GenericInfoFileWriteProxy.finish_saving"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileWriteProxy.finish_saving" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write xml_doc to the file, return the file`s path.
+Arguments:
+- p_file_name - a name of to-be-created info file
+- p_dir_path - a dir-path where p_file_name is to be created
+- p_signal_params - a dictionary of all signal parameters that should be stored in info file.</p>
+<p>What is the logics flow of analysing parameters?
+p_signal_params has keys representing signal parameters identificators.
+self._create_tags_controls creates a dictionary with the same keys, values are functions being &#8216;able&#8217;
+to understand particular param values.
+Method self._process_signal_params, for every key in p_signal_params fires corresponding function
+from self._tags_control,
+giving as argument value from p_signal_params...</p>
+<p>So, how can I implement a new parameter usage? Let`s say that the parameter is signal`s colour.
+Let`s call it &#8216;color&#8217;, values are strings.
+p_signal_params should contain a pair &#8216;color&#8217; -&gt; &#8216;color_value&#8217;.
+1. Create function self._set_color(self, p_color)
+2. Add pair &#8216;color&#8217; -&gt; self._set_color to self._tags_control in self._create_tags_control()
+3. Implement the function so that it creates xml element for color parameter and appends it to self._xml_root.
+For simple params (with one value) you can fire self._set_simple_tag(&#8216;color&#8217;, &#8216;color_value&#8217;).</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileWriteProxy.set_attributes">
+<code class="descname">set_attributes</code><span class="sig-paren">(</span><em>p_attrs_dict</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/generic_info_file_proxy.html#GenericInfoFileWriteProxy.set_attributes"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileWriteProxy.set_attributes" title="Permalink to this definition">¶</a></dt>
+<dd><p>For every pair key-&gt; value in p_attrs_dict create tag.
+The type of tag depends on self._tags_control.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.OpenBciDocument">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.</code><code class="descname">OpenBciDocument</code><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/generic_info_file_proxy.html#OpenBciDocument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.OpenBciDocument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal"><span class="pre">xml.dom.minidom.Document</span></code>, <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<p>Abstract class for future developement, used in proxies.</p>
+</dd></dl>
+
+<dl class="data">
+<dt id="obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.TAGS_DEFINITIONS">
+<code class="descclassname">obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.</code><code class="descname">TAGS_DEFINITIONS</code><em class="property"> = {'number_of_samples': ('simple', ['sampleCount']), 'page_size': ('simple', ['pageSize']), 'calibration': ('simple', ['calibration']), 'number_of_channels': ('simple', ['channelCount']), 'channels_names': ('list', ['channelLabels', 'label']), 'file': ('simple', ['sourceFileName']), 'channels_numbers': ('list', ['channelNumbers', 'number']), 'blocks_per_page': ('simple', ['blocksPerPage']), 'channels_gains': ('list', ['calibrationGain', 'calibrationParam']), 'export_date': ('simple', ['exportDate']), 'first_sample_timestamp': ('simple', ['firstSampleTimestamp']), 'sampling_frequency': ('simple', ['samplingFrequency']), 'byte_order': ('simple', ['byteOrder']), 'sample_type': ('simple', ['sampleType']), 'channels_offsets': ('list', ['calibrationOffset', 'calibrationParam']), 'export_file_name': ('simple', ['exportFileName']), 'file_format': ('list', ['sourceFileFormat', 'rawSignalInfo'])}</em><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.TAGS_DEFINITIONS" title="Permalink to this definition">¶</a></dt>
+<dd><p><a href="#id1"><span class="problematic" id="id2">**</span></a>For every tag we have entry in format* &#8211;* &#8211;</p>
+<dl class="docutils">
+<dt>&#8216;tag_universal_name&#8217;: (tag_type(&#8216;list&#8217; or &#8216;simple&#8217;),</dt>
+<dd><dl class="first docutils">
+<dt>list of tag translations (one element for &#8216;simple&#8217;</dt>
+<dd>two elements for &#8216;list&#8217;)</dd>
+</dl>
+<p class="last">)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.signal.info_file_proxy">
+<span id="obci-analysis-obci-signal-processing-signal-info-file-proxy-module"></span><h2>obci.analysis.obci_signal_processing.signal.info_file_proxy module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.signal.info_file_proxy" title="Permalink to this headline">¶</a></h2>
+<p>Module implements specific info file manifest for svarog.</p>
+<p>What is different from info_file_proxy:</p>
+<ul class="simple">
+<li>root name (here we haver rs:rawSignal and xmlns)</li>
+<li>tags namespace (here every tag has rs: previx)</li>
+<li>tags ordering (svarog requires specific tags ordering)</li>
+<li>additional tags (svarog requires only and only tags described in
+SvarogFileWriteProxy.ORDER)</li>
+</ul>
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.signal.info_file_proxy.InfoDocument">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.info_file_proxy.</code><code class="descname">InfoDocument</code><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/info_file_proxy.html#InfoDocument"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.info_file_proxy.InfoDocument" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.OpenBciDocument" title="obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.OpenBciDocument"><code class="xref py py-class docutils literal"><span class="pre">obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.OpenBciDocument</span></code></a></p>
+<p>Subclass xml_document, so that we can add rs: prefix before every
+tag name.</p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.info_file_proxy.InfoDocument.createElement">
+<code class="descname">createElement</code><span class="sig-paren">(</span><em>tagName</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/info_file_proxy.html#InfoDocument.createElement"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.info_file_proxy.InfoDocument.createElement" title="Permalink to this definition">¶</a></dt>
+<dd><p>Redefine the method so that every added tag has &#8216;rs:&#8217; prefix.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="obci.analysis.obci_signal_processing.signal.info_file_proxy.InfoDocument.prefix">
+<code class="descname">prefix</code><em class="property"> = 'rs:'</em><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.info_file_proxy.InfoDocument.prefix" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.signal.info_file_proxy.InfoFileReadProxy">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.info_file_proxy.</code><code class="descname">InfoFileReadProxy</code><span class="sig-paren">(</span><em>p_file_path</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/info_file_proxy.html#InfoFileReadProxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.info_file_proxy.InfoFileReadProxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileReadProxy" title="obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileReadProxy"><code class="xref py py-class docutils literal"><span class="pre">obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileReadProxy</span></code></a></p>
+<p>Sublassed read proxy - every <cite>get_</cite> method need to be subclassed
+to add rs: prefix before tag name.</p>
+<p>...</p>
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.signal.info_file_proxy.InfoFileWriteProxy">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.info_file_proxy.</code><code class="descname">InfoFileWriteProxy</code><span class="sig-paren">(</span><em>p_file_path</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/info_file_proxy.html#InfoFileWriteProxy"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.info_file_proxy.InfoFileWriteProxy" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileWriteProxy" title="obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileWriteProxy"><code class="xref py py-class docutils literal"><span class="pre">obci.analysis.obci_signal_processing.signal.generic_info_file_proxy.GenericInfoFileWriteProxy</span></code></a></p>
+<p>Subclass write proxy - ensure that every element has rs: prefix,
+ensure tags ordering, ensure tags required by svarog.</p>
+<p>Init xml structure.</p>
+<dl class="attribute">
+<dt id="obci.analysis.obci_signal_processing.signal.info_file_proxy.InfoFileWriteProxy.ORDER">
+<code class="descname">ORDER</code><em class="property"> = ['rs:exportFileName', 'rs:sourceFileName', 'rs:sourceFileFormat', 'rs:samplingFrequency', 'rs:channelCount', 'rs:sampleCount', 'rs:calibration', 'rs:sampleType', 'rs:byteOrder', 'rs:pageSize', 'rs:blocksPerPage', 'rs:channelLabels', 'rs:calibrationGain', 'rs:calibrationOffset', 'rs:firstSampleTimestamp']</em><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.info_file_proxy.InfoFileWriteProxy.ORDER" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.signal.read_data_source">
+<span id="obci-analysis-obci-signal-processing-signal-read-data-source-module"></span><h2>obci.analysis.obci_signal_processing.signal.read_data_source module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.signal.read_data_source" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.signal.read_data_source.DataSource">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.read_data_source.</code><code class="descname">DataSource</code><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_data_source.html#DataSource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_data_source.DataSource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_data_source.DataSource.get_samples">
+<code class="descname">get_samples</code><span class="sig-paren">(</span><em>p_from=None</em>, <em>p_len=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_data_source.html#DataSource.get_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_data_source.DataSource.get_samples" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_data_source.DataSource.iter_samples">
+<code class="descname">iter_samples</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_data_source.html#DataSource.iter_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_data_source.DataSource.iter_samples" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.signal.read_data_source.FileDataSource">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.read_data_source.</code><code class="descname">FileDataSource</code><span class="sig-paren">(</span><em>p_file</em>, <em>p_num_of_channels</em>, <em>p_sample_type='FLOAT'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_data_source.html#FileDataSource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_data_source.FileDataSource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.analysis.obci_signal_processing.signal.read_data_source.DataSource" title="obci.analysis.obci_signal_processing.signal.read_data_source.DataSource"><code class="xref py py-class docutils literal"><span class="pre">obci.analysis.obci_signal_processing.signal.read_data_source.DataSource</span></code></a></p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_data_source.FileDataSource.get_samples">
+<code class="descname">get_samples</code><span class="sig-paren">(</span><em>p_from=None</em>, <em>p_len=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_data_source.html#FileDataSource.get_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_data_source.FileDataSource.get_samples" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_data_source.FileDataSource.iter_samples">
+<code class="descname">iter_samples</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_data_source.html#FileDataSource.iter_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_data_source.FileDataSource.iter_samples" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_data_source.FileDataSource.set_samples">
+<code class="descname">set_samples</code><span class="sig-paren">(</span><em>samples</em>, <em>copy</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_data_source.html#FileDataSource.set_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_data_source.FileDataSource.set_samples" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.signal.read_data_source.MemoryDataSource">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.read_data_source.</code><code class="descname">MemoryDataSource</code><span class="sig-paren">(</span><em>p_data=None</em>, <em>p_copy=True</em>, <em>p_sample_source='FLOAT'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_data_source.html#MemoryDataSource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_data_source.MemoryDataSource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.analysis.obci_signal_processing.signal.read_data_source.DataSource" title="obci.analysis.obci_signal_processing.signal.read_data_source.DataSource"><code class="xref py py-class docutils literal"><span class="pre">obci.analysis.obci_signal_processing.signal.read_data_source.DataSource</span></code></a></p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_data_source.MemoryDataSource.get_samples">
+<code class="descname">get_samples</code><span class="sig-paren">(</span><em>p_from=None</em>, <em>p_len=None</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_data_source.html#MemoryDataSource.get_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_data_source.MemoryDataSource.get_samples" title="Permalink to this definition">¶</a></dt>
+<dd><p>Always success. If p_from or p_len is somehow out of range
+return an empty array of samples</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_data_source.MemoryDataSource.iter_samples">
+<code class="descname">iter_samples</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_data_source.html#MemoryDataSource.iter_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_data_source.MemoryDataSource.iter_samples" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_data_source.MemoryDataSource.set_sample">
+<code class="descname">set_sample</code><span class="sig-paren">(</span><em>p_sample_index</em>, <em>p_sample</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_data_source.html#MemoryDataSource.set_sample"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_data_source.MemoryDataSource.set_sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Throws:
+- IndexError if p_sample_index is out of range
+- ValueError if len(p_sample) doesn`t fit number_of_channels</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_data_source.MemoryDataSource.set_samples">
+<code class="descname">set_samples</code><span class="sig-paren">(</span><em>p_data</em>, <em>p_copy=True</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_data_source.html#MemoryDataSource.set_samples"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_data_source.MemoryDataSource.set_samples" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.signal.read_info_source">
+<span id="obci-analysis-obci-signal-processing-signal-read-info-source-module"></span><h2>obci.analysis.obci_signal_processing.signal.read_info_source module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.signal.read_info_source" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.FileInfoSource">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.read_info_source.</code><code class="descname">FileInfoSource</code><span class="sig-paren">(</span><em>p_file</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#FileInfoSource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.FileInfoSource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource" title="obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource"><code class="xref py py-class docutils literal"><span class="pre">obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource</span></code></a></p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.FileInfoSource.get_param">
+<code class="descname">get_param</code><span class="sig-paren">(</span><em>p_key</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#FileInfoSource.get_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.FileInfoSource.get_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.FileInfoSource.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#FileInfoSource.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.FileInfoSource.get_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.FileInfoSource.reset_params">
+<code class="descname">reset_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#FileInfoSource.reset_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.FileInfoSource.reset_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.FileInfoSource.set_param">
+<code class="descname">set_param</code><span class="sig-paren">(</span><em>k</em>, <em>v</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#FileInfoSource.set_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.FileInfoSource.set_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.FileInfoSource.set_params">
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>p_params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#FileInfoSource.set_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.FileInfoSource.set_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.FileInfoSource.update_params">
+<code class="descname">update_params</code><span class="sig-paren">(</span><em>p_params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#FileInfoSource.update_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.FileInfoSource.update_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.read_info_source.</code><code class="descname">InfoSource</code><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#InfoSource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">object</span></code></a></p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource.get_param">
+<code class="descname">get_param</code><span class="sig-paren">(</span><em>p_key</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#InfoSource.get_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource.get_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#InfoSource.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource.get_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource.reset_params">
+<code class="descname">reset_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#InfoSource.reset_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource.reset_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource.set_param">
+<code class="descname">set_param</code><span class="sig-paren">(</span><em>k</em>, <em>v</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#InfoSource.set_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource.set_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource.set_params">
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>p_params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#InfoSource.set_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource.set_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource.update_params">
+<code class="descname">update_params</code><span class="sig-paren">(</span><em>p_params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#InfoSource.update_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource.update_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.MemoryInfoSource">
+<em class="property">class </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.read_info_source.</code><code class="descname">MemoryInfoSource</code><span class="sig-paren">(</span><em>p_params={}</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#MemoryInfoSource"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.MemoryInfoSource" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource" title="obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource"><code class="xref py py-class docutils literal"><span class="pre">obci.analysis.obci_signal_processing.signal.read_info_source.InfoSource</span></code></a></p>
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.MemoryInfoSource.get_param">
+<code class="descname">get_param</code><span class="sig-paren">(</span><em>p_key</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#MemoryInfoSource.get_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.MemoryInfoSource.get_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.MemoryInfoSource.get_params">
+<code class="descname">get_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#MemoryInfoSource.get_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.MemoryInfoSource.get_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.MemoryInfoSource.reset_params">
+<code class="descname">reset_params</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#MemoryInfoSource.reset_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.MemoryInfoSource.reset_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.MemoryInfoSource.set_param">
+<code class="descname">set_param</code><span class="sig-paren">(</span><em>p_key</em>, <em>p_value</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#MemoryInfoSource.set_param"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.MemoryInfoSource.set_param" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.MemoryInfoSource.set_params">
+<code class="descname">set_params</code><span class="sig-paren">(</span><em>p_params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#MemoryInfoSource.set_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.MemoryInfoSource.set_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="obci.analysis.obci_signal_processing.signal.read_info_source.MemoryInfoSource.update_params">
+<code class="descname">update_params</code><span class="sig-paren">(</span><em>p_params</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/read_info_source.html#MemoryInfoSource.update_params"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.read_info_source.MemoryInfoSource.update_params" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.signal.signal_constants">
+<span id="obci-analysis-obci-signal-processing-signal-signal-constants-module"></span><h2>obci.analysis.obci_signal_processing.signal.signal_constants module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.signal.signal_constants" title="Permalink to this headline">¶</a></h2>
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.signal.signal_exceptions">
+<span id="obci-analysis-obci-signal-processing-signal-signal-exceptions-module"></span><h2>obci.analysis.obci_signal_processing.signal.signal_exceptions module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.signal.signal_exceptions" title="Permalink to this headline">¶</a></h2>
+<dl class="exception">
+<dt id="obci.analysis.obci_signal_processing.signal.signal_exceptions.BadSampleFormat">
+<em class="property">exception </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.signal_exceptions.</code><code class="descname">BadSampleFormat</code><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/signal_exceptions.html#BadSampleFormat"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.signal_exceptions.BadSampleFormat" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></a></p>
+<p>An exception that should be raised when data sample has arrived and it is not
+float (struct is unable to pack it).</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="obci.analysis.obci_signal_processing.signal.signal_exceptions.NoNextTag">
+<em class="property">exception </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.signal_exceptions.</code><code class="descname">NoNextTag</code><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/signal_exceptions.html#NoNextTag"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.signal_exceptions.NoNextTag" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></a></p>
+<p>Raised when end of tag file is met in self.get_next_tag().</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="obci.analysis.obci_signal_processing.signal.signal_exceptions.NoNextValue">
+<em class="property">exception </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.signal_exceptions.</code><code class="descname">NoNextValue</code><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/signal_exceptions.html#NoNextValue"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.signal_exceptions.NoNextValue" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></a></p>
+<p>Raised when end of data file is met in self.get_next_value().</p>
+</dd></dl>
+
+<dl class="exception">
+<dt id="obci.analysis.obci_signal_processing.signal.signal_exceptions.NoParameter">
+<em class="property">exception </em><code class="descclassname">obci.analysis.obci_signal_processing.signal.signal_exceptions.</code><code class="descname">NoParameter</code><span class="sig-paren">(</span><em>p_param</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/signal_exceptions.html#NoParameter"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.signal_exceptions.NoParameter" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/exceptions.html#Exception" title="(in Python v3.5)"><code class="xref py py-class docutils literal"><span class="pre">Exception</span></code></a></p>
+<p>Raised when a ther is a requrest for non-existing parameter in
+info file.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.signal.signal_logging">
+<span id="obci-analysis-obci-signal-processing-signal-signal-logging-module"></span><h2>obci.analysis.obci_signal_processing.signal.signal_logging module<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.signal.signal_logging" title="Permalink to this headline">¶</a></h2>
+<p>Module defines a single method get_logger that returns logger with
+set logging level. Change loggin.INFO lines to change logging level.</p>
+<dl class="function">
+<dt id="obci.analysis.obci_signal_processing.signal.signal_logging.get_logger">
+<code class="descclassname">obci.analysis.obci_signal_processing.signal.signal_logging.</code><code class="descname">get_logger</code><span class="sig-paren">(</span><em>p_name</em>, <em>p_level='info'</em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/obci/analysis/obci_signal_processing/signal/signal_logging.html#get_logger"><span class="viewcode-link">[source]</span></a><a class="headerlink" href="#obci.analysis.obci_signal_processing.signal.signal_logging.get_logger" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return logger with p_name as name. And logging level p_level.
+p_level should be in (starting with the most talkactive):
+&#8216;debug&#8217;, &#8216;info&#8217;, &#8216;warning&#8217;, &#8216;error&#8217;, &#8216;critical&#8217;.</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-obci.analysis.obci_signal_processing.signal">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-obci.analysis.obci_signal_processing.signal" title="Permalink to this headline">¶</a></h2>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">obci</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="obci.html">obci package</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="obci.acquisition.html">obci.acquisition package</a></li>
+<li class="toctree-l3 current"><a class="reference internal" href="obci.analysis.html">obci.analysis package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.benchmark.html">obci.benchmark package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.cmd.html">obci.cmd package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.configs.html">obci.configs package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.control.html">obci.control package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.core.html">obci.core package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.drivers.html">obci.drivers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.gui.html">obci.gui package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.mx_legacy.html">obci.mx_legacy package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.peers.html">obci.peers package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.scenarios.html">obci.scenarios package</a></li>
+<li class="toctree-l3"><a class="reference internal" href="obci.utils.html">obci.utils package</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../index.html">Documentation overview</a><ul>
+  <li><a href="modules.html">obci</a><ul>
+  <li><a href="obci.html">obci package</a><ul>
+  <li><a href="obci.analysis.html">obci.analysis package</a><ul>
+  <li><a href="obci.analysis.obci_signal_processing.html">obci.analysis.obci_signal_processing package</a><ul>
+      <li>Previous: <a href="obci.analysis.obci_signal_processing.html" title="previous chapter">obci.analysis.obci_signal_processing package</a></li>
+      <li>Next: <a href="obci.analysis.obci_signal_processing.tags.html" title="next chapter">obci.analysis.obci_signal_processing.tags package</a></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+      |
+      <a href="../_sources/apidoc/obci.analysis.obci_signal_processing.signal.txt"
+          rel="nofollow">Page source</a>
+    </div>
+
+    
+
+    
+  </body>
+</html>

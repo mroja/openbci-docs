@@ -1,0 +1,285 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.analysis.obci_signal_processing.read_manager &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.analysis.obci_signal_processing.read_manager</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1">#</span>
+<span class="c1"># Author:</span>
+<span class="c1">#     Mateusz Kruszyński &lt;mateusz.kruszynski@gmail.com&gt;</span>
+<span class="c1">#</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+<span class="kn">import</span> <span class="nn">copy</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+
+<span class="kn">from</span> <span class="nn">.signal</span> <span class="k">import</span> <span class="n">read_data_source</span>
+<span class="kn">from</span> <span class="nn">.signal</span> <span class="k">import</span> <span class="n">read_info_source</span>
+<span class="kn">from</span> <span class="nn">.tags</span> <span class="k">import</span> <span class="n">read_tags_source</span>
+
+<span class="kn">from</span> <span class="nn">.signal</span> <span class="k">import</span> <span class="n">data_raw_write_proxy</span>
+<span class="kn">from</span> <span class="nn">.signal</span> <span class="k">import</span> <span class="n">info_file_proxy</span>
+<span class="kn">from</span> <span class="nn">.tags</span> <span class="k">import</span> <span class="n">tags_file_writer</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">obci_signal_processing_logging</span> <span class="k">as</span> <span class="n">logger</span>
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="s2">&quot;read_manager&quot;</span><span class="p">,</span> <span class="s2">&quot;info&quot;</span><span class="p">)</span>
+
+
+<div class="viewcode-block" id="ReadManager"><a class="viewcode-back" href="../../../../apidoc/obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.read_manager.ReadManager">[docs]</a><span class="k">class</span> <span class="nc">ReadManager</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="sd">&quot;&quot;&quot;A class responsible for reding openbci file format.</span>
+<span class="sd">    Public interface:</span>
+<span class="sd">    - start_reading() - open info and data file,</span>
+<span class="sd">    - get_next_value() - get next value from data file,</span>
+<span class="sd">    - get_param(param_name) - get param_name parameter from info file.</span>
+
+<span class="sd">    Wanna be able to read a new parameter &#39;new_param&#39;?</span>
+<span class="sd">    1. Register reading function in self._create_info_tags_control() under &#39;new_param&#39; key.</span>
+<span class="sd">    2. Implement the function (it should be considered as class private function, not callable from outside;</span>
+<span class="sd">    the function should return a value for &#39;new_param&#39; request).</span>
+<span class="sd">    3. Call get_param(&#39;new_param&#39;) every time you want to get the param.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_info_source</span><span class="p">,</span> <span class="n">p_data_source</span><span class="p">,</span> <span class="n">p_tags_source</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Just remember info file path and data file path.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="s1">&#39;&#39;</span> <span class="o">+</span> <span class="n">p_info_source</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got info source file path.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">info_source</span> <span class="o">=</span> <span class="n">read_info_source</span><span class="o">.</span><span class="n">FileInfoSource</span><span class="p">(</span><span class="n">p_info_source</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got info source object.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">info_source</span> <span class="o">=</span> <span class="n">p_info_source</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="s1">&#39;&#39;</span> <span class="o">+</span> <span class="n">p_data_source</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got data source file path.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_source</span> <span class="o">=</span> <span class="n">read_data_source</span><span class="o">.</span><span class="n">FileDataSource</span><span class="p">(</span>
+                <span class="n">p_data_source</span><span class="p">,</span>
+                <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info_source</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;number_of_channels&#39;</span><span class="p">)),</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">info_source</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;sample_type&#39;</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got data source object.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data_source</span> <span class="o">=</span> <span class="n">p_data_source</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="s1">&#39;&#39;</span> <span class="o">+</span> <span class="n">p_tags_source</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got tags source file path.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tags_source</span> <span class="o">=</span> <span class="n">read_tags_source</span><span class="o">.</span><span class="n">FileTagsSource</span><span class="p">(</span><span class="n">p_tags_source</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span><span class="s2">&quot;Got tags source object.&quot;</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tags_source</span> <span class="o">=</span> <span class="n">p_tags_source</span>
+
+    <span class="k">def</span> <span class="nf">__deepcopy__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">memo</span><span class="p">):</span>
+        <span class="n">info_source</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">info_source</span><span class="p">)</span>
+        <span class="n">tags_source</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tags_source</span><span class="p">)</span>
+        <span class="n">samples_source</span> <span class="o">=</span> <span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data_source</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">ReadManager</span><span class="p">(</span><span class="n">info_source</span><span class="p">,</span> <span class="n">samples_source</span><span class="p">,</span> <span class="n">tags_source</span><span class="p">)</span>
+
+<div class="viewcode-block" id="ReadManager.save_to_file"><a class="viewcode-back" href="../../../../apidoc/obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.read_manager.ReadManager.save_to_file">[docs]</a>    <span class="k">def</span> <span class="nf">save_to_file</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_dir</span><span class="p">,</span> <span class="n">p_name</span><span class="p">):</span>
+        <span class="n">tags</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_tags</span><span class="p">()</span>
+        <span class="n">params</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_params</span><span class="p">()</span>
+
+        <span class="n">path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">p_dir</span><span class="p">,</span> <span class="n">p_name</span><span class="p">)</span>
+        <span class="c1"># store tags</span>
+        <span class="n">tags_writer</span> <span class="o">=</span> <span class="n">tags_file_writer</span><span class="o">.</span><span class="n">TagsFileWriter</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;.obci.tag&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="n">tags</span><span class="p">:</span>
+            <span class="n">tags_writer</span><span class="o">.</span><span class="n">tag_received</span><span class="p">(</span><span class="n">tag</span><span class="p">)</span>
+
+        <span class="c1"># store info</span>
+        <span class="n">info_writer</span> <span class="o">=</span> <span class="n">info_file_proxy</span><span class="o">.</span><span class="n">InfoFileWriteProxy</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;.obci.xml&#39;</span><span class="p">)</span>
+        <span class="n">info_writer</span><span class="o">.</span><span class="n">set_attributes</span><span class="p">(</span><span class="n">params</span><span class="p">)</span>
+
+        <span class="c1"># store data</span>
+        <span class="n">data_writer</span> <span class="o">=</span> <span class="n">data_raw_write_proxy</span><span class="o">.</span><span class="n">DataRawWriteProxy</span><span class="p">(</span><span class="n">path</span> <span class="o">+</span> <span class="s1">&#39;.obci.raw&#39;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">iter_samples</span><span class="p">():</span>
+            <span class="k">for</span> <span class="n">d</span> <span class="ow">in</span> <span class="n">sample</span><span class="p">:</span>
+                <span class="n">data_writer</span><span class="o">.</span><span class="n">data_received</span><span class="p">(</span><span class="n">d</span><span class="p">)</span>
+
+        <span class="n">tags_writer</span><span class="o">.</span><span class="n">finish_saving</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="n">info_writer</span><span class="o">.</span><span class="n">finish_saving</span><span class="p">()</span>
+        <span class="n">data_writer</span><span class="o">.</span><span class="n">finish_saving</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ReadManager.get_samples"><a class="viewcode-back" href="../../../../apidoc/obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.read_manager.ReadManager.get_samples">[docs]</a>    <span class="k">def</span> <span class="nf">get_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_from</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_len</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_unit</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return a two dimensional array of signal values.</span>
+<span class="sd">        if p_reload then refresh the file, otherwise use cached values.</span>
+<span class="sd">        p_unit can be &#39;sample&#39; or &#39;second&#39; and makes sense only if p_from and p_len is not none.&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">p_unit</span> <span class="o">==</span> <span class="s1">&#39;sample&#39;</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_source</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">p_from</span><span class="p">,</span> <span class="n">p_len</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">p_unit</span> <span class="o">==</span> <span class="s1">&#39;second&#39;</span><span class="p">:</span>
+            <span class="n">sampling</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;sampling_frequency&#39;</span><span class="p">)))</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_source</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">p_from</span> <span class="o">*</span> <span class="n">sampling</span><span class="p">,</span> <span class="n">p_len</span> <span class="o">*</span> <span class="n">sampling</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s1">&#39;Unrecognised unit type. Should be sample or second!. Abort!&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ReadManager.get_channel_samples"><a class="viewcode-back" href="../../../../apidoc/obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.read_manager.ReadManager.get_channel_samples">[docs]</a>    <span class="k">def</span> <span class="nf">get_channel_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_ch_name</span><span class="p">,</span> <span class="n">p_from</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_len</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_unit</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return an array of values for channel p_ch_name, or</span>
+<span class="sd">        raise ValueError exception if there is channel with that name.</span>
+<span class="sd">        p_unit can be &#39;sample&#39; or &#39;second&#39; and makes sense only if p_from and p_len is not none.&quot;&quot;&quot;</span>
+        <span class="n">ch_ind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;channels_names&#39;</span><span class="p">)</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">p_ch_name</span><span class="p">)</span>  <span class="c1"># TODO error</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_samples</span><span class="p">(</span><span class="n">p_from</span><span class="p">,</span> <span class="n">p_len</span><span class="p">,</span> <span class="n">p_unit</span><span class="p">)[</span><span class="n">ch_ind</span><span class="p">]</span></div>
+
+<div class="viewcode-block" id="ReadManager.get_channels_samples"><a class="viewcode-back" href="../../../../apidoc/obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.read_manager.ReadManager.get_channels_samples">[docs]</a>    <span class="k">def</span> <span class="nf">get_channels_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_ch_names</span><span class="p">,</span> <span class="n">p_from</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_len</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_unit</span><span class="o">=</span><span class="s1">&#39;sample&#39;</span><span class="p">):</span>
+        <span class="k">assert</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p_ch_names</span><span class="p">)</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="n">s</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_channel_samples</span><span class="p">(</span><span class="n">p_ch_names</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">p_from</span><span class="p">,</span> <span class="n">p_len</span><span class="p">,</span> <span class="n">p_unit</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">p_ch_names</span><span class="p">[</span><span class="mi">1</span><span class="p">:]:</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">vstack</span><span class="p">((</span><span class="n">s</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_channel_samples</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="n">p_from</span><span class="p">,</span> <span class="n">p_len</span><span class="p">,</span> <span class="n">p_unit</span><span class="p">)))</span>
+        <span class="k">return</span> <span class="n">s</span></div>
+
+<div class="viewcode-block" id="ReadManager.set_samples"><a class="viewcode-back" href="../../../../apidoc/obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.read_manager.ReadManager.set_samples">[docs]</a>    <span class="k">def</span> <span class="nf">set_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_samples</span><span class="p">,</span> <span class="n">p_channel_names</span><span class="p">,</span> <span class="n">p_copy</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">dim</span> <span class="o">=</span> <span class="n">p_samples</span><span class="o">.</span><span class="n">ndim</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Samples not a numpy array!&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="n">dim</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Samples must be a 2-dim numpy array!&quot;</span><span class="p">)</span>
+        <span class="n">num_of_channels</span> <span class="o">=</span> <span class="n">p_samples</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="n">num_of_samples</span> <span class="o">=</span> <span class="n">p_samples</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p_channel_names</span><span class="p">)</span> <span class="o">!=</span> <span class="n">num_of_channels</span><span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;Number of channels names is different from number of channels in samples!&quot;</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s1">&#39;channels_names&#39;</span><span class="p">,</span> <span class="n">p_channel_names</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s1">&#39;number_of_channels&#39;</span><span class="p">,</span> <span class="n">num_of_channels</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="s1">&#39;number_of_samples&#39;</span><span class="p">,</span> <span class="n">num_of_samples</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">data_source</span><span class="o">.</span><span class="n">set_samples</span><span class="p">(</span><span class="n">p_samples</span><span class="p">,</span> <span class="n">p_copy</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ReadManager.get_tags"><a class="viewcode-back" href="../../../../apidoc/obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.read_manager.ReadManager.get_tags">[docs]</a>    <span class="k">def</span> <span class="nf">get_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_tag_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_from</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_len</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_func</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return all tags of type tag_type, or all types if tag_type is None.&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags_source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span> <span class="p">[]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags_source</span><span class="o">.</span><span class="n">get_tags</span><span class="p">(</span><span class="n">p_tag_type</span><span class="p">,</span> <span class="n">p_from</span><span class="p">,</span> <span class="n">p_len</span><span class="p">,</span> <span class="n">p_func</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ReadManager.set_tags"><a class="viewcode-back" href="../../../../apidoc/obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.read_manager.ReadManager.set_tags">[docs]</a>    <span class="k">def</span> <span class="nf">set_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_tags</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags_source</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tags_source</span><span class="o">.</span><span class="n">set_tags</span><span class="p">(</span><span class="n">p_tags</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tags_source</span> <span class="o">=</span> <span class="n">read_tags_source</span><span class="o">.</span><span class="n">MemoryTagsSource</span><span class="p">(</span><span class="n">p_tags</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ReadManager.get_param"><a class="viewcode-back" href="../../../../apidoc/obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.read_manager.ReadManager.get_param">[docs]</a>    <span class="k">def</span> <span class="nf">get_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_param_name</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return parameter value for p_param_name.</span>
+<span class="sd">        Raise NoParameter exception if p_param_name</span>
+<span class="sd">        parameters was not found.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">info_source</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="n">p_param_name</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ReadManager.get_params"><a class="viewcode-back" href="../../../../apidoc/obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.read_manager.ReadManager.get_params">[docs]</a>    <span class="k">def</span> <span class="nf">get_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">info_source</span><span class="o">.</span><span class="n">get_params</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ReadManager.set_param"><a class="viewcode-back" href="../../../../apidoc/obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.read_manager.ReadManager.set_param">[docs]</a>    <span class="k">def</span> <span class="nf">set_param</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_key</span><span class="p">,</span> <span class="n">p_value</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info_source</span><span class="o">.</span><span class="n">set_param</span><span class="p">(</span><span class="n">p_key</span><span class="p">,</span> <span class="n">p_value</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ReadManager.set_params"><a class="viewcode-back" href="../../../../apidoc/obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.read_manager.ReadManager.set_params">[docs]</a>    <span class="k">def</span> <span class="nf">set_params</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_params</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info_source</span><span class="o">.</span><span class="n">update_params</span><span class="p">(</span><span class="n">p_params</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="ReadManager.reset_params"><a class="viewcode-back" href="../../../../apidoc/obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.read_manager.ReadManager.reset_params">[docs]</a>    <span class="k">def</span> <span class="nf">reset_params</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">info_source</span><span class="o">.</span><span class="n">reset_params</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="ReadManager.iter_tags"><a class="viewcode-back" href="../../../../apidoc/obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.read_manager.ReadManager.iter_tags">[docs]</a>    <span class="k">def</span> <span class="nf">iter_tags</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_tag_type</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_from</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_len</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">p_func</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags_source</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">return</span>
+
+        <span class="k">for</span> <span class="n">tag</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">tags_source</span><span class="o">.</span><span class="n">get_tags</span><span class="p">(</span><span class="n">p_tag_type</span><span class="p">,</span> <span class="n">p_from</span><span class="p">,</span> <span class="n">p_len</span><span class="p">,</span> <span class="n">p_func</span><span class="p">):</span>
+            <span class="k">yield</span> <span class="n">tag</span></div>
+
+<div class="viewcode-block" id="ReadManager.iter_samples"><a class="viewcode-back" href="../../../../apidoc/obci.analysis.obci_signal_processing.html#obci.analysis.obci_signal_processing.read_manager.ReadManager.iter_samples">[docs]</a>    <span class="k">def</span> <span class="nf">iter_samples</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">s</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">data_source</span><span class="o">.</span><span class="n">iter_samples</span><span class="p">():</span>
+            <span class="k">yield</span> <span class="n">s</span></div></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

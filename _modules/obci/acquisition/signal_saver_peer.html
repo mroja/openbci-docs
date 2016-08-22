@@ -1,0 +1,285 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.acquisition.signal_saver_peer &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../index.html" />
+    <link rel="up" title="Module code" href="../../index.html" />
+   
+  <link rel="stylesheet" href="../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.acquisition.signal_saver_peer</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+<span class="c1"># Author:</span>
+<span class="c1">#     Mateusz Kruszyński &lt;mateusz.kruszynski@titanis.pl&gt;</span>
+
+<span class="kn">import</span> <span class="nn">sys</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">time</span>
+
+<span class="kn">from</span> <span class="nn">obci.mx_legacy.multiplexer_constants</span> <span class="k">import</span> <span class="n">peers</span><span class="p">,</span> <span class="n">types</span>
+<span class="kn">from</span> <span class="nn">obci.control.peer.configured_multiplexer_server</span> <span class="k">import</span> <span class="n">ConfiguredMultiplexerServer</span>
+
+<span class="kn">from</span> <span class="nn">obci.configs</span> <span class="k">import</span> <span class="n">settings</span><span class="p">,</span> <span class="n">variables_pb2</span>
+<span class="kn">from</span> <span class="nn">obci.analysis.obci_signal_processing.signal</span> <span class="k">import</span> <span class="n">data_write_proxy</span>
+<span class="kn">from</span> <span class="nn">obci.analysis.obci_signal_processing.signal</span> <span class="k">import</span> <span class="n">signal_exceptions</span> <span class="k">as</span> <span class="n">data_storage_exceptions</span>
+<span class="kn">from</span> <span class="nn">obci.utils.openbci_logging</span> <span class="k">import</span> <span class="n">log_crash</span>
+
+<span class="n">DATA_FILE_EXTENSION</span> <span class="o">=</span> <span class="s2">&quot;.obci.raw&quot;</span>
+
+
+<div class="viewcode-block" id="SignalSaver"><a class="viewcode-back" href="../../../apidoc/obci.acquisition.html#obci.acquisition.signal_saver_peer.SignalSaver">[docs]</a><span class="k">class</span> <span class="nc">SignalSaver</span><span class="p">(</span><span class="n">ConfiguredMultiplexerServer</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">_all_but_first_data_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Validate p_data (is it a correct float? If not exit the program.), send it to data_proxy.</span>
+<span class="sd">        _all_but_first_data_received is set to self.data_received in</span>
+<span class="sd">        self._first_sample_data_received, so in fact _all_but_first_data_received</span>
+<span class="sd">        is fired externally by calling self.data_received.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_proxy</span><span class="o">.</span><span class="n">data_received</span><span class="p">(</span><span class="n">p_data</span><span class="p">)</span>
+        <span class="k">except</span> <span class="n">data_storage_exceptions</span><span class="o">.</span><span class="n">BadSampleFormat</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Received sample is not of a good size. Writing aborted!&quot;</span><span class="p">)</span>
+            <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_first_sample_data_received</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_data</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Validate p_data (is it a correct float? If not exit the program.), send it to data_proxy.</span>
+<span class="sd">        first_sample_data_received is set to self.data_received in self.__init__, so in fact</span>
+<span class="sd">        first_sample_data_received is fired externally by calling self.data_received&quot;&quot;&quot;</span>
+
+        <span class="c1"># Set some additional first_sample-like data</span>
+
+        <span class="n">msg</span> <span class="o">=</span> <span class="n">p_data</span>
+        <span class="n">l_vec</span> <span class="o">=</span> <span class="n">variables_pb2</span><span class="o">.</span><span class="n">SampleVector</span><span class="p">()</span>
+        <span class="n">l_vec</span><span class="o">.</span><span class="n">ParseFromString</span><span class="p">(</span><span class="n">msg</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;REAL SAMPLES PER PACKET: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">l_vec</span><span class="o">.</span><span class="n">samples</span><span class="p">)))</span>
+        <span class="k">for</span> <span class="n">i_sample</span> <span class="ow">in</span> <span class="n">l_vec</span><span class="o">.</span><span class="n">samples</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_first_sample_timestamp</span> <span class="o">=</span> <span class="n">i_sample</span><span class="o">.</span><span class="n">timestamp</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;First sample sample ts:&quot;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_first_sample_timestamp</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;First sample system ts:&quot;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;REAL NUM OF CHANNELS:&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">i_sample</span><span class="o">.</span><span class="n">channels</span><span class="p">)))</span>
+            <span class="k">break</span>
+
+            <span class="c1"># self._first_sample_timestamp = time.time()</span>
+            <span class="c1"># break</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_proxy</span><span class="o">.</span><span class="n">set_data_len</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p_data</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">_samples_per_packet</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_proxy</span><span class="o">.</span><span class="n">set_first_sample_timestamp</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_first_sample_timestamp</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Data len: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">p_data</span><span class="p">)))</span>
+        <span class="c1"># !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
+        <span class="c1"># !!! below operation changes self._data_received method</span>
+        <span class="c1"># from _first_sample_timestamp to _all_but_first_data_received</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_received</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_all_but_first_data_received</span>
+        <span class="c1"># !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_received</span><span class="p">(</span><span class="n">p_data</span><span class="p">)</span>
+
+    <span class="nd">@log_crash</span>
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">addresses</span><span class="p">,</span> <span class="n">peer_type</span><span class="o">=</span><span class="n">peers</span><span class="o">.</span><span class="n">SIGNAL_SAVER</span><span class="p">):</span>
+        <span class="nb">super</span><span class="p">(</span><span class="n">SignalSaver</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="n">addresses</span><span class="o">=</span><span class="n">addresses</span><span class="p">,</span>
+                                          <span class="nb">type</span><span class="o">=</span><span class="n">peer_type</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session_is_active</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="c1"># A method fired ever time we get new samples</span>
+        <span class="c1"># We need to do something when got first sample</span>
+        <span class="c1"># so for efficency reasons we do that kind of python hack...</span>
+        <span class="c1"># self._data_received is again changed im method</span>
+        <span class="c1"># self._first_sample_data_received</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_received</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_first_sample_data_received</span>
+
+        <span class="c1"># Needed slots</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_samples</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_first_sample_timestamp</span> <span class="o">=</span> <span class="o">-</span><span class="mf">1.0</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_saving_session</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">debug_on</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;debug_on&#39;</span><span class="p">))</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug_on</span><span class="p">:</span>
+            <span class="kn">from</span> <span class="nn">obci.utils</span> <span class="k">import</span> <span class="n">streaming_debug</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">debug</span> <span class="o">=</span> <span class="n">streaming_debug</span><span class="o">.</span><span class="n">Debug</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s1">&#39;sampling_rate&#39;</span><span class="p">)),</span>
+                                               <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="p">,</span>
+                                               <span class="bp">self</span><span class="o">.</span><span class="n">_samples_per_packet</span>
+                                               <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">ready</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session_is_active</span> <span class="o">=</span> <span class="kc">True</span>
+
+<div class="viewcode-block" id="SignalSaver.handle_message"><a class="viewcode-back" href="../../../apidoc/obci.acquisition.html#obci.acquisition.signal_saver_peer.SignalSaver.handle_message">[docs]</a>    <span class="k">def</span> <span class="nf">handle_message</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">mxmsg</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Handle messages:</span>
+<span class="sd">        * amplifier_signal_message - raw data from mx.</span>
+<span class="sd">        If session is active convey data to save_manager.</span>
+<span class="sd">        * signal_saver_finish_message - finish saving session&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">mxmsg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_mx_signal_type</span> <span class="ow">and</span> \
+                <span class="bp">self</span><span class="o">.</span><span class="n">_session_is_active</span><span class="p">:</span>
+
+            <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_samples</span> <span class="o">+=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_samples_per_packet</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_received</span><span class="p">(</span><span class="n">mxmsg</span><span class="o">.</span><span class="n">message</span><span class="p">)</span>
+
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">debug_on</span><span class="p">:</span>
+                <span class="c1"># Log module real sampling rate</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">debug</span><span class="o">.</span><span class="n">next_sample</span><span class="p">()</span>
+
+        <span class="k">elif</span> <span class="n">mxmsg</span><span class="o">.</span><span class="n">type</span> <span class="o">==</span> <span class="n">types</span><span class="o">.</span><span class="n">ACQUISITION_CONTROL_MESSAGE</span><span class="p">:</span>
+            <span class="n">ctr</span> <span class="o">=</span> <span class="n">mxmsg</span><span class="o">.</span><span class="n">message</span><span class="o">.</span><span class="n">decode</span><span class="p">()</span>
+            <span class="k">if</span> <span class="n">ctr</span> <span class="o">==</span> <span class="s1">&#39;finish&#39;</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Signal saver got finish saving _message.&quot;</span><span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Last sample ts ~ &quot;</span> <span class="o">+</span> <span class="nb">repr</span><span class="p">(</span><span class="n">time</span><span class="o">.</span><span class="n">time</span><span class="p">()))</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_finish_saving_session</span><span class="p">()</span>
+                <span class="n">time</span><span class="o">.</span><span class="n">sleep</span><span class="p">(</span><span class="mi">3</span><span class="p">)</span>
+                <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Signal saver got unknown control message &quot;</span> <span class="o">+</span> <span class="n">ctr</span> <span class="o">+</span> <span class="s2">&quot;!&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">no_response</span><span class="p">()</span></div>
+
+    <span class="k">def</span> <span class="nf">_init_saving_session</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Start storing data...&quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Attempting to start saving signal to file while not closing previously opened file!&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="n">append_ts</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;append_timestamps&quot;</span><span class="p">))</span>
+        <span class="n">use_tmp_file</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;use_tmp_file&quot;</span><span class="p">))</span>
+        <span class="n">use_own_buffer</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;use_own_buffer&quot;</span><span class="p">))</span>
+        <span class="n">signal_type</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;signal_type&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_samples_per_packet</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;samples_per_packet&quot;</span><span class="p">))</span>
+
+        <span class="n">l_f_name</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;save_file_name&quot;</span><span class="p">)</span>
+        <span class="n">l_f_dir</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;save_file_path&quot;</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_number_of_samples</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="n">l_f_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">expanduser</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">l_f_dir</span><span class="p">))</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">os</span><span class="o">.</span><span class="n">access</span><span class="p">(</span><span class="n">l_f_dir</span><span class="p">,</span> <span class="n">os</span><span class="o">.</span><span class="n">F_OK</span><span class="p">):</span>
+            <span class="n">os</span><span class="o">.</span><span class="n">mkdir</span><span class="p">(</span><span class="n">l_f_dir</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_file_path</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">normpath</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+            <span class="n">l_f_dir</span><span class="p">,</span> <span class="n">l_f_name</span> <span class="o">+</span> <span class="n">DATA_FILE_EXTENSION</span><span class="p">))</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_proxy</span> <span class="o">=</span> <span class="n">data_write_proxy</span><span class="o">.</span><span class="n">get_proxy</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_file_path</span><span class="p">,</span> <span class="n">append_ts</span><span class="p">,</span> <span class="n">use_tmp_file</span><span class="p">,</span> <span class="n">use_own_buffer</span><span class="p">,</span> <span class="n">signal_type</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_mx_signal_type</span> <span class="o">=</span> <span class="n">types</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;mx_signal_type&quot;</span><span class="p">)]</span>
+
+    <span class="k">def</span> <span class="nf">_finish_saving_session</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Send signal_saver_control_message to MX with</span>
+<span class="sd">        number of samples and first sample timestamp (for tag_saver and info_saver).</span>
+<span class="sd">        Also perform .finish_saving on data_proxy - it might be a long operation...&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_session_is_active</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;Attempting to stop saving signal to file while no file being opened!&quot;</span><span class="p">)</span>
+            <span class="k">return</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_session_is_active</span> <span class="o">=</span> <span class="kc">False</span>
+
+        <span class="n">l_vec</span> <span class="o">=</span> <span class="n">variables_pb2</span><span class="o">.</span><span class="n">VariableVector</span><span class="p">()</span>
+
+        <span class="n">l_var</span> <span class="o">=</span> <span class="n">l_vec</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">add</span><span class="p">()</span>
+        <span class="n">l_var</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;first_sample_timestamp&#39;</span>
+        <span class="n">l_var</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="nb">repr</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_first_sample_timestamp</span><span class="p">)</span>
+
+        <span class="n">l_var</span> <span class="o">=</span> <span class="n">l_vec</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">add</span><span class="p">()</span>
+        <span class="n">l_var</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;number_of_samples&#39;</span>
+        <span class="n">l_var</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_number_of_samples</span><span class="p">)</span>
+
+        <span class="n">l_var</span> <span class="o">=</span> <span class="n">l_vec</span><span class="o">.</span><span class="n">variables</span><span class="o">.</span><span class="n">add</span><span class="p">()</span>
+        <span class="n">l_var</span><span class="o">.</span><span class="n">key</span> <span class="o">=</span> <span class="s1">&#39;file_path&#39;</span>
+        <span class="n">l_var</span><span class="o">.</span><span class="n">value</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_file_path</span>
+
+        <span class="n">l_files</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_proxy</span><span class="o">.</span><span class="n">finish_saving</span><span class="p">()</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">conn</span><span class="o">.</span><span class="n">send_message</span><span class="p">(</span>
+            <span class="n">message</span><span class="o">=</span><span class="n">l_vec</span><span class="o">.</span><span class="n">SerializeToString</span><span class="p">(),</span>
+            <span class="nb">type</span><span class="o">=</span><span class="n">types</span><span class="o">.</span><span class="n">__dict__</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">config</span><span class="o">.</span><span class="n">get_param</span><span class="p">(</span><span class="s2">&quot;finished_signal_type&quot;</span><span class="p">)],</span>
+            <span class="n">flush</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Saved file &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">l_files</span><span class="p">))</span>
+        <span class="k">return</span> <span class="n">l_files</span></div>
+
+<span class="k">if</span> <span class="n">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="n">SignalSaver</span><span class="p">(</span><span class="n">settings</span><span class="o">.</span><span class="n">MULTIPLEXER_ADDRESSES</span><span class="p">)</span><span class="o">.</span><span class="n">loop</span><span class="p">()</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

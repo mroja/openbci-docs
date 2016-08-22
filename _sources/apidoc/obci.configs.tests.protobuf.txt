@@ -1,0 +1,38 @@
+obci.configs.tests.protobuf package
+===================================
+
+Submodules
+----------
+
+obci.configs.tests.protobuf.protobuf_test module
+------------------------------------------------
+
+.. automodule:: obci.configs.tests.protobuf.protobuf_test
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.configs.tests.protobuf.sample_logger module
+------------------------------------------------
+
+.. automodule:: obci.configs.tests.protobuf.sample_logger
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.configs.tests.protobuf.variables_pb2 module
+------------------------------------------------
+
+.. automodule:: obci.configs.tests.protobuf.variables_pb2
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.configs.tests.protobuf
+    :members:
+    :undoc-members:
+    :show-inheritance:

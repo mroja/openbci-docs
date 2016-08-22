@@ -1,0 +1,30 @@
+obci.mx_legacy package
+======================
+
+Submodules
+----------
+
+obci.mx_legacy.clients module
+-----------------------------
+
+.. automodule:: obci.mx_legacy.clients
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+obci.mx_legacy.multiplexer_constants module
+-------------------------------------------
+
+.. automodule:: obci.mx_legacy.multiplexer_constants
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.mx_legacy
+    :members:
+    :undoc-members:
+    :show-inheritance:

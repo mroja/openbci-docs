@@ -1,0 +1,229 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.control.gui.obci_log_engine &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.control.gui.obci_log_engine</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># -*- coding: utf-8 -*-</span>
+
+<span class="kn">from</span> <span class="nn">PyQt4</span> <span class="k">import</span> <span class="n">QtCore</span><span class="p">,</span> <span class="n">QtGui</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">obci_log_model</span>
+
+<span class="kn">from</span> <span class="nn">.obci_launcher_constants</span> <span class="k">import</span> <span class="n">STATUS_COLORS</span>
+
+
+<div class="viewcode-block" id="LogEngine"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_engine.LogEngine">[docs]</a><span class="k">class</span> <span class="nc">LogEngine</span><span class="p">(</span><span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tab_widget</span><span class="p">):</span>
+
+        <span class="n">QtCore</span><span class="o">.</span><span class="n">QObject</span><span class="o">.</span><span class="n">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tab_widget</span> <span class="o">=</span> <span class="n">tab_widget</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tab_widget</span><span class="o">.</span><span class="n">tabCloseRequested</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tab_closed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tab_widget</span><span class="o">.</span><span class="n">currentChanged</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tab_changed</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">obci_log_model</span><span class="o">.</span><span class="n">LogModel</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_prev_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_init_tab_shortcut</span><span class="p">()</span>
+
+<div class="viewcode-block" id="LogEngine.show"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_engine.LogEngine.show">[docs]</a>    <span class="k">def</span> <span class="nf">show</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">experiment</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Called from obci.gui when scenario`s moules panel is being refreshed,</span>
+<span class="sd">        eg. when user clicks some new scenario or gui is autmatically being refreshed&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_prev_model</span> <span class="o">!=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">log_model</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prev_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_model</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">log_model</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_exp</span> <span class="o">=</span> <span class="n">experiment</span><span class="o">.</span><span class="n">exp</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_prev_model</span><span class="o">.</span><span class="n">set_emmiting</span><span class="p">(</span><span class="kc">False</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_rebuild_tab_widget</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">set_emmiting</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+            <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exp</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">status_name</span> <span class="ow">in</span> <span class="p">[</span><span class="s1">&#39;launching&#39;</span><span class="p">,</span> <span class="s1">&#39;running&#39;</span><span class="p">]</span> <span class="ow">and</span> \
+                    <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">is_running</span><span class="p">():</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">connect_running</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_exp</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LogEngine.tab_closed"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_engine.LogEngine.tab_closed">[docs]</a>    <span class="k">def</span> <span class="nf">tab_closed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tab_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Called on tab_closed event from GUI&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">tab_id</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">remove_peer</span><span class="p">(</span><span class="n">tab_id</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tab_widget</span><span class="o">.</span><span class="n">removeTab</span><span class="p">(</span><span class="n">tab_id</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LogEngine.tab_changed"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_engine.LogEngine.tab_changed">[docs]</a>    <span class="k">def</span> <span class="nf">tab_changed</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tab_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Called on tab_changed event from GUI&quot;&quot;&quot;</span>
+        <span class="k">if</span> <span class="n">tab_id</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">t</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_widget</span><span class="o">.</span><span class="n">widget</span><span class="p">(</span><span class="n">tab_id</span><span class="p">)</span>
+            <span class="n">t</span><span class="o">.</span><span class="n">verticalScrollBar</span><span class="p">()</span><span class="o">.</span><span class="n">setSliderPosition</span><span class="p">(</span><span class="n">t</span><span class="o">.</span><span class="n">verticalScrollBar</span><span class="p">()</span><span class="o">.</span><span class="n">maximum</span><span class="p">())</span></div>
+
+<div class="viewcode-block" id="LogEngine.update_user_interface"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_engine.LogEngine.update_user_interface">[docs]</a>    <span class="k">def</span> <span class="nf">update_user_interface</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Called from gui on refresh_gui request.</span>
+<span class="sd">        Update tabs status in case module`s status</span>
+<span class="sd">        has changed.&quot;&quot;&quot;</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_tab_status</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="LogEngine.update_log"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_engine.LogEngine.update_log">[docs]</a>    <span class="k">def</span> <span class="nf">update_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">log</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">get_peer_ind</span><span class="p">(</span><span class="n">log</span><span class="p">[</span><span class="s1">&#39;peer_id&#39;</span><span class="p">])</span>
+            <span class="n">w</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_widget</span><span class="o">.</span><span class="n">widget</span><span class="p">(</span><span class="n">ind</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span>
+            <span class="n">w</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="s1">&#39;</span><span class="se">\n</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="nb">str</span><span class="p">(</span><span class="n">l</span><span class="p">)</span> <span class="k">for</span> <span class="n">l</span> <span class="ow">in</span> <span class="n">log</span><span class="p">[</span><span class="s1">&#39;logs&#39;</span><span class="p">]]))</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">pass</span></div>
+
+<div class="viewcode-block" id="LogEngine.show_log"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_engine.LogEngine.show_log">[docs]</a>    <span class="k">def</span> <span class="nf">show_log</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">peer_id</span><span class="p">,</span> <span class="n">scenario_id</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Called from gui when user requests peer_id module`s</span>
+<span class="sd">        log. Lets create and show it...&quot;&quot;&quot;</span>
+
+        <span class="c1"># TODO - create model.socket if needed</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">ind</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">get_peer_ind</span><span class="p">(</span><span class="n">peer_id</span><span class="p">)</span> <span class="o">+</span> <span class="mi">1</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_show_tab</span><span class="p">(</span><span class="n">ind</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>  <span class="c1"># this tab is not opened yet</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">add_peer</span><span class="p">(</span><span class="n">peer_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tab_widget</span><span class="o">.</span><span class="n">addTab</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_log_widget</span><span class="p">(),</span> <span class="n">peer_id</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_update_tab_status</span><span class="p">()</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_show_tab</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">get_peers</span><span class="p">()))</span></div>
+
+<div class="viewcode-block" id="LogEngine.experiment_stopped"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_engine.LogEngine.experiment_stopped">[docs]</a>    <span class="k">def</span> <span class="nf">experiment_stopped</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;experiment stopped&#39;</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="LogEngine.experiment_started"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_engine.LogEngine.experiment_started">[docs]</a>    <span class="k">def</span> <span class="nf">experiment_started</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s1">&#39;experiment started&#39;</span><span class="p">)</span></div>
+        <span class="c1"># self._model.start_running(self._exp)</span>
+
+<div class="viewcode-block" id="LogEngine.on_experiment_start"><a class="viewcode-back" href="../../../../apidoc/obci.control.gui.html#obci.control.gui.obci_log_engine.LogEngine.on_experiment_start">[docs]</a>    <span class="k">def</span> <span class="nf">on_experiment_start</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">exp</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">start_running</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_exp</span><span class="p">)</span></div>
+
+    <span class="k">def</span> <span class="nf">_rebuild_tab_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">scenario</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_widget</span><span class="o">.</span><span class="n">widget</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tab_widget</span><span class="o">.</span><span class="n">clear</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tab_widget</span><span class="o">.</span><span class="n">addTab</span><span class="p">(</span><span class="n">scenario</span><span class="p">,</span> <span class="s2">&quot;Scenario&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">get_peers</span><span class="p">():</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tab_widget</span><span class="o">.</span><span class="n">addTab</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_get_log_widget</span><span class="p">(),</span> <span class="n">t</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_request_update_log</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_update_tab_status</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_init_tab_shortcut</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">m</span> <span class="o">=</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">QSignalMapper</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">shortcuts</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">9</span><span class="p">):</span>
+            <span class="n">s</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QShortcut</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QKeySequence</span><span class="p">(</span><span class="s2">&quot;Alt+&quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)),</span> <span class="bp">self</span><span class="o">.</span><span class="n">tab_widget</span><span class="p">)</span>
+            <span class="n">s</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s1">&#39;activated()&#39;</span><span class="p">),</span> <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SLOT</span><span class="p">(</span><span class="s1">&#39;map()&#39;</span><span class="p">))</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="o">.</span><span class="n">setMapping</span><span class="p">(</span><span class="n">s</span><span class="p">,</span> <span class="n">i</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">shortcuts</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">s</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">connect</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">m</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SIGNAL</span><span class="p">(</span><span class="s1">&#39;mapped(int)&#39;</span><span class="p">),</span> <span class="bp">self</span><span class="p">,</span> <span class="n">QtCore</span><span class="o">.</span><span class="n">SLOT</span><span class="p">(</span><span class="s1">&#39;_show_tab(int)&#39;</span><span class="p">))</span>
+
+    <span class="k">def</span> <span class="nf">_update_tab_status</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">peer_id</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">get_peers</span><span class="p">()):</span>
+            <span class="n">st</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_exp</span><span class="o">.</span><span class="n">status</span><span class="o">.</span><span class="n">peer_status</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">peer_id</span><span class="p">))</span><span class="o">.</span><span class="n">status_name</span>
+            <span class="n">c</span> <span class="o">=</span> <span class="n">STATUS_COLORS</span><span class="p">[</span><span class="n">st</span><span class="p">]</span>
+            <span class="n">p</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QPixmap</span><span class="p">(</span><span class="mi">16</span><span class="p">,</span> <span class="mi">16</span><span class="p">)</span>
+            <span class="n">p</span><span class="o">.</span><span class="n">fill</span><span class="p">(</span><span class="n">QtGui</span><span class="o">.</span><span class="n">QColor</span><span class="p">(</span><span class="n">c</span><span class="p">))</span>
+            <span class="n">ic</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QIcon</span><span class="p">()</span>
+            <span class="n">ic</span><span class="o">.</span><span class="n">addPixmap</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">tab_widget</span><span class="o">.</span><span class="n">setTabIcon</span><span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="n">ic</span><span class="p">)</span>
+
+    <span class="nd">@QtCore</span><span class="o">.</span><span class="n">pyqtSlot</span><span class="p">(</span><span class="s1">&#39;int&#39;</span><span class="p">)</span>
+    <span class="k">def</span> <span class="nf">_show_tab</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">tab_id</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">tab_widget</span><span class="o">.</span><span class="n">setCurrentIndex</span><span class="p">(</span><span class="n">tab_id</span><span class="p">)</span>
+
+    <span class="k">def</span> <span class="nf">_request_update_log</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_model</span><span class="o">.</span><span class="n">emit_logs</span><span class="p">()</span>
+
+    <span class="k">def</span> <span class="nf">_get_log_widget</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="n">w</span> <span class="o">=</span> <span class="n">QtGui</span><span class="o">.</span><span class="n">QTextEdit</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">tab_widget</span><span class="p">)</span>
+        <span class="n">w</span><span class="o">.</span><span class="n">setReadOnly</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">w</span></div>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>

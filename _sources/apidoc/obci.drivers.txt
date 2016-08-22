@@ -1,0 +1,30 @@
+obci.drivers package
+====================
+
+Subpackages
+-----------
+
+.. toctree::
+
+    obci.drivers.eeg
+    obci.drivers.generic
+
+Submodules
+----------
+
+obci.drivers.drivers_logging module
+-----------------------------------
+
+.. automodule:: obci.drivers.drivers_logging
+    :members:
+    :undoc-members:
+    :show-inheritance:
+
+
+Module contents
+---------------
+
+.. automodule:: obci.drivers
+    :members:
+    :undoc-members:
+    :show-inheritance:

@@ -1,0 +1,215 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    
+    <title>obci.analysis.obci_signal_processing.signal.data_read_proxy &#8212; openbci 2.0.0-0 documentation</title>
+    
+    <link rel="stylesheet" href="../../../../../_static/alabaster.css" type="text/css" />
+    <link rel="stylesheet" href="../../../../../_static/pygments.css" type="text/css" />
+    
+    <script type="text/javascript">
+      var DOCUMENTATION_OPTIONS = {
+        URL_ROOT:    '../../../../../',
+        VERSION:     '2.0.0-0',
+        COLLAPSE_INDEX: false,
+        FILE_SUFFIX: '.html',
+        HAS_SOURCE:  true
+      };
+    </script>
+    <script type="text/javascript" src="../../../../../_static/jquery.js"></script>
+    <script type="text/javascript" src="../../../../../_static/underscore.js"></script>
+    <script type="text/javascript" src="../../../../../_static/doctools.js"></script>
+    <link rel="top" title="openbci 2.0.0-0 documentation" href="../../../../../index.html" />
+    <link rel="up" title="Module code" href="../../../../index.html" />
+   
+  <link rel="stylesheet" href="../../../../../_static/custom.css" type="text/css" />
+  
+  
+  <meta name="viewport" content="width=device-width, initial-scale=0.9, maximum-scale=0.9" />
+
+  </head>
+  <body role="document">
+  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <h1>Source code for obci.analysis.obci_signal_processing.signal.data_read_proxy</h1><div class="highlight"><pre>
+<span></span><span class="ch">#!/usr/bin/env python3</span>
+<span class="c1"># Author:</span>
+<span class="c1">#     Mateusz Kruszyński &lt;mateusz.kruszynski@gmail.com&gt;</span>
+<span class="c1">#</span>
+<span class="kn">import</span> <span class="nn">os.path</span>
+<span class="kn">import</span> <span class="nn">struct</span>
+
+<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
+
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">signal_exceptions</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">signal_constants</span>
+<span class="kn">from</span> <span class="nn">.</span> <span class="k">import</span> <span class="n">signal_logging</span> <span class="k">as</span> <span class="n">logger</span>
+
+
+<span class="n">LOGGER</span> <span class="o">=</span> <span class="n">logger</span><span class="o">.</span><span class="n">get_logger</span><span class="p">(</span><span class="s2">&quot;data_read_proxy&quot;</span><span class="p">,</span> <span class="s1">&#39;info&#39;</span><span class="p">)</span>
+<span class="n">SAMPLE_SIZES</span> <span class="o">=</span> <span class="n">signal_constants</span><span class="o">.</span><span class="n">SAMPLE_SIZES</span>
+<span class="n">SAMPLE_STRUCT_TYPES</span> <span class="o">=</span> <span class="n">signal_constants</span><span class="o">.</span><span class="n">SAMPLE_STRUCT_TYPES</span>
+
+
+<div class="viewcode-block" id="DataReadProxy"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.signal.html#obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy">[docs]</a><span class="k">class</span> <span class="nc">DataReadProxy</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span> <span class="nf">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_file_path</span><span class="p">,</span> <span class="n">sample_type</span><span class="o">=</span><span class="s1">&#39;FLOAT&#39;</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_file_path</span> <span class="o">=</span> <span class="n">p_file_path</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sample_size</span> <span class="o">=</span> <span class="n">SAMPLE_SIZES</span><span class="p">[</span><span class="n">sample_type</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_sample_struct_type</span> <span class="o">=</span> <span class="s1">&#39;&lt;&#39;</span> <span class="o">+</span> <span class="n">SAMPLE_STRUCT_TYPES</span><span class="p">[</span><span class="n">sample_type</span><span class="p">]</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_reading</span><span class="p">()</span>
+
+<div class="viewcode-block" id="DataReadProxy.start_reading"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.signal.html#obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy.start_reading">[docs]</a>    <span class="k">def</span> <span class="nf">start_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_data_file</span> <span class="o">=</span> <span class="nb">open</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_path</span><span class="p">,</span> <span class="s1">&#39;rb&#39;</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">IOError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;An error occured while opening the data file!&quot;</span><span class="p">)</span>
+            <span class="k">raise</span><span class="p">(</span><span class="n">e</span><span class="p">)</span></div>
+
+<div class="viewcode-block" id="DataReadProxy.finish_reading"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.signal.html#obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy.finish_reading">[docs]</a>    <span class="k">def</span> <span class="nf">finish_reading</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_file</span><span class="o">.</span><span class="n">close</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DataReadProxy.get_all_values"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.signal.html#obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy.get_all_values">[docs]</a>    <span class="k">def</span> <span class="nf">get_all_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_channels_num</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
+        <span class="k">assert</span><span class="p">(</span><span class="n">p_channels_num</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">finish_reading</span><span class="p">()</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">start_reading</span><span class="p">()</span>
+        <span class="n">f_len</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">getsize</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_file_path</span><span class="p">))</span>
+        <span class="n">ch_len</span> <span class="o">=</span> <span class="nb">int</span><span class="p">((</span><span class="n">f_len</span> <span class="o">/</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_size</span><span class="p">)</span> <span class="o">/</span> <span class="n">p_channels_num</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">ch_len</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_size</span> <span class="o">*</span> <span class="n">p_channels_num</span> <span class="o">!=</span> <span class="n">f_len</span><span class="p">:</span>
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+                <span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                    <span class="p">[</span><span class="s2">&quot;Remained samples &quot;</span><span class="p">,</span> <span class="nb">str</span><span class="p">(</span><span class="n">f_len</span> <span class="o">-</span> <span class="n">ch_len</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_size</span> <span class="o">*</span> <span class="n">p_channels_num</span><span class="p">),</span>
+                     <span class="s2">&quot; .Should be 0.&quot;</span><span class="p">]))</span>
+
+        <span class="n">vals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">p_channels_num</span><span class="p">,</span> <span class="n">ch_len</span><span class="p">))</span>
+        <span class="n">k</span> <span class="o">=</span> <span class="mi">0</span>
+        <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">r</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fromfile</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_data_file</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_struct_type</span><span class="p">,</span> <span class="n">p_channels_num</span><span class="p">)</span>
+            <span class="k">except</span> <span class="ne">MemoryError</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">r</span><span class="p">)</span> <span class="o">&lt;</span> <span class="n">p_channels_num</span><span class="p">:</span>
+                <span class="k">break</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p_channels_num</span><span class="p">):</span>
+                <span class="n">vals</span><span class="p">[</span><span class="n">i</span><span class="p">,</span> <span class="n">k</span><span class="p">]</span> <span class="o">=</span> <span class="n">r</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
+            <span class="n">k</span> <span class="o">+=</span> <span class="mi">1</span>
+        <span class="k">return</span> <span class="n">vals</span></div>
+
+<div class="viewcode-block" id="DataReadProxy.get_next_value"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.signal.html#obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy.get_next_value">[docs]</a>    <span class="k">def</span> <span class="nf">get_next_value</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return next value from data file (as python float).</span>
+<span class="sd">        Close data file and raise NoNextValue exception if eof.&quot;&quot;&quot;</span>
+        <span class="n">l_raw_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sample_size</span><span class="p">)</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># TODO - by now it is assumed that error means eof..</span>
+            <span class="c1"># What if it is not eof but eg. 4-chars</span>
+            <span class="c1"># string from the end of a broken file?</span>
+            <span class="k">return</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sample_struct_type</span><span class="p">,</span> <span class="n">l_raw_data</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">except</span> <span class="n">struct</span><span class="o">.</span><span class="n">error</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">signal_exceptions</span><span class="o">.</span><span class="n">NoNextValue</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DataReadProxy.get_next_values"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.signal.html#obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy.get_next_values">[docs]</a>    <span class="k">def</span> <span class="nf">get_next_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_num</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Return next p_num values from data file (as numpy array).</span>
+<span class="sd">        Close data file and raise NoNextValue exception if eof.&quot;&quot;&quot;</span>
+
+        <span class="c1"># Read data from file</span>
+        <span class="c1"># LOGGER.debug(&quot;Before reading &quot;+str(self._sample_size*p_num)+&quot; samples.</span>
+        <span class="c1"># CURRENT POSITION/8 = &quot;+str(self._data_file.tell()/8))</span>
+        <span class="n">l_raw_data</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data_file</span><span class="o">.</span><span class="n">read</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sample_size</span> <span class="o">*</span> <span class="n">p_num</span><span class="p">)</span>
+        <span class="c1"># LOGGER.debug(&quot;After read. CURRENT POSITION/8 = &quot;+str(self._data_file.tell()/8))</span>
+
+        <span class="c1"># Initialize return array</span>
+        <span class="n">l_ret</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="n">p_num</span><span class="p">)</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">l_raw_data</span><span class="p">)</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_size</span> <span class="o">*</span> <span class="n">p_num</span><span class="p">):</span>
+            <span class="c1"># If all data required for return array is present</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">p_num</span><span class="p">):</span>
+                <span class="n">l_ret</span><span class="p">[</span><span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">struct</span><span class="o">.</span><span class="n">unpack</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sample_struct_type</span><span class="p">,</span>
+                                         <span class="n">l_raw_data</span><span class="p">[</span><span class="bp">self</span><span class="o">.</span><span class="n">_sample_size</span> <span class="o">*</span> <span class="n">i</span><span class="p">:</span><span class="bp">self</span><span class="o">.</span><span class="n">_sample_size</span> <span class="o">*</span> <span class="p">(</span><span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)])[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">return</span> <span class="n">l_ret</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Either len(l_raw_data) is 0 and its ok -&gt; EOF</span>
+            <span class="c1"># or len(l_raw_data) &gt; 0 and its last len(l_raw_data) data from the file.</span>
+
+            <span class="n">LOGGER</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s1">&#39;&#39;</span><span class="o">.</span><span class="n">join</span><span class="p">([</span><span class="s2">&quot;Remained sample of &quot;</span><span class="p">,</span>
+                                 <span class="nb">str</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">l_raw_data</span><span class="p">)),</span>
+                                 <span class="s2">&quot; length (should be zero) as required length was &quot;</span><span class="p">,</span>
+                                 <span class="nb">str</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_sample_size</span> <span class="o">*</span> <span class="n">p_num</span><span class="p">),</span>
+                                 <span class="s2">&quot;. No next value.&quot;</span><span class="p">]))</span>
+            <span class="k">raise</span> <span class="n">signal_exceptions</span><span class="o">.</span><span class="n">NoNextValue</span><span class="p">()</span></div>
+
+<div class="viewcode-block" id="DataReadProxy.goto_value"><a class="viewcode-back" href="../../../../../apidoc/obci.analysis.obci_signal_processing.signal.html#obci.analysis.obci_signal_processing.signal.data_read_proxy.DataReadProxy.goto_value">[docs]</a>    <span class="k">def</span> <span class="nf">goto_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">p_value_no</span><span class="p">):</span>
+        <span class="sd">&quot;&quot;&quot;Set the engine, so that nex &#39;get_next_value&#39; call will return</span>
+<span class="sd">        value number p_value_no+1.</span>
+<span class="sd">        Eg. if p_value_no == 0, calling get_next_value will return first value.</span>
+<span class="sd">        if p_value_no == 11, calling get_next_value will return 12-th value.&quot;&quot;&quot;</span>
+        <span class="c1"># LOGGER.debug(&quot;DOING SEEK TO: &quot;+str(p_value_no))</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_data_file</span><span class="o">.</span><span class="n">seek</span><span class="p">(</span><span class="n">p_value_no</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">_sample_size</span><span class="p">)</span></div></div>
+        <span class="c1"># LOGGER.debug(&quot;DATA FILE SEEK DONE. CURRENT POSITION/8 = &quot;+str(self._data_file.tell()/8))</span>
+</pre></div>
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+<h1 class="logo"><a href="../../../../../index.html">openbci</a></h1>
+
+
+
+<p class="blurb">OpenBCI 2 framework</p>
+
+
+
+
+
+
+<h3>Navigation</h3>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../../apidoc/modules.html">obci</a></li>
+</ul>
+
+<div class="relations">
+<h3>Related Topics</h3>
+<ul>
+  <li><a href="../../../../../index.html">Documentation overview</a><ul>
+  <li><a href="../../../../index.html">Module code</a><ul>
+  </ul></li>
+  </ul></li>
+</ul>
+</div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <form class="search" action="../../../../../search.html" method="get">
+      <div><input type="text" name="q" /></div>
+      <div><input type="submit" value="Go" /></div>
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="footer">
+      &copy;2016, Alex Khrabrov.
+      
+      |
+      Powered by <a href="http://sphinx-doc.org/">Sphinx 1.4.6</a>
+      &amp; <a href="https://github.com/bitprophet/alabaster">Alabaster 0.7.9</a>
+      
+    </div>
+
+    
+
+    
+  </body>
+</html>
